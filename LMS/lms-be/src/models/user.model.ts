@@ -31,14 +31,14 @@ export interface IUSER extends Document {
 
 const userSchema = new Schema<IUSER>(
     {
-    firstname: { type: String, required: true },
-    lastname: { type: String, required: true },
+    firstname: { type: String},
+    lastname: { type: String},
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true },
     roles: { type: [String], enum: Object.values(Role), default: [Role.USER] },
-    mobile: { type: String, required: true },
-    profilePicLink: { type: String, required: true },
-    address: { type: String, required: true },
+    mobile: { type: String },
+    profilePicLink: { type: String },
+    address: { type: String },
     status: { type: String, enum: Object.values(Status), default: Status.PENDING }
     }, { 
         timestamps: true 
