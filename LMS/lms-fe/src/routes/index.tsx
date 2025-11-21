@@ -3,6 +3,11 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { useAuth } from "../context/authContext"
 
 const Index = lazy(() => import("../pages/Index"))
+const LoadingPage = lazy(() => import("../components/LoadingPage"))
+const AccessDenied = lazy(() => import("../components/AccessDenid"))
+const LoginPage = lazy(() => import("../pages/Login"))
+const SignupPage = lazy(() => import("../pages/Signup"))
+const ForgotPWPage = lazy(() => import("../pages/ForgotPW"))
 
 type RequireAuthTypes = { children: ReactNode; roles?: string[] }
 
@@ -10,11 +15,7 @@ const RequireAuth = ({ children, roles }: RequireAuthTypes) => {
   const { user, loading } = useAuth()
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
-        <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
-      </div>
-    )
+    return <LoadingPage />
   }
 
   if (!user) {
@@ -22,12 +23,7 @@ const RequireAuth = ({ children, roles }: RequireAuthTypes) => {
   }
 
   if (roles && !roles.some((role) => user.roles?.includes(role))) {
-    return (
-      <div className="text-center py-20">
-        <h2 className="text-xl font-bold mb-2">Access Denied</h2>
-        <p>You do not have permission to view this page.</p>
-      </div>
-    )
+    return <AccessDenied />
   }
 
   return <>{children}</>
@@ -37,17 +33,16 @@ export default function Router() {
   return (
     <BrowserRouter>
       <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-screen bg-gray-100">
-            <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
-          </div>
-        }
+        fallback= {<LoadingPage />}
       >
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-pw" element={<ForgotPWPage />} /> 
           {/* <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route
+          <Route>
             element={
               <RequireAuth>
                 <Layout />
