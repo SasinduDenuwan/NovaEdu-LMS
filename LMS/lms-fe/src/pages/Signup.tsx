@@ -5,14 +5,13 @@ import toast from 'react-hot-toast';
 import { register } from '../services/auth';
 
 export default function SignUpPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  const usernameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
@@ -21,9 +20,9 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    if (username.trim() === '') {
-      toast.error("Please enter your username!");
-      usernameRef.current?.focus();
+    if (email.trim() === '') {
+      toast.error("Please enter your email!");
+      emailRef.current?.focus();
       return;
     }
     if (password.trim() === '') {
@@ -44,7 +43,7 @@ export default function SignUpPage() {
 
     setIsLoading(true);
     try {
-      const data: any = await register(username, password);
+      const data: any = await register(email, password);
 
       if (data) {
         toast.success("Registration successful! Please log in.");
@@ -58,7 +57,6 @@ export default function SignUpPage() {
     }
   };
 
-  // Determine if passwords match
   const passwordsMatch = password && confirmPassword && password === confirmPassword;
 
   return (
@@ -69,41 +67,38 @@ export default function SignUpPage() {
             <div className="inline-block p-4 rounded-2xl mb-4 shadow-lg transform transition-transform hover:rotate-12 duration-300" style={{background: 'linear-gradient(135deg, #6366F1 0%, #3B82F6 100%)'}}>
               <User className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold mb-2" style={{
-              background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
+            <h1
+              className="text-3xl font-bold mb-2"
+              style={{
+                background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
               Create Account
             </h1>
             <p className="text-gray-600">Start your journey with us today</p>
           </div>
 
           <div className="space-y-5">
-            {/* Username input */}
             <div className="relative group">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Username
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#6366F1] transition-colors duration-300 w-5 h-5" />
                 <input
-                  ref={usernameRef}
+                  ref={emailRef}
                   type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#6366F1] focus:outline-none transition-all duration-300 bg-[#EEF2FF] focus:bg-white"
-                  placeholder="Username"
+                  placeholder="email"
                 />
               </div>
             </div>
 
-            {/* Password input */}
             <div className="relative group">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#6366F1] transition-colors duration-300 w-5 h-5" />
                 <input
@@ -124,11 +119,8 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            {/* Confirm Password input */}
             <div className="relative group">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#6366F1] transition-colors duration-300 w-5 h-5" />
                 <input
@@ -147,7 +139,6 @@ export default function SignUpPage() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              {/* Password match message */}
               {confirmPassword && (
                 <p className={`mt-1 text-sm ${passwordsMatch ? 'text-green-600' : 'text-red-600'}`}>
                   {passwordsMatch ? 'Passwords match ' : 'Passwords do not match'}
@@ -155,33 +146,9 @@ export default function SignUpPage() {
               )}
             </div>
 
-            {/* Terms checkbox */}
-            <label className="flex items-start cursor-pointer group">
-              <div className="relative flex items-center justify-center">
-                <input
-                  type="checkbox"
-                  checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  className="w-5 h-5 border-gray-300 rounded cursor-pointer"
-                  style={{accentColor: '#6366F1'}}
-                />
-              </div>
-              <span className="ml-3 text-sm text-gray-600 group-hover:text-[#4F46E5] transition-colors">
-                I agree to the{' '}
-                <button onClick={() => alert('Terms of Service')} className="text-[#6366F1] hover:text-[#4F46E5] font-medium">
-                  Terms of Service
-                </button>
-                {' '}and{' '}
-                <button onClick={() => alert('Privacy Policy')} className="text-[#6366F1] hover:text-[#4F46E5] font-medium">
-                  Privacy Policy
-                </button>
-              </span>
-            </label>
-
-            {/* Submit button */}
             <button
               onClick={handleSubmit}
-              disabled={isLoading || !agreedToTerms}
+              disabled={isLoading}
               className="w-full text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
               style={{background: 'linear-gradient(135deg, #6366F1 0%, #3B82F6 100%)'}}
             >
@@ -196,7 +163,6 @@ export default function SignUpPage() {
             </button>
           </div>
 
-          {/* Sign in link */}
           <p className="text-center text-sm text-gray-600 mt-6">
             Already have an account?{' '}
             <Link to="/login" className="text-[#6366F1] hover:text-[#4F46E5] font-semibold transition-colors">

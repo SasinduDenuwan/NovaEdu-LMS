@@ -31,11 +31,13 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const data: any = await login(email, password); // Replace with actual login call
+      const data: any = await login(email, password);
 
-      if (data) {
-        toast.success('Login successful!');
-        navigate('/dashboard'); // Change to your desired route after login
+      if (data.data || data) {
+        toast.success('Login successfully!');
+        localStorage.setItem('accessToken', data.data.accessToken);
+        localStorage.setItem('refreshToken', data.data.refreshToken);
+        navigate('/dashboard');
       }
     } catch (err: any) {
       console.error('Login Error: ', err);
@@ -187,7 +189,7 @@ export default function LoginPage() {
           <p className="text-center text-sm text-gray-600 mt-6">
             Don't have an account?{' '}
             <Link to="/signup" className="text-[#14B8A6] hover:text-[#0D9488] font-semibold transition-colors">
-              Sign up now
+              Sign up
             </Link>
           </p>
         </div>

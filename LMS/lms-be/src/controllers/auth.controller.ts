@@ -12,9 +12,7 @@ const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { email, password, firstname, lastname } = req.body
-
-    // left email form model, right side data varible
-    //   User.findOne({ email: email })
+    
     const existingUser = await User.findOne({ email })
     if (existingUser) {
       return res.status(400).json({ message: "Email exists" })
