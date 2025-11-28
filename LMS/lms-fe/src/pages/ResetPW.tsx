@@ -208,12 +208,14 @@ export default function ResetPasswordPage() {
       }
 
       const data = await resetPassword(email, password); 
-      
-      toast.success('Password reset successfully! You can now login with your new password.');
-      
-      setTimeout(() => {
+
+      if (data.code === 200) {
+        toast.success('Password reset successfully! You can now login with your new password.');
         navigate('/login');
-      }, 2000);
+      }
+      else {
+        toast.error(data.message);
+      }
       
     } catch (error) {
       toast.error('Failed to reset password. Please try again.');
