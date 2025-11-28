@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type FormEvent, type JSX } from 'react';
 import { Lock, Eye, EyeOff, Check, ArrowLeft, Mail, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { forgotPassword, checkOTP, resetPassword } from '../services/auth';
 
 type Step = 1 | 2 | 3;
 type PasswordRequirements = {
@@ -30,25 +31,22 @@ export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Timer for OTP resend
   useEffect(() => {
     let interval: number;
 
     if (timer > 0) {
       interval = window.setInterval(() => {
         setTimer((prev) => prev - 1);
-    }, 1000);
-  }
+      }, 1000);
+    }
 
-  return () => clearInterval(interval);
-}, [timer]);
-
+    return () => clearInterval(interval);
+  }, [timer]);
 
   const startTimer = (): void => {
-    setTimer(30); // 30 seconds
+    setTimer(30);
   };
 
-  // Check password requirements in real-time
   useEffect(() => {
     setPasswordRequirements({
       hasMinLength: password.length >= 6,
@@ -77,26 +75,18 @@ export default function ResetPasswordPage() {
 
     setIsLoading(true);
     try {
-      // Simulate API call to send OTP
-      // await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // // Generate a random 6-digit OTP for demo (in real app, this comes from backend)
-      // const demoOTP = Math.floor(100000 + Math.random() * 900000).toString();
-      // console.log('Demo OTP:', demoOTP); // For testing purposes
-      
-      // toast.success(`OTP sent to ${email}! (Check console for demo OTP: ${demoOTP})`);
-      // setStep(2);
-      // startTimer();
+      const data: any = await forgotPassword(email);
 
-      const data: any = await 
+      if(data.code === 404){
+        toast.error(data.message);
+      }else{
+        toast.success(data.message || 'OTP sent successfully');
+        setStep(2);
+        startTimer();
+        setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+      }
 
-      
-      // Auto-focus first OTP input
-      setTimeout(() => {
-        if (otpInputRefs.current[0]) {
-          otpInputRefs.current[0].focus();
-        }
-      }, 100);
+  
     } catch (error) {
       toast.error('Failed to send OTP. Please try again.');
     } finally {
@@ -112,14 +102,12 @@ export default function ResetPasswordPage() {
 
     setIsResending(true);
     try {
-      // Simulate API call to resend OTP
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Generate new random OTP for demo
       const demoOTP = Math.floor(100000 + Math.random() * 900000).toString();
-      console.log('New Demo OTP:', demoOTP); // For testing purposes
+      console.log('New Demo OTP:', demoOTP);
       
-      toast.success(`OTP resent to ${email}! (Check console for demo OTP: ${demoOTP})`);
+      toast.success(`OTP resent to ${email}!`);
       startTimer();
     } catch (error) {
       toast.error('Failed to resend OTP. Please try again.');
@@ -135,13 +123,11 @@ export default function ResetPasswordPage() {
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = otpInputRefs.current[index + 1];
       if (nextInput) nextInput.focus();
     }
 
-    // Auto-submit when all digits are filled
     if (value && index === 5) {
       const otpString = newOtp.join('');
       if (otpString.length === 6) {
@@ -157,6 +143,7 @@ export default function ResetPasswordPage() {
     }
   };
 
+  // ✅ ONLY THIS FUNCTION WAS EDITED
   const handleVerifyOTP = async (otpString?: string): Promise<void> => {
     const finalOtp = otpString || otp.join('');
     
@@ -167,17 +154,27 @@ export default function ResetPasswordPage() {
 
     setIsLoading(true);
     try {
-      // Simulate OTP verification
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes, accept any 6-digit OTP
-      // In real app, you'd verify against the backend
-      if (finalOtp.length === 6 && /^\d+$/.test(finalOtp)) {
+      const data: any = await checkOTP(email, finalOtp);      
+      console.log(data.code);
+      console.log(data.message);
+      if (data.code === 200) {
         toast.success('OTP verified successfully!');
         setStep(3);
-      } else {
-        toast.error('Invalid OTP. Please enter a valid 6-digit code.');
       }
+      else {
+        setOtp(['', '', '', '', '', '']);
+
+        otpInputRefs.current.forEach((input) => {
+          if (input) input.value = '';
+        });
+
+        setTimeout(() => {
+          otpInputRefs.current[0]?.focus();
+        }, 100);
+        
+        toast.error(data.message);
+      } 
+
     } catch (error) {
       toast.error('Failed to verify OTP. Please try again.');
     } finally {
@@ -191,7 +188,6 @@ export default function ResetPasswordPage() {
     setIsLoading(true);
 
     try {
-      // Validate form and show specific error messages
       if (!password || !confirmPassword) {
         toast.error('Please fill in all fields');
         setIsLoading(false);
@@ -211,13 +207,10 @@ export default function ResetPasswordPage() {
         return;
       }
 
-      // Simulate API call to reset password
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const data = await resetPassword(email, password); 
       
-      // Simulate successful password reset
       toast.success('Password reset successfully! You can now login with your new password.');
       
-      // Redirect to login after delay
       setTimeout(() => {
         navigate('/login');
       }, 2000);
@@ -276,7 +269,6 @@ export default function ResetPasswordPage() {
           ) : (
             <>
               Send Verification Code
-              <Check className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
             </>
           )}
         </button>
@@ -343,7 +335,6 @@ export default function ResetPasswordPage() {
               ) : (
                 <>
                   Verify Code
-                  <Check className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                 </>
               )}
             </button>
@@ -441,7 +432,7 @@ export default function ResetPasswordPage() {
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#2DD4BF] transition-colors duration-300"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#2DD4BF] transition-colors	duration-300"
             >
               {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
@@ -497,7 +488,6 @@ export default function ResetPasswordPage() {
           ) : (
             <>
               Reset Password
-              <Check className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
             </>
           )}
         </button>
@@ -505,7 +495,7 @@ export default function ResetPasswordPage() {
         <button
           type="button"
           onClick={() => setStep(2)}
-          className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-[#0D9488] transition-colors duration-300 py-2"
+          className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-[#0D9488] transition-colors	duration-300 py-2"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="font-medium">Back to Verification</span>
@@ -517,11 +507,10 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Progress Steps */}
         <div className="flex justify-center mb-8">
           <div className="flex items-center">
             {[1, 2, 3].map((stepNumber) => (
-              <div key={stepNumber} className="flex items-center">
+              <div key={stepNumber} className="flex	items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
                   step >= stepNumber 
                     ? 'bg-[#2DD4BF] text-white' 

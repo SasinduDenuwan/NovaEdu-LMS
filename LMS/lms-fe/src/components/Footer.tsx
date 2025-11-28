@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
             viewport={{ once: true }}
           >
             <div className="flex items-center space-x-3 mb-5">
-              <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-xl">
+              <div className="w-10 h-10 bg-linear-to-br from-teal-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-xl">
                 <BookOpen className="text-white" size={24} />
               </div>
               <span className="text-2xl font-bold">LearnHub</span>
