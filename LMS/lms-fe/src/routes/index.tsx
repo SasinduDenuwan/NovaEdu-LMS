@@ -7,7 +7,7 @@ const LoadingPage = lazy(() => import("../components/LoadingPage"))
 const AccessDenied = lazy(() => import("../components/AccessDenid"))
 const LoginPage = lazy(() => import("../pages/Login"))
 const SignupPage = lazy(() => import("../pages/Signup"))
-const ForgotPWPage = lazy(() => import("../pages/ForgotPW"))
+const ResetPWPage = lazy(() => import("../pages/ResetPW"))
 
 type RequireAuthTypes = { children: ReactNode; roles?: string[] }
 
@@ -39,7 +39,7 @@ export default function Router() {
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/forgot-pw" element={<ForgotPWPage />} /> 
+          <Route path="/forgot-pw" element={<ResetPWPage />} /> 
           {/* <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route>

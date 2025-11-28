@@ -22,3 +22,8 @@ export const refreshTokens = async (refreshToken: string) => {
   });
   return res.data;
 };
+
+export const forgotPassword = async (email: string) => {
+  const res = await api.post("/auth/forgot-password", { email });
+  return res.data;
+};  

@@ -1,0 +1,562 @@
+import { useState, useEffect, useRef, type FormEvent, type JSX } from 'react';
+import { Lock, Eye, EyeOff, Check, ArrowLeft, Mail, Clock } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+
+type Step = 1 | 2 | 3;
+type PasswordRequirements = {
+  hasMinLength: boolean;
+  hasUpperCase: boolean;
+  hasNumber: boolean;
+};
+
+export default function ResetPasswordPage() {
+  const [step, setStep] = useState<Step>(1);
+  const [email, setEmail] = useState<string>('');
+  const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
+  const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isResending, setIsResending] = useState<boolean>(false);
+  const [timer, setTimer] = useState<number>(0);
+  const [passwordRequirements, setPasswordRequirements] = useState<PasswordRequirements>({
+    hasMinLength: false,
+    hasUpperCase: false,
+    hasNumber: false
+  });
+
+  const navigate = useNavigate();
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Timer for OTP resend
+  useEffect(() => {
+    let interval: number;
+
+    if (timer > 0) {
+      interval = window.setInterval(() => {
+        setTimer((prev) => prev - 1);
+    }, 1000);
+  }
+
+  return () => clearInterval(interval);
+}, [timer]);
+
+
+  const startTimer = (): void => {
+    setTimer(30); // 30 seconds
+  };
+
+  // Check password requirements in real-time
+  useEffect(() => {
+    setPasswordRequirements({
+      hasMinLength: password.length >= 6,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasNumber: /[0-9]/.test(password)
+    });
+  }, [password]);
+
+  const validatePassword = (): boolean => {
+    return passwordRequirements.hasMinLength && 
+           passwordRequirements.hasUpperCase && 
+           passwordRequirements.hasNumber;
+  };
+
+  const handleSendOTP = async (e: FormEvent): Promise<void> => {
+    e.preventDefault();
+    if (!email) {
+      toast.error('Please enter your email address');
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Simulate API call to send OTP
+      // await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // // Generate a random 6-digit OTP for demo (in real app, this comes from backend)
+      // const demoOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      // console.log('Demo OTP:', demoOTP); // For testing purposes
+      
+      // toast.success(`OTP sent to ${email}! (Check console for demo OTP: ${demoOTP})`);
+      // setStep(2);
+      // startTimer();
+
+      const data: any = await 
+
+      
+      // Auto-focus first OTP input
+      setTimeout(() => {
+        if (otpInputRefs.current[0]) {
+          otpInputRefs.current[0].focus();
+        }
+      }, 100);
+    } catch (error) {
+      toast.error('Failed to send OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOTP = async (): Promise<void> => {
+    if (timer > 0) {
+      toast.error(`Please wait ${timer} seconds before resending`);
+      return;
+    }
+
+    setIsResending(true);
+    try {
+      // Simulate API call to resend OTP
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Generate new random OTP for demo
+      const demoOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log('New Demo OTP:', demoOTP); // For testing purposes
+      
+      toast.success(`OTP resent to ${email}! (Check console for demo OTP: ${demoOTP})`);
+      startTimer();
+    } catch (error) {
+      toast.error('Failed to resend OTP. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleOtpChange = (value: string, index: number): void => {
+    if (!/^\d?$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      const nextInput = otpInputRefs.current[index + 1];
+      if (nextInput) nextInput.focus();
+    }
+
+    // Auto-submit when all digits are filled
+    if (value && index === 5) {
+      const otpString = newOtp.join('');
+      if (otpString.length === 6) {
+        handleVerifyOTP(newOtp.join(''));
+      }
+    }
+  };
+
+  const handleOtpKeyDown = (e: React.KeyboardEvent, index: number): void => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const prevInput = otpInputRefs.current[index - 1];
+      if (prevInput) prevInput.focus();
+    }
+  };
+
+  const handleVerifyOTP = async (otpString?: string): Promise<void> => {
+    const finalOtp = otpString || otp.join('');
+    
+    if (finalOtp.length !== 6) {
+      toast.error('Please enter the complete 6-digit OTP');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Simulate OTP verification
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // For demo purposes, accept any 6-digit OTP
+      // In real app, you'd verify against the backend
+      if (finalOtp.length === 6 && /^\d+$/.test(finalOtp)) {
+        toast.success('OTP verified successfully!');
+        setStep(3);
+      } else {
+        toast.error('Invalid OTP. Please enter a valid 6-digit code.');
+      }
+    } catch (error) {
+      toast.error('Failed to verify OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: FormEvent): Promise<void> => {
+    e.preventDefault();
+    
+    setIsLoading(true);
+
+    try {
+      // Validate form and show specific error messages
+      if (!password || !confirmPassword) {
+        toast.error('Please fill in all fields');
+        setIsLoading(false);
+        return;
+      }
+
+      if (!validatePassword()) {
+        toast.error('Please meet all password requirements');
+        setIsLoading(false);
+        return;
+      }
+
+      const passwordsMatch = password === confirmPassword;
+      if (!passwordsMatch) {
+        toast.error('Passwords do not match');
+        setIsLoading(false);
+        return;
+      }
+
+      // Simulate API call to reset password
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Simulate successful password reset
+      toast.success('Password reset successfully! You can now login with your new password.');
+      
+      // Redirect to login after delay
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+      
+    } catch (error) {
+      toast.error('Failed to reset password. Please try again.');
+      setIsLoading(false);
+    }
+  };
+
+  const passwordsMatch: boolean = password === confirmPassword && confirmPassword.length > 0;
+  const isOtpComplete: boolean = otp.join('').length === 6;
+
+  const renderStep1 = (): JSX.Element => (
+    <form onSubmit={handleSendOTP}>
+      <div className="text-center mb-8 animate-fade-in">
+        <div className="inline-block p-4 rounded-2xl mb-4 shadow-lg transform transition-transform hover:rotate-12 duration-300" style={{background: 'linear-gradient(135deg, #2DD4BF 0%, #3B82F6 100%)'}}>
+          <Mail className="w-8 h-8 text-white" />
+        </div>
+        <h1 className="text-3xl font-bold mb-2" style={{
+          background: 'linear-gradient(135deg, #0D9488 0%, #2563EB 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }}>
+          Reset Your Password
+        </h1>
+        <p className="text-gray-600">Enter your email to receive a verification code</p>
+      </div>
+
+      <div className="space-y-6">
+        <div className="relative group">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Email Address
+          </label>
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#2DD4BF] transition-colors duration-300 w-5 h-5" />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#2DD4BF] focus:outline-none transition-all duration-300 bg-[#F0FDFA] focus:bg-white"
+              placeholder="you@example.com"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isLoading || !email}
+          className="w-full text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+          style={{background: 'linear-gradient(135deg, #2DD4BF 0%, #3B82F6 100%)'}}
+        >
+          {isLoading ? (
+            <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <>
+              Send Verification Code
+              <Check className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+            </>
+          )}
+        </button>
+
+        <Link to="/login"
+          className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-[#0D9488] transition-colors duration-300 py-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="font-medium">Back to Login</span>
+        </Link>
+      </div>
+    </form>
+  );
+
+  const renderStep2 = (): JSX.Element => (
+    <div>
+      <div className="text-center mb-8 animate-fade-in">
+        <div className="inline-block p-4 rounded-2xl mb-4 shadow-lg transform transition-transform hover:rotate-12 duration-300" style={{background: 'linear-gradient(135deg, #2DD4BF 0%, #3B82F6 100%)'}}>
+          <Lock className="w-8 h-8 text-white" />
+        </div>
+        <h1 className="text-3xl font-bold mb-2" style={{
+          background: 'linear-gradient(135deg, #0D9488 0%, #2563EB 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }}>
+          Enter Verification Code
+        </h1>
+        <p className="text-gray-600 mb-2">We sent a 6-digit code to</p>
+        <p className="text-[#0D9488] font-semibold">{email}</p>
+      </div>
+
+      <div className="space-y-6">
+        <div className="relative group">
+          <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
+            Enter the 6-digit code
+          </label>
+          <div className="flex justify-center gap-2 mb-6">
+            {otp.map((digit, index) => (
+             <input
+                key={index}
+                ref={(el) => {
+                  otpInputRefs.current[index] = el;
+                }}
+                type="text"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleOtpChange(e.target.value, index)}
+                onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                className="w-12 h-12 text-center text-lg font-semibold border-2 border-gray-200 rounded-xl focus:border-[#2DD4BF] focus:outline-none transition-all duration-300 bg-[#F0FDFA] focus:bg-white"
+              />
+            ))}
+          </div>
+
+          <div className="text-center space-y-4">
+            <button
+              onClick={() => handleVerifyOTP()}
+              disabled={isLoading || !isOtpComplete}
+              className="w-full text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+              style={{background: 'linear-gradient(135deg, #2DD4BF 0%, #3B82F6 100%)'}}
+            >
+              {isLoading ? (
+                <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  Verify Code
+                  <Check className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                </>
+              )}
+            </button>
+
+            <div>
+              <button
+                type="button"
+                onClick={handleResendOTP}
+                disabled={isResending || timer > 0}
+                className="text-[#14B8A6] hover:text-[#0D9488] font-semibold transition-colors duration-300 disabled:opacity-50 flex items-center justify-center gap-2 mx-auto"
+              >
+                {isResending ? (
+                  <div className="w-4 h-4 border-2 border-[#14B8A6] border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <Clock className="w-4 h-4" />
+                    {timer > 0 ? `Resend in ${timer}s` : 'Resend Code'}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setStep(1)}
+          className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-[#0D9488] transition-colors duration-300 py-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="font-medium">Change Email</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderStep3 = (): JSX.Element => (
+    <form onSubmit={handleResetPassword}>
+      <div className="text-center mb-8 animate-fade-in">
+        <div className="inline-block p-4 rounded-2xl mb-4 shadow-lg transform transition-transform hover:rotate-12 duration-300" style={{background: 'linear-gradient(135deg, #2DD4BF 0%, #3B82F6 100%)'}}>
+          <Lock className="w-8 h-8 text-white" />
+        </div>
+        <h1 className="text-3xl font-bold mb-2" style={{
+          background: 'linear-gradient(135deg, #0D9488 0%, #2563EB 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }}>
+          Create New Password
+        </h1>
+        <p className="text-gray-600">Enter your new password below</p>
+      </div>
+
+      <div className="space-y-6">
+        <div className="relative group">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            New Password
+          </label>
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#2DD4BF] transition-colors duration-300 w-5 h-5" />
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-[#2DD4BF] focus:outline-none transition-all duration-300 bg-[#F0FDFA] focus:bg-white"
+              placeholder="Enter new password"
+              minLength={6}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#2DD4BF] transition-colors duration-300"
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        <div className="relative group">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Confirm Password
+          </label>
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#2DD4BF] transition-colors duration-300 w-5 h-5" />
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className={`w-full pl-12 pr-12 py-3 border-2 rounded-xl focus:outline-none transition-all duration-300 bg-[#F0FDFA] focus:bg-white ${
+                confirmPassword && !passwordsMatch
+                  ? 'border-red-300 focus:border-red-500'
+                  : 'border-gray-200 focus:border-[#2DD4BF]'
+              }`}
+              placeholder="Confirm new password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#2DD4BF] transition-colors duration-300"
+            >
+              {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
+          
+          {confirmPassword && (
+            <div className={`flex items-center gap-2 mt-2 text-sm ${
+              passwordsMatch ? 'text-green-600' : 'text-red-600'
+            }`}>
+              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                passwordsMatch 
+                  ? 'bg-green-500 border-green-500 text-white' 
+                  : 'border-red-500'
+              }`}>
+                {passwordsMatch && <Check className="w-3 h-3" />}
+              </div>
+              <span>{passwordsMatch ? 'Passwords match' : 'Passwords do not match'}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-[#F8FAFC] rounded-xl p-4 border border-gray-200">
+          <p className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</p>
+          <ul className="text-xs text-gray-600 space-y-1">
+            <li className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${
+                passwordRequirements.hasMinLength ? 'bg-green-500' : 'bg-gray-300'
+              }`}></div>
+              At least 6 characters
+            </li>
+            <li className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${
+                passwordRequirements.hasUpperCase ? 'bg-green-500' : 'bg-gray-300'
+              }`}></div>
+              One uppercase letter
+            </li>
+            <li className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${
+                passwordRequirements.hasNumber ? 'bg-green-500' : 'bg-gray-300'
+              }`}></div>
+              One number
+            </li>
+          </ul>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+          style={{background: 'linear-gradient(135deg, #2DD4BF 0%, #3B82F6 100%)'}}
+        >
+          {isLoading ? (
+            <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <>
+              Reset Password
+              <Check className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+            </>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setStep(2)}
+          className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-[#0D9488] transition-colors duration-300 py-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="font-medium">Back to Verification</span>
+        </button>
+      </div>
+    </form>
+  );
+
+  return (
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Progress Steps */}
+        <div className="flex justify-center mb-8">
+          <div className="flex items-center">
+            {[1, 2, 3].map((stepNumber) => (
+              <div key={stepNumber} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
+                  step >= stepNumber 
+                    ? 'bg-[#2DD4BF] text-white' 
+                    : 'bg-gray-200 text-gray-500'
+                }`}>
+                  {step > stepNumber ? <Check className="w-4 h-4" /> : stepNumber}
+                </div>
+                {stepNumber < 3 && (
+                  <div className={`w-12 h-1 mx-2 transition-all duration-300 ${
+                    step > stepNumber ? 'bg-[#2DD4BF]' : 'bg-gray-200'
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+          {step === 1 && renderStep1()}
+          {step === 2 && renderStep2()}
+          {step === 3 && renderStep3()}
+        </div>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Need help?{' '}
+            <button 
+              onClick={() => toast.success('Contact support at help@example.com')} 
+              className="text-[#14B8A6] hover:text-[#0D9488] font-semibold transition-colors"
+            >
+              Contact Support
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
