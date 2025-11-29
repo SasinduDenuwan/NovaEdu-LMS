@@ -127,7 +127,7 @@ const Index: React.FC = () => {
   // Background image rotation effect
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentBg((prev) => (prev + 1) % backgroundImages.length);
+      setCurrentBg((prev) => (prev + 2) % backgroundImages.length);
     }, 4000); // Change every 4 seconds
 
     return () => clearInterval(interval);
@@ -166,9 +166,9 @@ const Index: React.FC = () => {
           <motion.div
             key={currentBg}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.1 }}
+            animate={{ opacity: 0.2 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}
+            transition={{ duration: 1.5 }}  
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${backgroundImages[currentBg]})` }}
           />
@@ -666,7 +666,7 @@ const Index: React.FC = () => {
             initial={{ scale: 0.9, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.6 }}
-            className="bg-gradient-to-r from-teal-500 to-blue-500 rounded-3xl shadow-2xl overflow-hidden"
+            className="bg-linear-to-r from-teal-500 to-blue-500 rounded-3xl shadow-2xl overflow-hidden"
           >
             <div className="relative p-12 text-center">
               <motion.div
@@ -845,7 +845,7 @@ const Index: React.FC = () => {
                 <motion.div 
                   animate={{ rotate: 360 }}
                   transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                  className="w-8 h-8 bg-gradient-to-r from-teal-500 to-blue-500 rounded-lg flex items-center justify-center"
+                  className="w-8 h-8 bg-linear-to-r from-teal-500 to-blue-500 rounded-lg flex items-center justify-center"
                 >
                   <span className="text-white font-bold text-sm">EL</span>
                 </motion.div>
