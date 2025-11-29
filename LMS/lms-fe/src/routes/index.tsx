@@ -1,13 +1,14 @@
 import { lazy, Suspense, type ReactNode } from "react"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { useAuth } from "../context/authContext"
+import Index from "../pages/testCode2"
 
-const Index = lazy(() => import("../pages/Index"))
 const LoadingPage = lazy(() => import("../components/LoadingPage"))
 const AccessDenied = lazy(() => import("../components/AccessDenid"))
 const LoginPage = lazy(() => import("../pages/Login"))
 const SignupPage = lazy(() => import("../pages/Signup"))
 const ResetPWPage = lazy(() => import("../pages/ResetPW"))
+const TestCode2 = lazy(() => import("../pages/testCode2")) 
 type RequireAuthTypes = { children: ReactNode; roles?: string[] }
 
 const RequireAuth = ({ children, roles }: RequireAuthTypes) => {
@@ -36,6 +37,7 @@ export default function Router() {
       >
         <Routes>
           <Route path="/" element={<Index />} />
+          {/* <Route path="/" element={<TestCode2 />} /> */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/forgot-pw" element={<ResetPWPage />} /> 
