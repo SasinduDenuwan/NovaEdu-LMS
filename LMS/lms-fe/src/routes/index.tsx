@@ -2,12 +2,12 @@ import { lazy, Suspense, type ReactNode } from "react"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { useAuth } from "../context/authContext"
 
-const Index = lazy(() => import("../pages/Index"))
 const LoadingPage = lazy(() => import("../components/LoadingPage"))
 const AccessDenied = lazy(() => import("../components/AccessDenid"))
 const LoginPage = lazy(() => import("../pages/Login"))
 const SignupPage = lazy(() => import("../pages/Signup"))
 const ResetPWPage = lazy(() => import("../pages/ResetPW"))
+const Index = lazy(() => import("../pages/Index"))  
 type RequireAuthTypes = { children: ReactNode; roles?: string[] }
 
 const RequireAuth = ({ children, roles }: RequireAuthTypes) => {
