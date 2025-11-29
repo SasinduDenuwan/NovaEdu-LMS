@@ -8,11 +8,7 @@ const AccessDenied = lazy(() => import("../components/AccessDenid"))
 const LoginPage = lazy(() => import("../pages/Login"))
 const SignupPage = lazy(() => import("../pages/Signup"))
 const ResetPWPage = lazy(() => import("../pages/ResetPW"))
-<<<<<<< HEAD
 const TestCode2 = lazy(() => import("../pages/testCode2")) 
-=======
-const Index = lazy(() => import("../pages/Index"))  
->>>>>>> 935b94fdceb69e9851a08b1963ade101b7b3b0f0
 type RequireAuthTypes = { children: ReactNode; roles?: string[] }
 
 const RequireAuth = ({ children, roles }: RequireAuthTypes) => {
