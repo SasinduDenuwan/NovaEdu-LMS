@@ -5,10 +5,10 @@ import Router from "./routes";
 export default function App() {
   return (
     <>
-    <Toaster position="top-center" reverseOrder={false} />
-    <AuthProvider>
-      <Router />
-    </AuthProvider>
+      <Toaster position="top-center" reverseOrder={false} />
+      <AuthProvider>
+        <Router />
+      </AuthProvider>
     </>
-  )
+  );
 }
