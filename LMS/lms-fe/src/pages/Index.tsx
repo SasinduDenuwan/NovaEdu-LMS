@@ -1,4 +1,3 @@
-// Index.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -71,6 +70,7 @@ const Index: React.FC = () => {
   const [activeNav, setActiveNav] = useState<string>('home');
   const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
   const [isInstructorModalOpen, setIsInstructorModalOpen] = useState<boolean>(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const backgroundImages = [
     'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600',
@@ -549,6 +549,13 @@ const Index: React.FC = () => {
     }
   ];
 
+  // Check localStorage for accessToken
+  useEffect(() => {
+    if (localStorage.getItem('accessToken')) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   // Prevent background scroll when modals are open
   useEffect(() => {
     const body = document.body;
@@ -567,7 +574,6 @@ const Index: React.FC = () => {
     const interval = setInterval(() => {
       setCurrentBg((prev) => (prev + 1) % backgroundImages.length);
     }, 4000); // Change every 4 seconds
-
     return () => clearInterval(interval);
   }, []);
 
@@ -583,7 +589,7 @@ const Index: React.FC = () => {
       const discount = subtotal * 0.1; // 10% discount
       const tax = (subtotal - discount) * 0.13; // 13% tax
       const total = subtotal - discount + tax;
-      
+    
       setOrderSummary({
         subtotal,
         discount,
@@ -593,11 +599,16 @@ const Index: React.FC = () => {
     }
   }, [cart]);
 
-  const filteredCourses = activeTab === 'all' 
-    ? courses 
+  const filteredCourses = activeTab === 'all'
+    ? courses
     : courses.filter(course => course.category === activeTab);
 
   const addToCart = (course: Course, openCart: boolean = true): void => {
+    if (!isLoggedIn) {
+      // Prevent adding to cart if not logged in
+      alert('Please sign in to add courses to your cart.');
+      return;
+    }
     setCart(prev => [...prev, course]);
     if (openCart) {
       setIsCartOpen(true);
@@ -666,13 +677,13 @@ const Index: React.FC = () => {
   };
 
   const getInstructorCourses = (instructorId: number): Course[] => {
-    return courses.filter(course => 
+    return courses.filter(course =>
       instructors.find(instructor => instructor.id === instructorId)?.name === course.instructor
     );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 relative overflow-x-hidden">
+    <div className="min-h-screen bg-linear-to-br from-teal-50 to-blue-50 relative overflow-x-hidden">
       {/* Animated Background */}
       <div className="fixed inset-0 z-0">
         <AnimatePresence mode="wait">
@@ -681,19 +692,19 @@ const Index: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.2 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}  
+            transition={{ duration: 1.5 }}
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${backgroundImages[currentBg]})` }}
           />
         </AnimatePresence>
-        
+      
         {/* Animated floating elements */}
         <div className="absolute inset-0 overflow-hidden">
           {[1, 2, 3, 4, 5, 6].map((item) => (
             <motion.div
               key={item}
               initial={{ opacity: 0, scale: 0 }}
-              animate={{ 
+              animate={{
                 opacity: isVisible ? [0.3, 0.6, 0.3] : 0,
                 scale: isVisible ? [1, 1.2, 1] : 0,
                 x: isVisible ? [0, 100, 0] : 0,
@@ -705,7 +716,7 @@ const Index: React.FC = () => {
                 delay: item * 0.5,
                 ease: "easeInOut"
               }}
-              className={`absolute w-${item % 2 === 0 ? '4' : '6'} h-${item % 2 === 0 ? '4' : '6'} rounded-full bg-gradient-to-r from-teal-400 to-blue-400 opacity-30`}
+              className={`absolute w-${item % 2 === 0 ? '4' : '6'} h-${item % 2 === 0 ? '4' : '6'} rounded-full bg-linear-to-r from-teal-400 to-blue-400 opacity-30`}
               style={{
                 left: `${(item * 15) % 100}%`,
                 top: `${(item * 20) % 100}%`,
@@ -714,23 +725,22 @@ const Index: React.FC = () => {
           ))}
         </div>
       </div>
-
       {/* Header */}
-      <motion.header 
+      <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         className="bg-white/90 backdrop-blur-md shadow-lg fixed top-0 w-full z-50 border-b border-white/20"
       >
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05 }}
               className="flex items-center space-x-2 cursor-pointer group"
             >
-              <motion.div 
+              <motion.div
                 animate={{ rotate: 0 }}
                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                className="w-8 h-8 bg-gradient-to-r from-teal-500 to-blue-500 rounded-lg flex items-center justify-center"
+                className="w-8 h-8 bg-linear-to-r from-teal-500 to-blue-500 rounded-lg flex items-center justify-center"
               >
                 <span className="text-white font-bold text-sm">NE</span>
               </motion.div>
@@ -738,12 +748,11 @@ const Index: React.FC = () => {
                 NovaEdu
               </span>
             </motion.div>
-
             <nav className="hidden md:flex space-x-8">
               {['home', 'courses', 'instructors', 'about', 'contact'].map((item) => (
                 <motion.a
                   key={item}
-                  whileHover={{ 
+                  whileHover={{
                     color: '#14B8A6',
                     y: -2
                   }}
@@ -762,7 +771,6 @@ const Index: React.FC = () => {
                 </motion.a>
               ))}
             </nav>
-
             <div className="flex items-center space-x-4">
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -774,7 +782,7 @@ const Index: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 {cart.length > 0 && (
-                  <motion.span 
+                  <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     className="absolute -top-2 -right-2 bg-gradient-to-r from-teal-500 to-blue-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center shadow-lg"
@@ -783,30 +791,42 @@ const Index: React.FC = () => {
                   </motion.span>
                 )}
               </motion.button>
-
-              <motion.button
-                whileHover={{ 
-                  scale: 1.05,
-                  boxShadow: "0 10px 30px -5px rgba(20, 184, 166, 0.5)"
-                }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
-              >
-                <span className="relative z-10">Sign In</span>
+              {isLoggedIn ? (
                 <motion.div
-                  className="absolute inset-0 bg-linear-to-r from-blue-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                />
-              </motion.button>
+                  whileHover={{ scale: 1.05 }}
+                  className="relative"
+                >
+                  <button className="flex items-center space-x-2 bg-white/80 p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20">
+                    <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center text-white font-bold">
+                      U
+                    </div>
+                    <span className="text-gray-800 font-semibold">Profile</span>
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.button
+                  whileHover={{
+                    scale: 1.05,
+                    boxShadow: "0 10px 30px -5px rgba(20, 184, 166, 0.5)"
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+                >
+                  <span className="relative z-10">Sign In</span>
+                  <motion.div
+                    className="absolute inset-0 bg-linear-to-r from-blue-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  />
+                </motion.button>
+              )}
             </div>
           </div>
         </div>
       </motion.header>
-
       {/* Hero Section */}
       <section id="home" className="relative pt-36 pb-20 overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <div className="flex flex-col lg:flex-row items-center justify-between">
-            <motion.div 
+            <motion.div
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8 }}
@@ -822,20 +842,20 @@ const Index: React.FC = () => {
                   🚀 Transform Your Career
                 </span>
               </motion.div>
-              
+            
               <h1 className="text-5xl lg:text-7xl font-bold text-gray-800 leading-tight mb-6">
                 Learn Without
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-500 block">
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-500 to-blue-500 block">
                   Limits
                 </span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed bg-white/50 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
-                Discover thousands of courses from industry experts. 
+                Discover thousands of courses from industry experts.
                 Start your learning journey today and unlock your potential with our interactive platform.
               </p>
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                 <motion.button
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.05,
                     boxShadow: "0 15px 40px -10px rgba(20, 184, 166, 0.6)"
                   }}
@@ -866,9 +886,8 @@ const Index: React.FC = () => {
                   </div>
                 </motion.button>
               </div>
-
               {/* Stats */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
@@ -890,7 +909,6 @@ const Index: React.FC = () => {
                 ))}
               </motion.div>
             </motion.div>
-
             <motion.div
               initial={{ x: 100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -898,21 +916,21 @@ const Index: React.FC = () => {
               className="lg:w-1/2 relative"
             >
               <div className="relative z-10">
-                <motion.img 
-                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600" 
+                <motion.img
+                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600"
                   alt="Students learning"
                   className="rounded-3xl shadow-2xl border-8 border-white/20"
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
                 />
-                
+              
                 {/* Floating cards */}
                 <motion.div
-                  animate={{ 
+                  animate={{
                     y: [0, -15, 0],
                     rotate: [0, 3, 0]
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 4,
                     repeat: Infinity,
                     ease: "easeInOut"
@@ -924,13 +942,13 @@ const Index: React.FC = () => {
                     <span className="text-sm font-semibold text-gray-800">2,500+ Courses</span>
                   </div>
                 </motion.div>
-                
+              
                 <motion.div
-                  animate={{ 
+                  animate={{
                     y: [0, 15, 0],
                     rotate: [0, -3, 0]
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 3,
                     repeat: Infinity,
                     ease: "easeInOut",
@@ -943,7 +961,6 @@ const Index: React.FC = () => {
                     <span className="text-sm font-semibold text-gray-800">Expert Instructors</span>
                   </div>
                 </motion.div>
-
                 {/* Decorative elements */}
                 <motion.div
                   animate={{ rotate: 360 }}
@@ -960,10 +977,7 @@ const Index: React.FC = () => {
           </div>
         </div>
       </section>
-      
-      {/* Rest of the content remains the same... */}
-      {/* ... (Categories & Courses, Instructors, Features, About, Contact, CTA, Footers, Modals) */}
-      
+    
       {/* Categories & Courses */}
       <section id="courses" className="py-16 relative z-10">
         <div className="container mx-auto px-6">
@@ -978,14 +992,13 @@ const Index: React.FC = () => {
               Find the perfect course for your learning journey
             </p>
           </motion.div>
-
           <div className="flex flex-wrap justify-center gap-4 mb-12">
             {categories.map((category) => (
               <motion.button
                 key={category.id}
-                whileHover={{ 
+                whileHover={{
                   scale: 1.05,
-                  background: activeTab === category.id 
+                  background: activeTab === category.id
                     ? 'linear-gradient(135deg, #14B8A6, #3B82F6)'
                     : 'linear-gradient(135deg, #F3F4F6, #E5E7EB)'
                 }}
@@ -1001,9 +1014,8 @@ const Index: React.FC = () => {
               </motion.button>
             ))}
           </div>
-
           {/* Course Grid */}
-          <motion.div 
+          <motion.div
             layout
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
@@ -1016,7 +1028,7 @@ const Index: React.FC = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -50, scale: 0.9 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ 
+                  whileHover={{
                     y: -10,
                     boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
                   }}
@@ -1030,10 +1042,9 @@ const Index: React.FC = () => {
                       </span>
                     </div>
                   )}
-
                   <div className="relative overflow-hidden">
-                    <img 
-                      src={course.image} 
+                    <img
+                      src={course.image}
                       alt={course.title}
                       className="w-full h-48 object-cover transition-transform duration-700 group-hover:scale-110"
                     />
@@ -1042,11 +1053,11 @@ const Index: React.FC = () => {
                       Rs. {course.price.toFixed(0)}
                     </div>
                   </div>
-                  
+                
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <span className={`px-4 py-2 rounded-xl text-sm font-medium backdrop-blur-sm border ${
-                        course.level === 'Beginner' 
+                        course.level === 'Beginner'
                           ? 'bg-teal-50/80 text-teal-600 border-teal-200'
                           : course.level === 'Intermediate'
                           ? 'bg-blue-50/80 text-blue-600 border-blue-200'
@@ -1062,14 +1073,14 @@ const Index: React.FC = () => {
                         <span className="text-gray-500">({course.students})</span>
                       </div>
                     </div>
-                    
+                  
                     <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-teal-600 transition-colors duration-300">
                       {course.title}
                     </h3>
                     <p className="text-gray-600 mb-4 line-clamp-2 leading-relaxed">
                       {course.description}
                     </p>
-                    
+                  
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-gradient-to-r from-teal-400 to-blue-400 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
@@ -1081,25 +1092,25 @@ const Index: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    
+                  
                     <div className="flex space-x-3">
                       <motion.button
-                        whileHover={{ 
+                        whileHover={{
                           scale: 1.02,
                           boxShadow: "0 10px 25px -5px rgba(20, 184, 166, 0.4)"
                         }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => addToCart(course)}
-                        className="flex-1 bg-gradient-to-r from-teal-500 to-blue-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+                        className="flex-1 bg-linear-to-r from-teal-500 to-blue-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
                       >
                         <span className="relative z-10">Add to Cart</span>
                         <motion.div
                           whileHover={{ scale: 1.1 }}
-                          className="absolute inset-0 bg-gradient-to-r from-blue-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          className="absolute inset-0 bg-linear-to-r from-blue-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                         />
                       </motion.button>
                       <motion.button
-                        whileHover={{ 
+                        whileHover={{
                           scale: 1.02,
                           boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.4)"
                         }}
@@ -1120,7 +1131,6 @@ const Index: React.FC = () => {
           </motion.div>
         </div>
       </section>
-
       {/* Instructors Section */}
       <section id="instructors" className="py-20 relative z-10 bg-gradient-to-br from-white/50 to-teal-50/30">
         <div className="container mx-auto px-6">
@@ -1135,7 +1145,6 @@ const Index: React.FC = () => {
               Learn from industry professionals with real-world experience
             </p>
           </motion.div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {instructors.map((instructor, index) => (
               <motion.div
@@ -1143,25 +1152,25 @@ const Index: React.FC = () => {
                 initial={{ opacity: 0, y: 50, scale: 0.9 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ 
+                whileHover={{
                   y: -10,
                   boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
                 }}
                 className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 border border-white/20 group"
               >
                 <div className="relative overflow-hidden">
-                  <img 
-                    src={instructor.image} 
+                  <img
+                    src={instructor.image}
                     alt={instructor.name}
                     className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
+                  <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-teal-600 px-4 py-2 rounded-xl text-lg font-bold shadow-lg">
                     {instructor.rating} ⭐
                   </div>
                 </div>
-                
+              
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -1171,11 +1180,11 @@ const Index: React.FC = () => {
                       <p className="text-teal-600 font-semibold">{instructor.role}</p>
                     </div>
                   </div>
-                  
+                
                   <p className="text-gray-600 mb-4 leading-relaxed">
                     {instructor.bio}
                   </p>
-                  
+                
                   {/* Enhanced Stats */}
                   <div className="grid grid-cols-3 gap-3 mb-6">
                     <div className="text-center bg-teal-50/50 rounded-xl p-3 group-hover:bg-teal-100/50 transition-colors duration-300">
@@ -1191,7 +1200,6 @@ const Index: React.FC = () => {
                       <div className="text-xs text-gray-600 font-medium">Students</div>
                     </div>
                   </div>
-
                   <div className="flex items-center justify-between">
                     <div className="flex space-x-3">
                       {Object.entries(instructor.social).map(([platform, url]) => (
@@ -1207,12 +1215,12 @@ const Index: React.FC = () => {
                         </motion.a>
                       ))}
                     </div>
-                    
+                  
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => viewInstructorProfile(instructor)}
-                      className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="bg-linear-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       View Profile
                     </motion.button>
@@ -1223,7 +1231,6 @@ const Index: React.FC = () => {
           </div>
         </div>
       </section>
-
       {/* Instructor Profile Modal */}
       <AnimatePresence>
         {isInstructorModalOpen && selectedInstructor && (
@@ -1247,9 +1254,9 @@ const Index: React.FC = () => {
                 <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 w-full max-w-4xl overflow-hidden">
                   {/* Header */}
                   <div className="relative h-80 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-blue-500" />
+                    <div className="absolute inset-0 bg-linear-to-r from-teal-500 to-blue-500" />
                     <div className="absolute inset-0 bg-black/20" />
-                    
+                  
                     <div className="absolute top-6 right-6 flex space-x-3">
                       <motion.button
                         whileHover={{ scale: 1.1, rotate: 90 }}
@@ -1262,12 +1269,11 @@ const Index: React.FC = () => {
                         </svg>
                       </motion.button>
                     </div>
-
                     <div className="absolute bottom-6 left-6 right-6 text-white">
                       <div className="flex flex-col md:flex-row md:items-end md:justify-between">
                         <div className="flex items-center space-x-6">
-                          <img 
-                            src={selectedInstructor.image} 
+                          <img
+                            src={selectedInstructor.image}
                             alt={selectedInstructor.name}
                             className="w-24 h-24 rounded-2xl border-4 border-white/20 shadow-2xl"
                           />
@@ -1277,7 +1283,7 @@ const Index: React.FC = () => {
                             <p className="text-white/80">{selectedInstructor.specialization}</p>
                           </div>
                         </div>
-                        
+                      
                         <div className="flex items-center space-x-4 mt-4 md:mt-0">
                           <div className="text-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl">
                             <div className="text-2xl font-bold">{selectedInstructor.rating}</div>
@@ -1291,7 +1297,6 @@ const Index: React.FC = () => {
                       </div>
                     </div>
                   </div>
-
                   {/* Content */}
                   <div className="p-8">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1302,7 +1307,6 @@ const Index: React.FC = () => {
                           <h3 className="text-2xl font-bold text-gray-800 mb-4">About</h3>
                           <p className="text-gray-700 leading-relaxed">{selectedInstructor.detailedBio}</p>
                         </div>
-
                         {/* Expertise */}
                         <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
                           <h3 className="text-2xl font-bold text-gray-800 mb-4">Areas of Expertise</h3>
@@ -1320,7 +1324,6 @@ const Index: React.FC = () => {
                             ))}
                           </div>
                         </div>
-
                         {/* Achievements */}
                         <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
                           <h3 className="text-2xl font-bold text-gray-800 mb-4">Notable Achievements</h3>
@@ -1333,20 +1336,19 @@ const Index: React.FC = () => {
                                 transition={{ delay: index * 0.1 }}
                                 className="flex items-center space-x-3"
                               >
-                                <div className="w-2 h-2 bg-teal-500 rounded-full flex-shrink-0"></div>
+                                <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
                                 <span className="text-gray-700">{achievement}</span>
                               </motion.div>
                             ))}
                           </div>
                         </div>
                       </div>
-
                       {/* Sidebar */}
                       <div className="space-y-6">
                         {/* Instructor Stats */}
                         <div className="bg-gradient-to-br from-teal-500 to-blue-500 rounded-2xl p-6 shadow-2xl text-white">
                           <h3 className="text-xl font-bold mb-6 text-center">Instructor Stats</h3>
-                          
+                        
                           <div className="space-y-4">
                             <div className="flex justify-between items-center">
                               <span>Experience</span>
@@ -1365,14 +1367,12 @@ const Index: React.FC = () => {
                               <span className="font-bold text-lg">{selectedInstructor.rating} ⭐</span>
                             </div>
                           </div>
-
                           <div className="mt-6 pt-4 border-t border-teal-400/30">
                             <div className="text-center text-teal-100 text-sm">
                               Join {selectedInstructor.students.toLocaleString()}+ satisfied students
                             </div>
                           </div>
                         </div>
-
                         {/* Social Links */}
                         <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
                           <h4 className="font-semibold text-gray-800 mb-4">Connect</h4>
@@ -1391,7 +1391,6 @@ const Index: React.FC = () => {
                             ))}
                           </div>
                         </div>
-
                         {/* Featured Courses */}
                         <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
                           <h4 className="font-semibold text-gray-800 mb-4">Featured Courses</h4>
@@ -1406,8 +1405,8 @@ const Index: React.FC = () => {
                                   setIsInstructorModalOpen(false);
                                 }}
                               >
-                                <img 
-                                  src={course.image} 
+                                <img
+                                  src={course.image}
                                   alt={course.title}
                                   className="w-12 h-12 object-cover rounded-lg"
                                 />
@@ -1428,7 +1427,6 @@ const Index: React.FC = () => {
           </>
         )}
       </AnimatePresence>
-
       {/* Features Section */}
       <section className="py-20 relative z-10">
         <div className="container mx-auto px-6">
@@ -1443,7 +1441,6 @@ const Index: React.FC = () => {
               Experience learning like never before with our cutting-edge platform
             </p>
           </motion.div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -1482,7 +1479,7 @@ const Index: React.FC = () => {
                 initial={{ y: 50, opacity: 0, scale: 0.9 }}
                 whileInView={{ y: 0, opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ 
+                whileHover={{
                   scale: 1.05,
                   y: -5
                 }}
@@ -1504,7 +1501,6 @@ const Index: React.FC = () => {
           </div>
         </div>
       </section>
-
       {/* About Section */}
       <section id="about" className="py-20 relative z-10 bg-gradient-to-br from-blue-50/50 to-teal-50/50">
         <div className="container mx-auto px-6">
@@ -1525,19 +1521,18 @@ const Index: React.FC = () => {
                   🎯 Our Mission
                 </span>
               </motion.div>
-              
+            
               <h2 className="text-5xl font-bold text-gray-800 mb-6">
-                Transforming Education Through 
+                Transforming Education Through
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-500 block">
                   Innovation
                 </span>
               </h2>
-              
+            
               <p className="text-lg text-gray-600 mb-8 leading-relaxed bg-white/50 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
-                EduLearn was founded with a simple yet powerful vision: to make quality education accessible to everyone, 
+                EduLearn was founded with a simple yet powerful vision: to make quality education accessible to everyone,
                 everywhere. We believe that learning should be engaging, interactive, and tailored to individual needs.
               </p>
-
               <div className="grid grid-cols-2 gap-6 mb-8">
                 {[
                   { number: '2018', label: 'Founded In' },
@@ -1555,7 +1550,6 @@ const Index: React.FC = () => {
                   </motion.div>
                 ))}
               </div>
-
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -1564,7 +1558,6 @@ const Index: React.FC = () => {
                 Learn Our Story
               </motion.button>
             </motion.div>
-
             <motion.div
               initial={{ x: 100, opacity: 0 }}
               whileInView={{ x: 0, opacity: 1 }}
@@ -1572,21 +1565,21 @@ const Index: React.FC = () => {
               className="lg:w-1/2 relative"
             >
               <div className="relative z-10">
-                <motion.img 
-                  src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600" 
+                <motion.img
+                  src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600"
                   alt="About EduLearn"
                   className="rounded-3xl shadow-2xl border-8 border-white/20"
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
                 />
-                
+              
                 {/* Floating elements */}
                 <motion.div
-                  animate={{ 
+                  animate={{
                     y: [0, -20, 0],
                     rotate: [0, 5, 0]
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 4,
                     repeat: Infinity,
                     ease: "easeInOut"
@@ -1598,13 +1591,13 @@ const Index: React.FC = () => {
                     <span className="text-sm font-semibold text-gray-800">Global Community</span>
                   </div>
                 </motion.div>
-                
+              
                 <motion.div
-                  animate={{ 
+                  animate={{
                     y: [0, 20, 0],
                     rotate: [0, -5, 0]
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 3,
                     repeat: Infinity,
                     ease: "easeInOut",
@@ -1622,7 +1615,6 @@ const Index: React.FC = () => {
           </div>
         </div>
       </section>
-
       {/* Contact Section */}
       <section id="contact" className="py-20 relative z-10">
         <div className="container mx-auto px-6">
@@ -1637,7 +1629,6 @@ const Index: React.FC = () => {
               We'd love to hear from you. Let's start a conversation!
             </p>
           </motion.div>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Information */}
             <motion.div
@@ -1649,11 +1640,10 @@ const Index: React.FC = () => {
               <div>
                 <h3 className="text-3xl font-bold text-gray-800 mb-6">Contact Information</h3>
                 <p className="text-gray-600 mb-8 text-lg">
-                  Have questions about our courses or need assistance? 
+                  Have questions about our courses or need assistance?
                   Reach out to our friendly team - we're here to help you succeed.
                 </p>
               </div>
-
               <div className="space-y-6">
                 {[
                   {
@@ -1703,7 +1693,6 @@ const Index: React.FC = () => {
                   </motion.div>
                 ))}
               </div>
-
               {/* Social Links */}
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
                 <h4 className="font-semibold text-gray-800 text-lg mb-4">Follow Us</h4>
@@ -1728,7 +1717,6 @@ const Index: React.FC = () => {
                 </div>
               </div>
             </motion.div>
-
             {/* Contact Form */}
             <motion.div
               initial={{ x: 50, opacity: 0 }}
@@ -1737,7 +1725,7 @@ const Index: React.FC = () => {
               className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20"
             >
               <h3 className="text-3xl font-bold text-gray-800 mb-6">Send us a Message</h3>
-              
+            
               <form className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -1757,7 +1745,6 @@ const Index: React.FC = () => {
                     />
                   </div>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                   <input
@@ -1766,7 +1753,6 @@ const Index: React.FC = () => {
                     placeholder="your@email.com"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
                   <input
@@ -1775,7 +1761,6 @@ const Index: React.FC = () => {
                     placeholder="How can we help you?"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
                   <textarea
@@ -1784,21 +1769,20 @@ const Index: React.FC = () => {
                     placeholder="Tell us more about your inquiry..."
                   />
                 </div>
-
                 <motion.button
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.02,
-                    boxShadow: "0 15px 30px -5px rgba(20, 184, 166, 0.4)"
+                    boxShadow: "0 15px 40px -10px rgba(20, 184, 166, 0.6)"
                   }}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={{ scale: 0.95 }}
                   type="submit"
-                  className="w-full bg-gradient-to-r from-teal-500 to-blue-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+                  className="w-full bg-linear-to-r from-teal-500 to-blue-500 text-white py-4 rounded-xl font-semibold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 relative overflow-hidden group"
                 >
                   <span className="relative z-10">Send Message</span>
                   <motion.div
                     animate={{ x: [-100, 100] }}
                     transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+                    className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent skew-x-12"
                   />
                 </motion.button>
               </form>
@@ -1806,7 +1790,6 @@ const Index: React.FC = () => {
           </div>
         </div>
       </section>
-
       {/* CTA Section */}
       <section className="py-20 relative z-10">
         <div className="container mx-auto px-6">
@@ -1818,37 +1801,37 @@ const Index: React.FC = () => {
           >
             <div className="relative p-12 text-center">
               <motion.div
-                animate={{ 
+                animate={{
                   rotate: 360,
                   scale: [1, 1.1, 1]
                 }}
-                transition={{ 
+                transition={{
                   rotate: { duration: 20, repeat: Infinity, ease: "linear" },
                   scale: { duration: 3, repeat: Infinity }
                 }}
                 className="absolute -top-20 -right-20 w-40 h-40 bg-white/10 rounded-full"
               />
               <motion.div
-                animate={{ 
+                animate={{
                   rotate: -360,
                   scale: [1.1, 1, 1.1]
                 }}
-                transition={{ 
+                transition={{
                   rotate: { duration: 25, repeat: Infinity, ease: "linear" },
                   scale: { duration: 4, repeat: Infinity }
                 }}
                 className="absolute -bottom-20 -left-20 w-40 h-40 bg-white/10 rounded-full"
               />
-              
+            
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                 Ready to Start Your Learning Journey?
               </h2>
               <p className="text-xl text-teal-100 mb-8 max-w-2xl mx-auto">
-                Join thousands of students who have transformed their careers with our courses. 
+                Join thousands of students who have transformed their careers with our courses.
                 Start learning today and unlock your potential.
               </p>
               <motion.button
-                whileHover={{ 
+                whileHover={{
                   scale: 1.05,
                   boxShadow: "0 20px 40px -10px rgba(255, 255, 255, 0.3)"
                 }}
@@ -1861,9 +1844,6 @@ const Index: React.FC = () => {
           </motion.div>
         </div>
       </section>
-
-      {/* ... (Modals and Footer code remain the same as previous response, make sure to include them) */}
-      
       {/* Course Details Modal */}
       <AnimatePresence>
         {isDetailsOpen && selectedCourse && (
@@ -1887,13 +1867,13 @@ const Index: React.FC = () => {
                 <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 w-full max-w-[90vw] overflow-hidden">
                   {/* Header */}
                   <div className="relative h-80 md:h-96 overflow-hidden">
-                    <img 
-                      src={selectedCourse.image} 
+                    <img
+                      src={selectedCourse.image}
                       alt={selectedCourse.title}
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    
+                  
                     <div className="absolute top-6 right-6 flex space-x-3">
                       <motion.button
                         whileHover={{ scale: 1.1, rotate: 90 }}
@@ -1906,7 +1886,6 @@ const Index: React.FC = () => {
                         </svg>
                       </motion.button>
                     </div>
-
                     <div className="absolute bottom-6 left-6 right-6 text-white">
                       <div className="flex flex-wrap items-center gap-3 mb-4">
                         <span className={`px-4 py-2 rounded-xl text-sm font-medium backdrop-blur-sm border ${getLevelColor(selectedCourse.level)}`}>
@@ -1923,12 +1902,11 @@ const Index: React.FC = () => {
                           <span className="text-white/80">({selectedCourse.students} students)</span>
                         </div>
                       </div>
-                      
+                    
                       <h1 className="text-3xl md:text-4xl font-bold mb-4">{selectedCourse.title}</h1>
                       <p className="text-xl text-white/90 max-w-3xl">{selectedCourse.description}</p>
                     </div>
                   </div>
-
                   {/* Content */}
                   <div className="p-8">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1955,7 +1933,6 @@ const Index: React.FC = () => {
                             </div>
                           </div>
                         </div>
-
                         {/* Course Objectives */}
                         <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
                           <h3 className="text-2xl font-bold text-gray-800 mb-4">What You'll Learn</h3>
@@ -1974,7 +1951,6 @@ const Index: React.FC = () => {
                             ))}
                           </div>
                         </div>
-
                         {/* Requirements */}
                         <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
                           <h3 className="text-2xl font-bold text-gray-800 mb-4">Requirements</h3>
@@ -1994,7 +1970,6 @@ const Index: React.FC = () => {
                           </div>
                         </div>
                       </div>
-
                       {/* Sidebar */}
                       <div className="space-y-6">
                         {/* Pricing Card */}
@@ -2003,7 +1978,6 @@ const Index: React.FC = () => {
                             <div className="text-4xl font-bold mb-2">Rs. {selectedCourse.price.toFixed(0)}</div>
                             <div className="text-teal-100">One-time payment</div>
                           </div>
-
                           <div className="space-y-4 mb-6">
                             <div className="flex justify-between items-center">
                               <span>Lessons</span>
@@ -2022,10 +1996,9 @@ const Index: React.FC = () => {
                               <span className="font-semibold">{selectedCourse.level}</span>
                             </div>
                           </div>
-
                           <div className="space-y-3">
                             <motion.button
-                              whileHover={{ 
+                              whileHover={{
                                 scale: 1.02,
                                 boxShadow: "0 15px 30px -5px rgba(255, 255, 255, 0.3)"
                               }}
@@ -2047,12 +2020,10 @@ const Index: React.FC = () => {
                               Add to Cart
                             </motion.button>
                           </div>
-
                           <div className="text-center mt-4 text-teal-100 text-sm">
                             30-day money-back guarantee
                           </div>
                         </div>
-
                         {/* Course Includes */}
                         <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
                           <h4 className="font-semibold text-gray-800 mb-4">This course includes:</h4>
@@ -2081,7 +2052,6 @@ const Index: React.FC = () => {
           </>
         )}
       </AnimatePresence>
-
       {/* Shopping Cart Sidebar */}
       <AnimatePresence>
         {isCartOpen && (
@@ -2114,7 +2084,6 @@ const Index: React.FC = () => {
                     </svg>
                   </motion.button>
                 </div>
-
                 {cart.length === 0 ? (
                   <div className="flex-1 flex flex-col items-center justify-center text-center">
                     <motion.div
@@ -2147,8 +2116,8 @@ const Index: React.FC = () => {
                           exit={{ opacity: 0, x: 50 }}
                           className="flex items-center space-x-4 bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300 group"
                         >
-                          <img 
-                            src={item.image} 
+                          <img
+                            src={item.image}
                             alt={item.title}
                             className="w-16 h-12 object-cover rounded-lg shadow-md group-hover:scale-110 transition-transform duration-300"
                           />
@@ -2171,20 +2140,19 @@ const Index: React.FC = () => {
                         </motion.div>
                       ))}
                     </div>
-
                     <div className="border-t border-gray-200/50 pt-4 bg-white/50 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
                       <div className="flex justify-between items-center mb-4">
                         <span className="text-lg font-semibold text-gray-800">Total:</span>
                         <span className="text-2xl font-bold text-teal-600">Rs. {getTotalPrice()}</span>
                       </div>
                       <motion.button
-                        whileHover={{ 
+                        whileHover={{
                           scale: 1.02,
                           boxShadow: "0 15px 30px -5px rgba(20, 184, 166, 0.4)"
                         }}
                         whileTap={{ scale: 0.98 }}
                         onClick={handleProceedToCheckout}
-                        className="w-full bg-gradient-to-r from-teal-500 to-blue-500 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+                        className="w-full bg-linear-to-r from-teal-500 to-blue-500 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
                       >
                         <span className="relative z-10">Proceed to Checkout</span>
                         <motion.div
@@ -2201,7 +2169,6 @@ const Index: React.FC = () => {
           </>
         )}
       </AnimatePresence>
-
       {/* Payment Checkout Section - Centered Modal */}
       <AnimatePresence>
         {isCheckoutOpen && (
@@ -2259,7 +2226,6 @@ const Index: React.FC = () => {
                     </svg>
                   </motion.button>
                 </div>
-
                 {/* Progress Steps */}
                 {paymentStep !== 'confirmation' && (
                   <div className="flex items-center justify-center py-6 bg-white/50 backdrop-blur-sm border-b border-gray-200/50">
@@ -2294,7 +2260,6 @@ const Index: React.FC = () => {
                     </div>
                   </div>
                 )}
-
                 {/* Checkout Content */}
                 <div className="flex-1 overflow-y-auto">
                   {paymentStep === 'details' && (
@@ -2326,7 +2291,6 @@ const Index: React.FC = () => {
                               </div>
                             </div>
                           </div>
-
                           {/* Payment Method Selection */}
                           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
                             <h3 className="text-xl font-bold text-gray-800 mb-4">Payment Method</h3>
@@ -2352,7 +2316,6 @@ const Index: React.FC = () => {
                             </div>
                           </div>
                         </div>
-
                         {/* Right Column - Order Summary */}
                         <div className="space-y-6">
                           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20 sticky top-0">
@@ -2361,8 +2324,8 @@ const Index: React.FC = () => {
                               {cart.map((item) => (
                                 <div key={item.id} className="flex items-center justify-between py-2 border-b border-gray-200/50">
                                   <div className="flex items-center space-x-3">
-                                    <img 
-                                      src={item.image} 
+                                    <img
+                                      src={item.image}
                                       alt={item.title}
                                       className="w-12 h-12 object-cover rounded-lg shadow-md"
                                     />
@@ -2371,11 +2334,11 @@ const Index: React.FC = () => {
                                       <p className="text-gray-500 text-xs">{item.instructor}</p>
                                     </div>
                                   </div>
-                                  <span className="font-bold text-teal-600 whitespace-nowrap">Rs. {item.price.toFixed(0)}</span>
+                                  <span className="font-bold text-teal-600">Rs. {item.price.toFixed(0)}</span>
                                 </div>
                               ))}
                             </div>
-                            
+                          
                             <div className="space-y-2 mt-4 pt-4 border-t border-gray-200/50">
                               <div className="flex justify-between text-gray-600">
                                 <span>Subtotal</span>
@@ -2395,10 +2358,9 @@ const Index: React.FC = () => {
                               </div>
                             </div>
                           </div>
-
                           {/* Continue to Payment Button */}
                           <motion.button
-                            whileHover={{ 
+                            whileHover={{
                               scale: 1.02,
                               boxShadow: "0 15px 30px -5px rgba(20, 184, 166, 0.4)"
                             }}
@@ -2417,7 +2379,6 @@ const Index: React.FC = () => {
                       </div>
                     </motion.div>
                   )}
-
                   {paymentStep === 'payment' && (
                     <motion.div
                       initial={{ opacity: 0, x: 50 }}
@@ -2452,7 +2413,7 @@ const Index: React.FC = () => {
                                   </div>
                                 </div>
                               </div>
-                              
+                            
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
@@ -2471,7 +2432,7 @@ const Index: React.FC = () => {
                                   />
                                 </div>
                               </div>
-                              
+                            
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
                                 <input
@@ -2482,7 +2443,6 @@ const Index: React.FC = () => {
                               </div>
                             </div>
                           </div>
-
                           {/* Billing Address */}
                           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
                             <h3 className="text-xl font-bold text-gray-800 mb-4">Billing Address</h3>
@@ -2505,7 +2465,7 @@ const Index: React.FC = () => {
                                   />
                                 </div>
                               </div>
-                              
+                            
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
                                 <input
@@ -2514,7 +2474,7 @@ const Index: React.FC = () => {
                                   placeholder="123 Main Street"
                                 />
                               </div>
-                              
+                            
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
@@ -2536,7 +2496,6 @@ const Index: React.FC = () => {
                             </div>
                           </div>
                         </div>
-
                         {/* Right Column - Order Summary & Security */}
                         <div className="space-y-6">
                           {/* Order Summary */}
@@ -2546,8 +2505,8 @@ const Index: React.FC = () => {
                               {cart.map((item) => (
                                 <div key={item.id} className="flex items-center justify-between py-2 border-b border-gray-200/50">
                                   <div className="flex items-center space-x-3">
-                                    <img 
-                                      src={item.image} 
+                                    <img
+                                      src={item.image}
                                       alt={item.title}
                                       className="w-10 h-10 object-cover rounded-lg shadow-md"
                                     />
@@ -2560,7 +2519,7 @@ const Index: React.FC = () => {
                                 </div>
                               ))}
                             </div>
-                            
+                          
                             <div className="space-y-2 mt-4 pt-4 border-t border-gray-200/50">
                               <div className="flex justify-between text-gray-600 text-sm">
                                 <span>Subtotal</span>
@@ -2580,7 +2539,6 @@ const Index: React.FC = () => {
                               </div>
                             </div>
                           </div>
-
                           {/* Security Badge */}
                           <div className="bg-green-50/80 backdrop-blur-sm rounded-2xl p-4 border border-green-200">
                             <div className="flex items-center space-x-3">
@@ -2595,10 +2553,9 @@ const Index: React.FC = () => {
                               </div>
                             </div>
                           </div>
-
                           {/* Pay Now Button */}
                           <motion.button
-                            whileHover={{ 
+                            whileHover={{
                               scale: 1.02,
                               boxShadow: "0 15px 30px -5px rgba(20, 184, 166, 0.4)"
                             }}
@@ -2617,7 +2574,6 @@ const Index: React.FC = () => {
                       </div>
                     </motion.div>
                   )}
-
                   {paymentStep === 'confirmation' && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
@@ -2631,16 +2587,15 @@ const Index: React.FC = () => {
                         className="w-24 h-24 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mb-6 shadow-2xl"
                       >
                         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l2 4L19 7" />
                         </svg>
                       </motion.div>
-                      
+                    
                       <h3 className="text-3xl font-bold text-gray-800 mb-4">Payment Successful!</h3>
                       <p className="text-gray-600 mb-8 max-w-md">
-                        Thank you for your purchase! You now have lifetime access to {cart.length} course{cart.length !== 1 ? 's' : ''}. 
+                        Thank you for your purchase! You now have lifetime access to {cart.length} course{cart.length !== 1 ? 's' : ''}.
                         Check your email for the receipt and course access details.
                       </p>
-
                       <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20 w-full max-w-sm mb-8">
                         <h4 className="font-semibold text-gray-800 mb-4">Order Details</h4>
                         <div className="space-y-2 text-sm">
@@ -2658,7 +2613,6 @@ const Index: React.FC = () => {
                           </div>
                         </div>
                       </div>
-
                       <div className="flex space-x-4">
                         <motion.button
                           whileHover={{ scale: 1.05 }}
@@ -2691,17 +2645,16 @@ const Index: React.FC = () => {
           </>
         )}
       </AnimatePresence>
-
       {/* Footer */}
       <footer className="bg-gray-800/95 backdrop-blur-lg text-white py-12 relative z-10 border-t border-white/10">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <motion.div 
+              <motion.div
                 whileHover={{ scale: 1.05 }}
                 className="flex items-center space-x-2 mb-4"
               >
-                <motion.div 
+                <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                   className="w-8 h-8 bg-linear-to-r from-teal-500 to-blue-500 rounded-lg flex items-center justify-center"
@@ -2711,7 +2664,7 @@ const Index: React.FC = () => {
                 <span className="text-2xl font-bold">EduLearn</span>
               </motion.div>
               <p className="text-gray-400 leading-relaxed">
-                Empowering learners worldwide with quality education and expert-led courses. 
+                Empowering learners worldwide with quality education and expert-led courses.
                 Transform your career with our innovative learning platform.
               </p>
               <div className="flex space-x-4 mt-4">
@@ -2726,13 +2679,13 @@ const Index: React.FC = () => {
                 ))}
               </div>
             </div>
-            
+          
             {['Company', 'Categories', 'Support', 'Legal'].map((section) => (
               <div key={section}>
                 <h3 className="font-semibold text-lg mb-4 text-white">{section}</h3>
                 <ul className="space-y-3">
                   {['About', 'Careers', 'Contact'].map((item) => (
-                    <motion.li 
+                    <motion.li
                       key={item}
                       whileHover={{ x: 5, color: '#14B8A6' }}
                       className="text-gray-400 hover:text-teal-400 cursor-pointer transition-all duration-300"
@@ -2744,8 +2697,8 @@ const Index: React.FC = () => {
               </div>
             ))}
           </div>
-          
-          <motion.div 
+        
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             className="border-t border-gray-700/50 mt-8 pt-8 text-center text-gray-400"
