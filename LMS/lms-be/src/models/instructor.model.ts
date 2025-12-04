@@ -2,26 +2,26 @@ import mongoose, { Document, Schema} from "mongoose";
 
 export interface IInstructor extends Document {
     _id: mongoose.Types.ObjectId;
-    first_name?: string;
-    last_name?: string;
-    job_title?: string;
-    bio?: string;
+    name: string;
+    role?: string;
     experience?: number;
-    courses?: number;
     students?: number;
+    courses?: number;
+    image?: string;
+    bio?: string;
     createdAt: Date;
     updatedAt: Date;
 }
 
 const instructorSchema = new Schema<IInstructor>(
     {
-    first_name: { type: String},
-    last_name: { type: String},
-    job_title: { type: String},
-    bio: { type: String},
-    experience: { type: Number},
-    courses: { type: Number},
-    students: { type: Number},
+        name: { type: String, required: true },
+        role: { type: String },
+        experience: { type: Number },
+        students: { type: Number },
+        courses: { type: Number },
+        image: { type: String },
+        bio: { type: String },
     }, { 
         timestamps: true    
     }

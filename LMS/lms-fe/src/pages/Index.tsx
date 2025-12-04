@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getInstructors } from '../services/instructor';
+
 interface Course {
   id: number;
   title: string;
@@ -17,10 +19,12 @@ interface Course {
   lessons?: number;
   projects?: number;
 }
+
 interface Category {
   id: string;
   name: string;
 }
+
 interface Instructor {
   id: number;
   name: string;
@@ -42,6 +46,7 @@ interface Instructor {
   };
   featuredCourses?: number[];
 }
+
 const Index: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [cart, setCart] = useState<Course[]>([]);
@@ -64,9 +69,9 @@ const Index: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
   const [activeNav, setActiveNav] = useState<string>('home');
-  const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
-  const [isInstructorModalOpen, setIsInstructorModalOpen] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+
   const backgroundImages = [
     'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600',
     'https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=1600',
@@ -83,200 +88,6 @@ const Index: React.FC = () => {
     { id: 'personal', name: 'Personal Development' },
     { id: 'photo', name: 'Photography' },
     { id: 'music', name: 'Music' }
-  ];
-  const instructors: Instructor[] = [
-    {
-      id: 1,
-      name: 'Sarah Johnson',
-      role: 'Senior React Developer',
-      specialization: 'Frontend Development',
-      experience: '8+ years',
-      rating: 4.9,
-      students: 15420,
-      courses: 12,
-      image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400',
-      bio: 'Former lead developer at TechCorp with expertise in modern JavaScript frameworks and scalable applications.',
-      detailedBio: 'Sarah is a seasoned React developer with over 8 years of experience in building scalable web applications. She has worked with major tech companies including Google and Microsoft, and has contributed to open-source projects with over 10,000 stars on GitHub. Her teaching methodology focuses on practical, real-world applications of React concepts.',
-      achievements: [
-        'Lead Developer at TechCorp (2018-2022)',
-        'React Contributor since 2019',
-        'Published 3 technical books on React',
-        'Speaker at React Conf 2021 & 2022'
-      ],
-      expertise: [
-        'React & React Hooks',
-        'TypeScript',
-        'State Management',
-        'Performance Optimization',
-        'Testing Strategies'
-      ],
-      social: {
-        twitter: '#',
-        linkedin: '#',
-        website: '#'
-      },
-      featuredCourses: [1, 5]
-    },
-    {
-      id: 2,
-      name: 'Mike Chen',
-      role: 'UX Design Lead',
-      specialization: 'UI/UX Design',
-      experience: '10+ years',
-      rating: 4.8,
-      students: 12850,
-      courses: 8,
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
-      bio: 'Award-winning designer with experience at Google and Apple. Passionate about creating intuitive user experiences.',
-      detailedBio: 'Mike brings over a decade of UX design experience from top tech companies. He has led design teams at both Google and Apple, working on products used by millions daily. His design philosophy centers around user-centered design and accessibility.',
-      achievements: [
-        'Apple Design Award Winner 2020',
-        'Google Material Design Contributor',
-        'Figma Community Leader',
-        'Mentored 500+ designers'
-      ],
-      expertise: [
-        'User Research',
-        'Wireframing & Prototyping',
-        'Design Systems',
-        'Accessibility',
-        'Design Thinking'
-      ],
-      social: {
-        twitter: '#',
-        linkedin: '#',
-        website: '#'
-      },
-      featuredCourses: [2, 6]
-    },
-    {
-      id: 3,
-      name: 'Emma Davis',
-      role: 'Marketing Director',
-      specialization: 'Digital Marketing',
-      experience: '12+ years',
-      rating: 4.7,
-      students: 18900,
-      courses: 15,
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
-      bio: 'Ex-Facebook marketing lead helping businesses grow through data-driven marketing strategies.',
-      detailedBio: 'Emma has 12+ years of digital marketing experience, with 5 years as a Marketing Lead at Facebook. She specializes in data-driven marketing strategies and has helped over 200 businesses scale their online presence.',
-      achievements: [
-        'Facebook Blueprint Certified',
-        'Google Analytics Expert',
-        'Featured in Forbes 30 Under 30',
-        'Marketing Campaigns with 1B+ reach'
-      ],
-      expertise: [
-        'SEO & SEM',
-        'Social Media Marketing',
-        'Data Analytics',
-        'Content Strategy',
-        'Growth Hacking'
-      ],
-      social: {
-        twitter: '#',
-        linkedin: '#',
-        website: '#'
-      },
-      featuredCourses: [3]
-    },
-    {
-      id: 4,
-      name: 'David Wilson',
-      role: 'Data Scientist',
-      specialization: 'Business Analytics',
-      experience: '9+ years',
-      rating: 4.9,
-      students: 11200,
-      courses: 10,
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-      bio: 'PhD in Data Science with industry experience in predictive analytics and machine learning.',
-      detailedBio: 'David holds a PhD in Data Science and has worked with Fortune 500 companies to implement data-driven decision making processes. His research has been published in top academic journals.',
-      achievements: [
-        'PhD in Data Science',
-        'Published 20+ Research Papers',
-        'AWS Machine Learning Certified',
-        'Built analytics for 50+ companies'
-      ],
-      expertise: [
-        'Machine Learning',
-        'Statistical Analysis',
-        'Python & R',
-        'Data Visualization',
-        'Business Intelligence'
-      ],
-      social: {
-        twitter: '#',
-        linkedin: '#',
-        website: '#'
-      },
-      featuredCourses: [4]
-    },
-    {
-      id: 5,
-      name: 'Lisa Wang',
-      role: 'Product Designer',
-      specialization: 'Figma & Prototyping',
-      experience: '7+ years',
-      rating: 4.8,
-      students: 9600,
-      courses: 6,
-      image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
-      bio: 'Specialized in design systems and interactive prototyping. Former designer at Adobe and Figma ambassador.',
-      detailedBio: 'Lisa is a product designer passionate about creating beautiful and functional interfaces. As a former Adobe designer and current Figma ambassador, she brings industry insights and best practices to her courses.',
-      achievements: [
-        'Figma Ambassador',
-        'Adobe Creative Suite Expert',
-        'Design System Architect',
-        'Mentor at Designlab'
-      ],
-      expertise: [
-        'Figma & Sketch',
-        'Design Systems',
-        'Interactive Prototyping',
-        'User Testing',
-        'Design Workshops'
-      ],
-      social: {
-        twitter: '#',
-        linkedin: '#',
-        website: '#'
-      },
-      featuredCourses: [6]
-    },
-    {
-      id: 6,
-      name: 'Alex Rodriguez',
-      role: 'Full Stack Developer',
-      specialization: 'JavaScript & Node.js',
-      experience: '11+ years',
-      rating: 4.9,
-      students: 20300,
-      courses: 14,
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
-      bio: 'Full-stack developer with expertise in MERN stack and cloud technologies. AWS certified architect.',
-      detailedBio: 'Alex is a full-stack developer with extensive experience in JavaScript ecosystems. He has built scalable applications for startups and enterprises, and holds multiple AWS certifications.',
-      achievements: [
-        'AWS Solutions Architect',
-        'MongoDB Certified Developer',
-        'Built 50+ Production Apps',
-        'Open Source Contributor'
-      ],
-      expertise: [
-        'Node.js & Express',
-        'React & Vue',
-        'Database Design',
-        'Cloud Architecture',
-        'DevOps & CI/CD'
-      ],
-      social: {
-        twitter: '#',
-        linkedin: '#',
-        website: '#'
-      },
-      featuredCourses: [5]
-    }
   ];
   const courses: Course[] = [
     {
@@ -540,16 +351,36 @@ const Index: React.FC = () => {
       projects: 2
     }
   ];
+
+  // Fetch instructors from backend
+  useEffect(() => {
+    const fetchInstructors = async () => {
+      try {
+        const response = await getInstructors();
+        if (!response.ok) {
+          throw new Error('Failed to fetch instructors');
+        }
+        const data: Instructor[] = await response.json();
+        setInstructors(data);
+      } catch (error) {
+        console.error('Error fetching instructors:', error);
+      }
+    };
+
+    fetchInstructors();
+  }, []);
+
   // Check localStorage for accessToken
   useEffect(() => {
     if (localStorage.getItem('accessToken')) {
       setIsLoggedIn(true);
     }
   }, []);
+
   // Prevent background scroll when modals are open
   useEffect(() => {
     const body = document.body;
-    if (isDetailsOpen || isCartOpen || isCheckoutOpen || isInstructorModalOpen) {
+    if (isDetailsOpen || isCartOpen || isCheckoutOpen) {
       body.style.overflow = 'hidden';
     } else {
       body.style.overflow = '';
@@ -557,7 +388,8 @@ const Index: React.FC = () => {
     return () => {
       body.style.overflow = '';
     };
-  }, [isDetailsOpen, isCartOpen, isCheckoutOpen, isInstructorModalOpen]);
+  }, [isDetailsOpen, isCartOpen, isCheckoutOpen]);
+
   // Background image rotation effect
   useEffect(() => {
     const interval = setInterval(() => {
@@ -565,10 +397,12 @@ const Index: React.FC = () => {
     }, 4000); // Change every 4 seconds
     return () => clearInterval(interval);
   }, []);
+
   // Floating elements visibility
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
   // Calculate order summary when cart changes
   useEffect(() => {
     if (cart.length > 0) {
@@ -576,7 +410,6 @@ const Index: React.FC = () => {
       const discount = subtotal * 0.1; // 10% discount
       const tax = (subtotal - discount) * 0.13; // 13% tax
       const total = subtotal - discount + tax;
- 
       setOrderSummary({
         subtotal,
         discount,
@@ -585,9 +418,11 @@ const Index: React.FC = () => {
       });
     }
   }, [cart]);
+
   const filteredCourses = activeTab === 'all'
     ? courses
     : courses.filter(course => course.category === activeTab);
+
   const addToCart = (course: Course, openCart: boolean = true): void => {
     if (!isLoggedIn) {
       // Prevent adding to cart if not logged in
@@ -599,24 +434,30 @@ const Index: React.FC = () => {
       setIsCartOpen(true);
     }
   };
+
   const removeFromCart = (courseId: number): void => {
     setCart(prev => prev.filter(item => item.id !== courseId));
   };
+
   const getTotalPrice = (): string => {
     return cart.reduce((total, item) => total + item.price, 0).toFixed(0);
   };
+
   const getInstructorInitials = (name: string): string => {
     return name.split(' ').map(n => n[0]).join('');
   };
+
   const viewCourseDetails = (course: Course): void => {
     setSelectedCourse(course);
     setIsDetailsOpen(true);
   };
+
   const purchaseCourse = (course: Course): void => {
     addToCart(course);
     setIsDetailsOpen(false);
     setIsCartOpen(true);
   };
+
   const getLevelColor = (level: string): string => {
     switch (level) {
       case 'Beginner': return 'bg-green-100 text-green-800 border-green-200';
@@ -625,11 +466,13 @@ const Index: React.FC = () => {
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
+
   const handleProceedToCheckout = (): void => {
     setIsCartOpen(false);
     setIsCheckoutOpen(true);
     setPaymentStep('details');
   };
+
   const handlePaymentSuccess = (): void => {
     setPaymentStep('confirmation');
     // In a real app, you would process the payment here
@@ -639,6 +482,7 @@ const Index: React.FC = () => {
       setPaymentStep('details');
     }, 3000);
   };
+
   const scrollToSection = (sectionId: string) => {
     setActiveNav(sectionId);
     const element = document.getElementById(sectionId);
@@ -646,15 +490,9 @@ const Index: React.FC = () => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
-  const viewInstructorProfile = (instructor: Instructor): void => {
-    setSelectedInstructor(instructor);
-    setIsInstructorModalOpen(true);
-  };
-  const getInstructorCourses = (instructorId: number): Course[] => {
-    return courses.filter(course =>
-      instructors.find(instructor => instructor.id === instructorId)?.name === course.instructor
-    );
-  };
+
+  const accessToken = localStorage.getItem("accessToken");
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 relative overflow-x-hidden">
       {/* Animated Background */}
@@ -670,7 +508,7 @@ const Index: React.FC = () => {
             style={{ backgroundImage: `url(${backgroundImages[currentBg]})` }}
           />
         </AnimatePresence>
-   
+  
         {/* Animated floating elements */}
         <div className="absolute inset-0 overflow-hidden">
           {[1, 2, 3, 4, 5, 6].map((item) => (
@@ -769,6 +607,7 @@ const Index: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   className="relative"
                 >
+
                   <button className="flex items-center space-x-2 bg-white/80 p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20">
                     <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center text-white font-bold">
                       U
@@ -815,7 +654,7 @@ const Index: React.FC = () => {
                   🚀 Transform Your Career
                 </span>
               </motion.div>
-         
+        
               <h1 className="text-5xl lg:text-7xl font-bold text-gray-800 leading-tight mb-6">
                 Learn Without
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-500 block">
@@ -896,7 +735,7 @@ const Index: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
                 />
-           
+          
                 {/* Floating cards */}
                 <motion.div
                   animate={{
@@ -915,7 +754,7 @@ const Index: React.FC = () => {
                     <span className="text-sm font-semibold text-gray-800">2,500+ Courses</span>
                   </div>
                 </motion.div>
-           
+          
                 <motion.div
                   animate={{
                     y: [0, 15, 0],
@@ -950,7 +789,6 @@ const Index: React.FC = () => {
           </div>
         </div>
       </section>
- 
       {/* Categories & Courses */}
       <section id="courses" className="py-16 relative z-10">
         <div className="container mx-auto px-6">
@@ -1026,7 +864,7 @@ const Index: React.FC = () => {
                       Rs. {course.price.toFixed(0)}
                     </div>
                   </div>
-             
+            
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <span className={`px-4 py-2 rounded-xl text-sm font-medium backdrop-blur-sm border ${
@@ -1046,14 +884,14 @@ const Index: React.FC = () => {
                         <span className="text-gray-500">({course.students})</span>
                       </div>
                     </div>
-               
+              
                     <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-teal-600 transition-colors duration-300">
                       {course.title}
                     </h3>
                     <p className="text-gray-600 mb-4 line-clamp-2 leading-relaxed">
                       {course.description}
                     </p>
-               
+              
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-gradient-to-r from-teal-400 to-blue-400 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
@@ -1065,7 +903,7 @@ const Index: React.FC = () => {
                         </div>
                       </div>
                     </div>
-               
+              
                     <div className="flex space-x-3">
                       <motion.button
                         whileHover={{
@@ -1138,12 +976,12 @@ const Index: React.FC = () => {
                     className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-             
+            
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-teal-600 px-4 py-2 rounded-xl text-lg font-bold shadow-lg">
                     {instructor.rating} ⭐
                   </div>
                 </div>
-           
+          
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -1153,11 +991,11 @@ const Index: React.FC = () => {
                       <p className="text-teal-600 font-semibold">{instructor.role}</p>
                     </div>
                   </div>
-             
+            
                   <p className="text-gray-600 mb-4 leading-relaxed">
                     {instructor.bio}
                   </p>
-             
+            
                   {/* Enhanced Stats */}
                   <div className="grid grid-cols-3 gap-3 mb-6">
                     <div className="text-center bg-teal-50/50 rounded-xl p-3 group-hover:bg-teal-100/50 transition-colors duration-300">
@@ -1179,202 +1017,6 @@ const Index: React.FC = () => {
           </div>
         </div>
       </section>
-      {/* Instructor Profile Modal */}
-      <AnimatePresence>
-        {isInstructorModalOpen && selectedInstructor && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/70 backdrop-blur-md z-50"
-              onClick={() => setIsInstructorModalOpen(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 50 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8, y: 50 }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed inset-2 md:inset-4 z-50 overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="min-h-full flex items-center justify-center p-4">
-                <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 w-full max-w-4xl overflow-hidden">
-                  {/* Header */}
-                  <div className="relative h-80 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-blue-500" />
-                    <div className="absolute inset-0 bg-black/20" />
-               
-                    <div className="absolute top-6 right-6 flex space-x-3">
-                      <motion.button
-                        whileHover={{ scale: 1.1, rotate: 90 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setIsInstructorModalOpen(false)}
-                        className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-xl hover:bg-white/30 transition-all duration-300"
-                      >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </motion.button>
-                    </div>
-                    <div className="absolute bottom-6 left-6 right-6 text-white">
-                      <div className="flex flex-col md:flex-row md:items-end md:justify-between">
-                        <div className="flex items-center space-x-6">
-                          <img
-                            src={selectedInstructor.image}
-                            alt={selectedInstructor.name}
-                            className="w-24 h-24 rounded-2xl border-4 border-white/20 shadow-2xl"
-                          />
-                          <div>
-                            <h1 className="text-3xl md:text-4xl font-bold mb-2">{selectedInstructor.name}</h1>
-                            <p className="text-xl text-white/90">{selectedInstructor.role}</p>
-                            <p className="text-white/80">{selectedInstructor.specialization}</p>
-                          </div>
-                        </div>
-                   
-                        <div className="flex items-center space-x-4 mt-4 md:mt-0">
-                          <div className="text-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl">
-                            <div className="text-2xl font-bold">{selectedInstructor.rating}</div>
-                            <div className="text-white/80 text-sm">Rating</div>
-                          </div>
-                          <div className="text-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl">
-                            <div className="text-2xl font-bold">{selectedInstructor.students.toLocaleString()}</div>
-                            <div className="text-white/80 text-sm">Students</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Content */}
-                  <div className="p-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                      {/* Main Content */}
-                      <div className="lg:col-span-2 space-y-8">
-                        {/* About Instructor */}
-                        <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
-                          <h3 className="text-2xl font-bold text-gray-800 mb-4">About</h3>
-                          <p className="text-gray-700 leading-relaxed">{selectedInstructor.detailedBio}</p>
-                        </div>
-                        {/* Expertise */}
-                        <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
-                          <h3 className="text-2xl font-bold text-gray-800 mb-4">Areas of Expertise</h3>
-                          <div className="flex flex-wrap gap-3">
-                            {selectedInstructor.expertise.map((skill, index) => (
-                              <motion.span
-                                key={skill}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.1 }}
-                                className="px-4 py-2 bg-teal-100 text-teal-800 rounded-xl font-medium text-sm border border-teal-200"
-                              >
-                                {skill}
-                              </motion.span>
-                            ))}
-                          </div>
-                        </div>
-                        {/* Achievements */}
-                        <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
-                          <h3 className="text-2xl font-bold text-gray-800 mb-4">Notable Achievements</h3>
-                          <div className="space-y-3">
-                            {selectedInstructor.achievements.map((achievement, index) => (
-                              <motion.div
-                                key={achievement}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className="flex items-center space-x-3"
-                              >
-                                <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
-                                <span className="text-gray-700">{achievement}</span>
-                              </motion.div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      {/* Sidebar */}
-                      <div className="space-y-6">
-                        {/* Instructor Stats */}
-                        <div className="bg-gradient-to-br from-teal-500 to-blue-500 rounded-2xl p-6 shadow-2xl text-white">
-                          <h3 className="text-xl font-bold mb-6 text-center">Instructor Stats</h3>
-                     
-                          <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                              <span>Experience</span>
-                              <span className="font-bold text-lg">{selectedInstructor.experience}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span>Courses</span>
-                              <span className="font-bold text-lg">{selectedInstructor.courses}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span>Students</span>
-                              <span className="font-bold text-lg">{selectedInstructor.students.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span>Rating</span>
-                              <span className="font-bold text-lg">{selectedInstructor.rating} ⭐</span>
-                            </div>
-                          </div>
-                          <div className="mt-6 pt-4 border-t border-teal-400/30">
-                            <div className="text-center text-teal-100 text-sm">
-                              Join {selectedInstructor.students.toLocaleString()}+ satisfied students
-                            </div>
-                          </div>
-                        </div>
-                        {/* Social Links */}
-                        <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
-                          <h4 className="font-semibold text-gray-800 mb-4">Connect</h4>
-                          <div className="flex space-x-3">
-                            {Object.entries(selectedInstructor.social).map(([platform, url]) => (
-                              <motion.a
-                                key={platform}
-                                whileHover={{ scale: 1.1, y: -2 }}
-                                href={url}
-                                className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-semibold text-center hover:bg-teal-500 hover:text-white transition-all duration-300"
-                              >
-                                {platform === 'twitter' && 'Twitter'}
-                                {platform === 'linkedin' && 'LinkedIn'}
-                                {platform === 'website' && 'Website'}
-                              </motion.a>
-                            ))}
-                          </div>
-                        </div>
-                        {/* Featured Courses */}
-                        <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
-                          <h4 className="font-semibold text-gray-800 mb-4">Featured Courses</h4>
-                          <div className="space-y-3">
-                            {getInstructorCourses(selectedInstructor.id).slice(0, 3).map((course) => (
-                              <motion.div
-                                key={course.id}
-                                whileHover={{ scale: 1.02 }}
-                                className="flex items-center space-x-3 p-3 bg-white/50 rounded-xl border border-gray-200/50 cursor-pointer hover:border-teal-300 transition-all duration-300"
-                                onClick={() => {
-                                  viewCourseDetails(course);
-                                  setIsInstructorModalOpen(false);
-                                }}
-                              >
-                                <img
-                                  src={course.image}
-                                  alt={course.title}
-                                  className="w-12 h-12 object-cover rounded-lg"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <h5 className="font-semibold text-gray-800 text-sm line-clamp-1">{course.title}</h5>
-                                  <p className="text-teal-600 font-bold text-sm">Rs. {course.price.toFixed(0)}</p>
-                                </div>
-                              </motion.div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
       {/* Features Section */}
       <section className="py-20 relative z-10">
         <div className="container mx-auto px-6">
@@ -1469,14 +1111,14 @@ const Index: React.FC = () => {
                   🎯 Our Mission
                 </span>
               </motion.div>
-         
+        
               <h2 className="text-5xl font-bold text-gray-800 mb-6">
                 Transforming Education Through
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-500 block">
                   Innovation
                 </span>
               </h2>
-         
+        
               <p className="text-lg text-gray-600 mb-8 leading-relaxed bg-white/50 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
                 EduLearn was founded with a simple yet powerful vision: to make quality education accessible to everyone,
                 everywhere. We believe that learning should be engaging, interactive, and tailored to individual needs.
@@ -1520,7 +1162,7 @@ const Index: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
                 />
-           
+          
                 {/* Floating elements */}
                 <motion.div
                   animate={{
@@ -1539,7 +1181,7 @@ const Index: React.FC = () => {
                     <span className="text-sm font-semibold text-gray-800">Global Community</span>
                   </div>
                 </motion.div>
-           
+          
                 <motion.div
                   animate={{
                     y: [0, 20, 0],
@@ -1673,7 +1315,7 @@ const Index: React.FC = () => {
               className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20"
             >
               <h3 className="text-3xl font-bold text-gray-800 mb-6">Send us a Message</h3>
-         
+        
               <form className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -1770,7 +1412,7 @@ const Index: React.FC = () => {
                 }}
                 className="absolute -bottom-20 -left-20 w-40 h-40 bg-white/10 rounded-full"
               />
-         
+        
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                 Ready to Start Your Learning Journey?
               </h2>
@@ -1821,7 +1463,7 @@ const Index: React.FC = () => {
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-               
+              
                     <div className="absolute top-6 right-6 flex space-x-3">
                       <motion.button
                         whileHover={{ scale: 1.1, rotate: 90 }}
@@ -1850,7 +1492,7 @@ const Index: React.FC = () => {
                           <span className="text-white/80">({selectedCourse.students} students)</span>
                         </div>
                       </div>
-                 
+                
                       <h1 className="text-3xl md:text-4xl font-bold mb-4">{selectedCourse.title}</h1>
                       <p className="text-xl text-white/90 max-w-3xl">{selectedCourse.description}</p>
                     </div>
@@ -2265,7 +1907,7 @@ const Index: React.FC = () => {
                                 </div>
                               ))}
                             </div>
-                       
+                      
                             <div className="space-y-2 mt-4 pt-4 border-t border-gray-200/50">
                               <div className="flex justify-between text-gray-600">
                                 <span>Subtotal</span>
@@ -2340,7 +1982,7 @@ const Index: React.FC = () => {
                                   </div>
                                 </div>
                               </div>
-                         
+                        
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
@@ -2359,7 +2001,7 @@ const Index: React.FC = () => {
                                   />
                                 </div>
                               </div>
-                         
+                        
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
                                 <input
@@ -2392,7 +2034,7 @@ const Index: React.FC = () => {
                                   />
                                 </div>
                               </div>
-                         
+                        
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
                                 <input
@@ -2401,7 +2043,7 @@ const Index: React.FC = () => {
                                   placeholder="123 Main Street"
                                 />
                               </div>
-                         
+                        
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
@@ -2446,7 +2088,7 @@ const Index: React.FC = () => {
                                 </div>
                               ))}
                             </div>
-                       
+                      
                             <div className="space-y-2 mt-4 pt-4 border-t border-gray-200/50">
                               <div className="flex justify-between text-gray-600 text-sm">
                                 <span>Subtotal</span>
@@ -2517,7 +2159,7 @@ const Index: React.FC = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l2 4L19 7" />
                         </svg>
                       </motion.div>
-                 
+                
                       <h3 className="text-3xl font-bold text-gray-800 mb-4">Payment Successful!</h3>
                       <p className="text-gray-600 mb-8 max-w-md">
                         Thank you for your purchase! You now have lifetime access to {cart.length} course{cart.length !== 1 ? 's' : ''}.
@@ -2606,7 +2248,7 @@ const Index: React.FC = () => {
                 ))}
               </div>
             </div>
-       
+      
             {['Company', 'Categories', 'Support', 'Legal'].map((section) => (
               <div key={section}>
                 <h3 className="font-semibold text-lg mb-4 text-white">{section}</h3>
@@ -2624,7 +2266,7 @@ const Index: React.FC = () => {
               </div>
             ))}
           </div>
-     
+    
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -2637,4 +2279,5 @@ const Index: React.FC = () => {
     </div>
   );
 };
+
 export default Index;

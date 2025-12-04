@@ -37,7 +37,7 @@ export default function LoginPage() {
         toast.success('Login successfully!');
         localStorage.setItem('accessToken', data.data.accessToken);
         localStorage.setItem('refreshToken', data.data.refreshToken);
-        navigate('/dashboard');
+        navigate('/');
       }
     } catch (err: any) {
       console.error('Login Error: ', err);

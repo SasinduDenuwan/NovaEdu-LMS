@@ -5,12 +5,16 @@ import toast from 'react-hot-toast';
 import { register } from '../services/auth';
 
 export default function SignUpPage() {
+  const [firstname, setFirstname] = useState('');
+  const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const firstnameRef = useRef<HTMLInputElement>(null);
+  const lastnameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
@@ -20,6 +24,16 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
+    if (firstname.trim() === '') {
+      toast.error("Please enter your first name!");
+      firstnameRef.current?.focus();
+      return;
+    }
+    if (lastname.trim() === '') {
+      toast.error("Please enter your last name!");
+      lastnameRef.current?.focus();
+      return;
+    }
     if (email.trim() === '') {
       toast.error("Please enter your email!");
       emailRef.current?.focus();
@@ -43,7 +57,7 @@ export default function SignUpPage() {
 
     setIsLoading(true);
     try {
-      const data: any = await register(email, password);
+      const data: any = await register(firstname, lastname, email, password);
 
       if (data) {
         toast.success("Registration successful! Please log in.");
@@ -83,6 +97,34 @@ export default function SignUpPage() {
 
           <div className="space-y-5">
             <div className="relative group">
+              <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#6366F1] transition-colors duration-300 w-5 h-5" />
+                <input
+                  ref={firstnameRef}
+                  type="text"
+                  value={firstname}
+                  onChange={(e) => setFirstname(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#6366F1] focus:outline-none transition-all duration-300 bg-[#EEF2FF] focus:bg-white"
+                  placeholder="First Name"
+                />
+              </div>
+            </div>
+            <div className="relative group">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#6366F1] transition-colors duration-300 w-5 h-5" />
+                <input
+                  ref={lastnameRef}
+                  type="text"
+                  value={lastname}
+                  onChange={(e) => setLastname(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#6366F1] focus:outline-none transition-all duration-300 bg-[#EEF2FF] focus:bg-white"
+                  placeholder="Last Name"
+                />
+              </div>
+            </div>
+            <div className="relative group">
               <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#6366F1] transition-colors duration-300 w-5 h-5" />
@@ -96,7 +138,6 @@ export default function SignUpPage() {
                 />
               </div>
             </div>
-
             <div className="relative group">
               <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div className="relative">

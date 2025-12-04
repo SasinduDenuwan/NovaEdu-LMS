@@ -6,7 +6,6 @@ import { signAccessToken, signRefreshToken } from "../utils/tokens";
 import { AUTHRequest } from "../middleware/auth.middleware";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { ChildProcess } from "child_process";
 import transporter from "../config/email.config";
 dotenv.config();
 
