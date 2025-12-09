@@ -10,6 +10,9 @@ export const signAccessToken = (user: IUSER) => {
     {
       sub: user._id.toString(),
       roles: user.roles,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
     },
     JWT_SECRET,
     {

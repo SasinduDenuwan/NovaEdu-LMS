@@ -49,3 +49,11 @@ export const addInstructor = async (req: AUTHRequest, res: Response) => {
     return res.status(500).json({ code: 500, message: "Server Error" });
   }
 };
+
+export const updateInstructor = async (req: AUTHRequest, res: Response) => {
+  // Implementation for updating an instructor
+}
+
+export const deleteInstructor = async (req: AUTHRequest, res: Response) => {
+  // Implementation for deleting an instructor
+}

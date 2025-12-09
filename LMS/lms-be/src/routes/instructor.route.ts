@@ -8,4 +8,8 @@ router.post("/add-instructor", authenticate, addInstructor);
 
 router.get("/get-all-instructors", authenticate, getInstructors);
 
+router.put("/update-instructor/:instructorId", authenticate, );
+
+router.delete("/delete-instructor/:instructorId", authenticate, );
+
 export default router;

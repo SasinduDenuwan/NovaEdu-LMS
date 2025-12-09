@@ -10,7 +10,7 @@ interface Course {
   rating: number;
   students: number;
   duration: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  level: 'Beginner' | 'Intermediate' | 'Advanced';  
   category: string;
   image: string;
   description: string;

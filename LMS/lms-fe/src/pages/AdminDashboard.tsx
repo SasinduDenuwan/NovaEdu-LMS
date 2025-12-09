@@ -167,7 +167,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex">
+    <div className="min-h-screen bg-linear-to-br from-teal-50 to-blue-50 flex">
       {/* Admin Sidebar */}
       <motion.div
         initial={{ x: -100, opacity: 0 }}
@@ -181,12 +181,12 @@ const AdminDashboard: React.FC = () => {
             className="flex items-center space-x-4 cursor-pointer"
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           >
-            <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-linear-to-br from-teal-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-lg">A</span>
             </div>
             {!isSidebarCollapsed && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1">
-                <span className="text-2xl font-bold bg-gradient-to-br from-teal-600 to-indigo-600 bg-clip-text text-transparent">Admin Panel</span>
+                <span className="text-2xl font-bold bg-linear-to-br from-teal-600 to-indigo-600 bg-clip-text text-transparent">Admin Panel</span>
                 <div className="text-sm text-teal-600 font-medium">EduLearn Management</div>
               </motion.div>
             )}
@@ -197,7 +197,7 @@ const AdminDashboard: React.FC = () => {
         <div className="p-6 border-b border-white/20">
           <div className={`flex items-center space-x-4 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
             <div className="relative">
-              <div className="w-14 h-14 bg-gradient-to-br from-teal-400 to-indigo-500 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">AD</div>
+              <div className="w-14 h-14 bg-linear-to-br from-teal-400 to-indigo-500 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">AD</div>
               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-teal-400 rounded-full border-2 border-white"></div>
             </div>
             {!isSidebarCollapsed && (
@@ -256,7 +256,7 @@ const AdminDashboard: React.FC = () => {
         <header className="bg-white/60 backdrop-blur-xl border-b border-white/20 sticky top-0 z-30">
           <div className="flex items-center justify-between px-8 py-6">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-br from-teal-600 to-indigo-600 bg-clip-text text-transparent capitalize">
+              <h1 className="text-3xl font-bold bg-linear-to-br from-teal-600 to-indigo-600 bg-clip-text text-transparent capitalize">
                 {activeTab}
               </h1>
               <p className="text-gray-500 text-lg mt-2">
@@ -296,7 +296,7 @@ const AdminDashboard: React.FC = () => {
             {activeTab === 'dashboard' && (
               <motion.div key="dashboard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
                 {/* Welcome Section */}
-                <div className="bg-gradient-to-br from-teal-500 via-indigo-500 to-blue-500 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
+                <div className="bg-linear-to-br from-teal-500 via-indigo-500 to-blue-500 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
                   <div className="relative z-10">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4">Welcome, Admin! 🎯</h1>
                     <p className="text-teal-100 text-xl max-w-2xl">Manage your platform efficiently with real-time insights and powerful tools.</p>
@@ -511,7 +511,7 @@ const AdminDashboard: React.FC = () => {
                       <div className="relative overflow-hidden">
                         <img src={course.image} alt={course.title} className="w-full h-48 object-cover transition-transform duration-700 hover:scale-110" />
                         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-teal-600 px-4 py-2 rounded-2xl text-sm font-bold shadow-lg">{course.status}</div>
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6 text-white">
+                        <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/70 to-transparent p-6 text-white">
                           <h3 className="font-bold text-xl mb-2 line-clamp-2">{course.title}</h3>
                           <p className="text-white/80 text-sm">{course.instructor}</p>
                         </div>
