@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode'; // Assuming you have jwt-decode installed and imported
 import { getAllCourses } from '../services/course';
 import toast from 'react-hot-toast';
+import { getCartItems, addCartItem, deleteCartItem } from '../services/cart';
 interface Course {
   id: string; // Changed from number to string because backend sends string IDs
   title: string;
@@ -58,6 +59,7 @@ const Index: React.FC = () => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState<boolean>(false);
   const [activeNav, setActiveNav] = useState<string>('home');
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
@@ -120,12 +122,14 @@ const Index: React.FC = () => {
     };
     fetchInstructors();
   }, []);
+
   // Check localStorage for accessToken
   useEffect(() => {
     if (localStorage.getItem('accessToken')) {
       setIsLoggedIn(true);
     }
   }, []);
+
   // Prevent background scroll when modals are open
   useEffect(() => {
     const body = document.body;
@@ -181,30 +185,92 @@ const Index: React.FC = () => {
 
     // add to cart functions
 
-  const addToCart = (course: Course, openCart: boolean = true): void => {
+  // Fetch cart items when user logs in
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      if (!isLoggedIn || !accessToken) return;
+      
+      const decodedToken: any = jwtDecode(accessToken);
+      const userID = decodedToken.sub;
+
+      try {
+        const response = await getCartItems(userID);
+        if (response.code === 200) {
+           // Helper function to map backend cart item to UI Course interface
+           // Backend returns array of CartItem populated with course_id
+           const mappedCart = response.data.map((item: any) => {
+             // If item has course_id object, use it; otherwise assume item itself is the course (fallback)
+             const courseData = item.course_id || item;
+             
+             return {
+               id: courseData._id || courseData.id || item._id, // Prefer course ID, fallback to item ID if direct
+               title: courseData.title || "Untitled Course",
+               instructor: typeof courseData.instructor === 'object' ? courseData.instructor.name : (courseData.instructor || "Unknown Instructor"),
+               price: typeof courseData.price === 'number' ? courseData.price : 0,
+               students: courseData.students || 0,
+               duration: courseData.duration || 0,
+               level: courseData.level ? (courseData.level.charAt(0).toUpperCase() + courseData.level.slice(1).toLowerCase()) : "Beginner",
+               category: courseData.category ? courseData.category.toLowerCase() : "general",
+               image: courseData.image || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1600",
+               description: courseData.description || "",
+               lessons: courseData.lessons || 0
+             } as Course;
+           });
+
+           setCart(mappedCart);
+        } else {
+           console.error("Failed to fetch cart items:", response.message);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchCartItems();
+  }, [isLoggedIn, accessToken]); // Re-run when login status changes
+
+  const addToCart = async (course: Course, openCart: boolean = true) => {
     if (!accessToken) {
-      alert('Please sign in to add courses to your cart.');
-      navigate('/login');
+      toast.error('Please sign in to add courses to cart.');
+      navigate('/');
       return;
     }
 
     const decodedToken: any = jwtDecode(accessToken);
-    const userId = decodedToken.sub;
-    
+    const userID = decodedToken.sub;
    
     if (cart.some(item => item.id === course.id)) {
       toast.error('This course is already in your cart.');
       return;
     }
 
-    setCart(prev => [...prev, course]);
-    if (openCart) {
-      setIsCartOpen(true);
+    try {
+        await addCartItem({
+            user_id: userID,
+            course_id: course.id
+        });
+        
+        const newCart = [...cart, course];
+        setCart(newCart);
+        if (openCart) {
+          setIsCartOpen(true);
+        }
+        toast.success("Added to cart");
+    } catch (error) {
+        console.error("Error adding to cart:", error);
+        toast.error("Failed to add to cart");
     }
   };
-  const removeFromCart = (courseId: string): void => {
-    setCart(prev => prev.filter(item => item.id !== courseId));
+  const removeFromCart = async (courseId: string) => {
+    try {
+        await deleteCartItem(courseId); // Sending courseId 
+        setCart(prev => prev.filter(item => item.id !== courseId));
+        toast.success("Removed from cart");
+    } catch (error) {
+        console.error("Error removing from cart:", error);
+        toast.error("Failed to remove from cart");
+    }
   };
+
   const getTotalPrice = (): string => {
     return cart.reduce((total, item) => total + item.price, 0).toFixed(0);
   };
@@ -252,7 +318,8 @@ const Index: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     setIsLoggedIn(false);
-    navigate("/login");
+    toast.success("Logged out successfully");
+    window.location.href = "/";
   };
   return (
     <div className="min-h-screen bg-linear-to-br from-teal-50 to-blue-50 relative overflow-x-hidden">
@@ -363,17 +430,81 @@ const Index: React.FC = () => {
                 )}
               </motion.button>
               {isLoggedIn ? (
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="relative"
-                >
-                  <button className="flex items-center space-x-2 bg-white/80 p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20">
+                <div className="relative">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    className="flex items-center space-x-2 bg-white/80 p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20"
+                  >
                     <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center text-white font-bold">
                       {firstname ? firstname[0].toUpperCase() : 'U'}
                     </div>
                     <span className="text-gray-800 font-semibold">{firstname || 'Profile'}</span>
-                  </button>
-                </motion.div>
+                    <svg className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </motion.button>
+
+                  <AnimatePresence>
+                    {isProfileMenuOpen && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-40"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl py-2 z-50 border border-gray-100 overflow-hidden"
+                        >
+                          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+                            <p className="text-sm font-semibold text-gray-800">{firstname} {lastname}</p>
+                            <p className="text-xs text-gray-500 truncate">{email}</p>
+                          </div>
+                          
+                          <div className="py-1">
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/student-dashboard');
+                              }}
+                              className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors"
+                            >
+                              <span>👤</span>
+                              <span>Profile</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                // navigate('/student-dashboard?tab=my-courses'); // Example query param if supported
+                                navigate('/student-dashboard');
+                              }}
+                              className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors"
+                            >
+                              <span>🎓</span>
+                              <span>My Courses</span>
+                            </button>
+                          </div>
+
+                          <div className="border-t border-gray-100 pt-1">
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                handleLogout();
+                              }}
+                              className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                            >
+                              <span>🚪</span>
+                              <span>Logout</span>
+                            </button>
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
               ) : (
                 <motion.button
                   whileHover={{

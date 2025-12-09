@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface ICartItem extends Document {
     _id: mongoose.Types.ObjectId;
-    cart_id: mongoose.Schema.Types.ObjectId;
+    user_id: mongoose.Schema.Types.ObjectId;
     course_id: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
@@ -10,7 +10,7 @@ export interface ICartItem extends Document {
 
 const cartItemSchema = new Schema<ICartItem>(
     {
-    cart_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Cart' },
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     course_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
     }, { 
         timestamps: true 
