@@ -10,12 +10,12 @@ export const addInstructor = async (instructor: any) => {
     return res.data;
 }   
 
-export const updateInstructor = async (instructor: any) => {
-    const res = await api.put("/instructor/update-instructor", instructor);
+export const updateInstructor = async (id: string, instructor: any) => {
+    const res = await api.put(`/instructor/update-instructor/${id}`, instructor);
     return res.data;
 }   
 
 export const deleteInstructor = async (instructorId: string) => {
-    const res = await api.delete("/instructor/delete-instructor", { data: { instructorId } });
+    const res = await api.delete(`/instructor/delete-instructor/${instructorId}`);
     return res.data;
 }

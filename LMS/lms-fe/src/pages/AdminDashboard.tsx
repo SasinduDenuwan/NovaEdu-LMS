@@ -40,7 +40,8 @@ interface Student {
   updatedAt: string;
 }
 interface Instructor {
-  id: number | string;
+  id?: number | string;
+  _id?: string;
   name: string;
   role?: string;
   experience?: number;
@@ -48,6 +49,7 @@ interface Instructor {
   courses?: number;
   image?: string;
   bio?: string;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -272,12 +274,7 @@ const AdminDashboard: React.FC = () => {
       reader.readAsDataURL(file);
     }
   };
-  const deleteInstructor = (id: number | string) => {
-    if (window.confirm('Are you sure you want to delete this instructor?')) {
-      setInstructors(prev => prev.filter(inst => inst.id !== id));
-      toast.success('Instructor deleted successfully');
-    }
-  };
+
   const deleteCourse = (id: number) => {
     if (window.confirm('Are you sure you want to delete this course?')) {
       setCourses(prev => prev.filter(course => course.id !== id));
@@ -289,9 +286,9 @@ const AdminDashboard: React.FC = () => {
   };
   // --- Handlers ---
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
+    localStorage.clear();
     toast.success("Logged out successfully");
-    navigate('/');
+    navigate('/login');
   };
   const openModal = (type: 'student' | 'instructor' | 'course', mode: 'add' | 'edit' | 'view', item?: any) => {
     setModalType(type);
@@ -352,8 +349,33 @@ const AdminDashboard: React.FC = () => {
             setIsSubmitting(false);
           }
         } else if (modalMode === 'edit') {
-        setInstructors(prev => prev.map(i => i.id === formData.id ? { ...formData, updatedAt: new Date().toISOString() } : i));
-        toast.success('Instructor updated successfully');
+        try {
+          setIsSubmitting(true);
+          const instructorData = new FormData();
+          instructorData.append('id', formData.id || formData._id); // Ensure ID is sent
+          instructorData.append('name', formData.name);
+          instructorData.append('role', formData.role);
+          instructorData.append('experience', formData.experience.toString());
+          instructorData.append('bio', formData.bio);
+          if (formData.imageFile) {
+            instructorData.append('image', formData.imageFile);
+          }
+
+          const instructorId = formData.id || formData._id;
+          const response = await updateInstructor(instructorId, instructorData);
+          
+          if (response.code === 200 || response.code === 201) {
+            setInstructors(prev => prev.map(i => (i.id === formData.id || i.id === formData._id) ? response.data : i));
+            toast.success('Instructor updated successfully');
+          } else {
+             toast.error(response.message || 'Failed to update instructor');
+          }
+        } catch (error) {
+             console.error(error);
+             toast.error('An error occurred while updating instructor');
+        } finally {
+             setIsSubmitting(false);
+        }
       }
     } else if (modalType === 'course') {
       if (modalMode === 'add') {
@@ -375,6 +397,25 @@ const AdminDashboard: React.FC = () => {
       }
     }
     closeModal();
+  };
+
+  const deleteInstructorHandler = async (id: string | number) => {
+      if (window.confirm('Are you sure you want to disable this instructor?')) {
+        try {
+            const response = await deleteInstructor(id.toString());
+            if (response.code === 200) {
+                 toast.success('Instructor disabled successfully');
+                 // For soft delete, we might want to keep it but mark inactive, or just remove from view.
+                 // Assuming "disable" means remove from active list for now.
+                 setInstructors(prev => prev.filter(inst => (inst.id !== id && inst._id !== id)));
+            } else {
+                 toast.error(response.message || 'Failed to disable instructor');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to disable instructor');
+        }
+      }
   };
   // --- Navigation ---
   const navigationItems = [
@@ -733,7 +774,7 @@ const AdminDashboard: React.FC = () => {
                                  <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => openModal('instructor', 'edit', instructor)} className="p-2.5 bg-white text-gray-700 hover:text-purple-600 rounded-xl shadow-sm border border-gray-100 transition-colors">
                                     <Edit size={16} />
                                  </motion.button>
-                                 <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => deleteInstructor(instructor.id)} className="p-2.5 bg-white text-gray-700 hover:text-red-500 rounded-xl shadow-sm border border-gray-100 transition-colors">
+                                 <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => deleteInstructorHandler(instructor._id || instructor.id!)} className="p-2.5 bg-white text-gray-700 hover:text-red-500 rounded-xl shadow-sm border border-gray-100 transition-colors">
                                     <Trash2 size={16} />
                                  </motion.button>
                               </div>
