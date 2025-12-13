@@ -6,6 +6,8 @@ import {jwtDecode} from 'jwt-decode'; // Assuming you have jwt-decode installed 
 import { getAllCourses } from '../services/course';
 import toast from 'react-hot-toast';
 import { getCartItems, addCartItem, deleteCartItem } from '../services/cart';
+import AiFloatingButton from '../components/AiFloatingButton';
+import { User, GraduationCap, LogOut, Rocket, Play } from 'lucide-react';
 interface Course {
   id: string; // Changed from number to string because backend sends string IDs
   title: string;
@@ -363,6 +365,7 @@ const Index: React.FC = () => {
           ))}
         </div>
       </div>
+      <AiFloatingButton />
       {/* Header */}
       <motion.header
         initial={{ y: -100 }}
@@ -472,7 +475,7 @@ const Index: React.FC = () => {
                               }}
                               className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors"
                             >
-                              <span>👤</span>
+                              <User size={16} />
                               <span>Profile</span>
                             </button>
                             <button
@@ -483,7 +486,7 @@ const Index: React.FC = () => {
                               }}
                               className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors"
                             >
-                              <span>🎓</span>
+                              <GraduationCap size={16} />
                               <span>My Courses</span>
                             </button>
                           </div>
@@ -496,7 +499,7 @@ const Index: React.FC = () => {
                               }}
                               className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                             >
-                              <span>🚪</span>
+                              <LogOut size={16} />
                               <span>Logout</span>
                             </button>
                           </div>
@@ -541,13 +544,13 @@ const Index: React.FC = () => {
                 transition={{ delay: 0.2 }}
                 className="inline-block mb-4"
               >
-                <span className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
-                  🚀 Transform Your Career
+                <span className="bg-linear-to-r from-teal-500 to-blue-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                  <Rocket size={16} className="inline mr-2" /> Transform Your Career
                 </span>
               </motion.div>
               <h1 className="text-5xl lg:text-7xl font-bold text-gray-800 leading-tight mb-6">
                 Learn Without
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-500 block">
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-500 to-blue-500 block">
                   Limits
                 </span>
               </h1>
@@ -583,7 +586,7 @@ const Index: React.FC = () => {
                       animate={{ x: [0, 5, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
                     >
-                      ▶
+                      <Play size={16} fill="currentColor" />
                     </motion.div>
                   </div>
                 </motion.button>
@@ -772,7 +775,7 @@ const Index: React.FC = () => {
                     </p>
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-teal-400 to-blue-400 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                        <div className="w-10 h-10 bg-linear-to-r from-teal-400 to-blue-400 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
                           {getInstructorInitials(course.instructor)}
                         </div>
                         <div>
@@ -789,12 +792,12 @@ const Index: React.FC = () => {
                         }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => addToCart(course)}
-                        className="flex-1 bg-gradient-to-r from-teal-500 to-blue-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+                        className="flex-1 bg-linear-to-r from-teal-500 to-blue-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
                       >
                         <span className="relative z-10">Add to Cart</span>
                         <motion.div
                           whileHover={{ scale: 1.1 }}
-                          className="absolute inset-0 bg-gradient-to-r from-blue-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          className="absolute inset-0 bg-linear-to-r from-blue-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                         />
                       </motion.button>
                       <motion.button
@@ -877,7 +880,7 @@ const Index: React.FC = () => {
                       <div className="text-xs text-gray-600 font-medium">Courses</div>
                     </div>
                     <div className="text-center bg-purple-50/50 rounded-xl p-3 group-hover:bg-purple-100/50 transition-colors duration-300">
-                      <div className="text-lg font-bold text-purple-600">{instructor.students.toLocaleString()}</div>
+                      <div className="text-lg font-bold text-purple-600">{(instructor.students || 0).toLocaleString()}</div>
                       <div className="text-xs text-gray-600 font-medium">Students</div>
                     </div>
                   </div>
@@ -1733,13 +1736,13 @@ const Index: React.FC = () => {
                             }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setPaymentStep('payment')}
-                            className="w-full bg-gradient-to-r from-teal-500 to-blue-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+                            className="w-full bg-linear-to-r from-teal-500 to-blue-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
                           >
                             <span className="relative z-10">Continue to Payment</span>
                             <motion.div
                               animate={{ x: [-100, 100] }}
                               transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+                              className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent skew-x-12"
                             />
                           </motion.button>
                         </div>
@@ -1916,13 +1919,13 @@ const Index: React.FC = () => {
                             }}
                             whileTap={{ scale: 0.98 }}
                             onClick={handlePaymentSuccess}
-                            className="w-full bg-gradient-to-r from-teal-500 to-blue-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+                            className="w-full bg-linear-to-r from-teal-500 to-blue-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
                           >
                             <span className="relative z-10">Pay Rs. {orderSummary.total.toFixed(0)}</span>
                             <motion.div
                               animate={{ x: [-100, 100] }}
                               transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+                              className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent skew-x-12"
                             />
                           </motion.button>
                         </div>
@@ -1939,7 +1942,7 @@ const Index: React.FC = () => {
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ type: 'spring', stiffness: 200 }}
-                        className="w-24 h-24 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mb-6 shadow-2xl"
+                        className="w-24 h-24 bg-linear-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mb-6 shadow-2xl"
                       >
                         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l2 4L19 7" />
@@ -1986,7 +1989,7 @@ const Index: React.FC = () => {
                             setIsCheckoutOpen(false);
                             setPaymentStep('details');
                           }}
-                          className="px-8 py-3 bg-gradient-to-r from-teal-500 to-blue-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                          className="px-8 py-3 bg-linear-to-r from-teal-500 to-blue-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                         >
                           View Courses
                         </motion.button>
@@ -2011,7 +2014,7 @@ const Index: React.FC = () => {
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                  className="w-8 h-8 bg-gradient-to-r from-teal-500 to-blue-500 rounded-lg flex items-center justify-center"
+                  className="w-8 h-8 bg-linear-to-r from-teal-500 to-blue-500 rounded-lg flex items-center justify-center"
                 >
                   <span className="text-white font-bold text-sm">EL</span>
                 </motion.div>

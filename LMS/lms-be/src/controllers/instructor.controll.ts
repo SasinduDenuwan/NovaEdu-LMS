@@ -1,6 +1,7 @@
 import { AUTHRequest } from "../middleware/auth.middleware";
 import { Response } from "express";
 import { Instructor } from "../models/instructor.model";
+import cloudinary from "../config/cloudinary.config";
 
 export const getInstructors = async (req: AUTHRequest, res: Response) => {
   try {
@@ -8,7 +9,7 @@ export const getInstructors = async (req: AUTHRequest, res: Response) => {
       return res.status(401).json({ code: 401, message: "Unauthorized" });
     }
 
-    const instructors = await Instructor.find({});
+    const instructors = await Instructor.find({ isActive: true });
 
     return res.status(200).json({
       code: 200,
@@ -26,7 +27,17 @@ export const addInstructor = async (req: AUTHRequest, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ code: 401, message: "Unauthorized" });
     }
-    const { name, role, experience, students, courses, image, bio } = req.body;
+    const { name, role, experience, students, courses, bio } = req.body;
+    let imageUrl = "";
+
+    if (req.file) {
+      const b64 = Buffer.from(req.file.buffer).toString("base64");
+      const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+      const cldRes = await cloudinary.uploader.upload(dataURI, {
+        folder: "instructors",
+      });
+      imageUrl = cldRes.secure_url;
+    }
 
     const newInstructor = new Instructor({
       name,
@@ -34,7 +45,7 @@ export const addInstructor = async (req: AUTHRequest, res: Response) => {
       experience,
       students,
       courses,
-      image,
+      image: imageUrl,
       bio,
     });
     const savedInstructor = await newInstructor.save();

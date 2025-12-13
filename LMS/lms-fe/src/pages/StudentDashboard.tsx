@@ -1,6 +1,37 @@
 // StudentDashboard.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  GraduationCap,
+  BookOpen,
+  Library,
+  Clock,
+  Flame,
+  FileText,
+  Video,
+  Package,
+  Laptop,
+  ClipboardList,
+  Paperclip,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  Settings,
+  Bell,
+  Play,
+  Download,
+  Star
+} from 'lucide-react';
+
+const backgroundImages = [
+  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600',
+  'https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=1600',
+  'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1600',
+  'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1600'
+];
 
 interface Course {
   id: number;
@@ -51,7 +82,7 @@ interface Resource {
 }
 
 const StudentDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'my-courses' | 'resources' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'my-courses' | 'resources'>('dashboard');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [isCoursePlayerOpen, setIsCoursePlayerOpen] = useState<boolean>(false);
@@ -62,6 +93,19 @@ const StudentDashboard: React.FC = () => {
   const [activeSidebar, setActiveSidebar] = useState<'lessons' | 'resources' | 'discussion'>('lessons');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [resourceFilter, setResourceFilter] = useState<string>('all');
+  const [currentBg, setCurrentBg] = useState<number>(0);
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setCurrentBg((prev) => (prev + 1) % backgroundImages.length);
+  //   }, 4000);
+  //   return () => clearInterval(interval);
+  // }, []);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   // Mock data for enrolled courses
   const enrolledCourses: Course[] = [
@@ -246,10 +290,9 @@ const StudentDashboard: React.FC = () => {
   ];
 
   const navigationItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊', color: 'teal' },
-    { id: 'my-courses', label: 'My Courses', icon: '🎓', color: 'blue' },
-    { id: 'resources', label: 'Resources', icon: '📚', color: 'purple' },
-    { id: 'settings', label: 'Settings', icon: '⚙️', color: 'gray' }
+    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={24} />, color: 'teal' },
+    { id: 'my-courses', label: 'My Courses', icon: <BookOpen size={24} />, color: 'blue' },
+    { id: 'resources', label: 'Resources', icon: <Library size={24} />, color: 'purple' },
   ];
 
   const openCoursePlayer = (course: Course) => {
@@ -283,23 +326,62 @@ const StudentDashboard: React.FC = () => {
     : resources.filter(resource => resource.category === resourceFilter);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex">
+    <div className="min-h-screen bg-linear-to-br from-teal-50 to-blue-50 flex relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 z-0">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentBg}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.2 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5 }}
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          />
+        </AnimatePresence>
+        {/* Animated floating elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <motion.div
+              key={item}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{
+                opacity: isVisible ? [0.3, 0.6, 0.3] : 0,
+                scale: isVisible ? [1, 1.2, 1] : 0,
+                x: isVisible ? [0, 100, 0] : 0,
+                y: isVisible ? [0, -50, 0] : 0,
+              }}
+              transition={{
+                duration: 8 + item * 2,
+                repeat: Infinity,
+                delay: item * 0.5,
+                ease: "easeInOut"
+              }}
+              className={`absolute w-${item % 2 === 0 ? '4' : '6'} h-${item % 2 === 0 ? '4' : '6'} rounded-full bg-linear-to-r from-teal-400 to-blue-400 opacity-30`}
+              style={{
+                left: `${(item * 15) % 100}%`,
+                top: `${(item * 20) % 100}%`,
+              }}
+            />
+          ))}
+        </div>
+      </div>
       {/* Sidebar Navigation */}
       <motion.div
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className={`bg-white shadow-xl border-r border-gray-200 flex flex-col ${
-          isSidebarCollapsed ? 'w-20' : 'w-64'
-        } transition-all duration-300 fixed h-full z-40`}
+        className={`bg-white/80 backdrop-blur-xl border-r border-white/20 flex flex-col ${
+          isSidebarCollapsed ? 'w-24' : 'w-80'
+        } transition-all duration-300 fixed h-full z-40 shadow-xl`}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-white/20">
           <motion.div
             whileHover={{ scale: 1.05 }}
             className="flex items-center space-x-3 cursor-pointer"
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           >
-            <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-blue-500 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-linear-to-r from-teal-500 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-sm">EL</span>
             </div>
             {!isSidebarCollapsed && (
@@ -315,43 +397,44 @@ const StudentDashboard: React.FC = () => {
           </motion.div>
         </div>
         {/* User Profile */}
-        <div className="p-4 border-b border-gray-200">
-          <div className={`flex items-center space-x-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-            <div className="w-12 h-12 bg-gradient-to-r from-teal-400 to-blue-400 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-              JS
-            </div>
+        <div className="p-6 border-b border-white/20">
+          <div className={`flex items-center space-x-4 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+             <div className="relative">
+               <div className="w-12 h-12 bg-linear-to-br from-teal-400 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">JS</div>
+               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-teal-400 rounded-full border-2 border-white"></div>
+             </div>
             {!isSidebarCollapsed && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="flex-1 min-w-0"
               >
-                <div className="font-semibold text-gray-800 truncate">John Student</div>
-                <div className="text-sm text-gray-500 truncate">Pro Member</div>
+                <div className="font-bold text-gray-800 truncate">John Student</div>
+                <div className="text-sm text-teal-600 truncate">Pro Member</div>
               </motion.div>
             )}
           </div>
         </div>
         {/* Navigation Menu */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-3">
           {navigationItems.map((item) => (
             <motion.button
               key={item.id}
               whileHover={{ scale: 1.02, x: 4 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setActiveTab(item.id as any)}
-              className={`w-full flex items-center space-x-3 p-3 rounded-xl font-medium transition-all duration-300 ${
+              className={`w-full flex items-center space-x-4 p-4 rounded-2xl font-semibold transition-all duration-300 ${
                 activeTab === item.id
-                  ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-lg'
-                  : 'text-gray-600 hover:text-teal-600 hover:bg-teal-50'
-              } ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                  ? 'bg-white shadow-lg border border-white/50 text-gray-800'
+                  : 'text-gray-600 hover:bg-white/50 hover:shadow-md'
+              } ${isSidebarCollapsed ? 'justify-center px-2' : ''}`}
             >
-              <span className="text-xl">{item.icon}</span>
+              <span className="text-gray-600">{item.icon}</span>
               {!isSidebarCollapsed && (
                 <motion.span
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex-1 text-left"
+                  className="flex-1 text-left text-lg"
                 >
                   {item.label}
                 </motion.span>
@@ -360,12 +443,12 @@ const StudentDashboard: React.FC = () => {
           ))}
         </nav>
         {/* Collapse Button */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-white/20">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className={`w-full flex items-center space-x-3 p-3 text-gray-600 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all duration-300 ${
+            className={`w-full flex items-center space-x-3 p-3 text-gray-600 hover:text-teal-600 hover:bg-teal-50 rounded-2xl transition-all duration-300 ${
               isSidebarCollapsed ? 'justify-center' : ''
             }`}
           >
@@ -373,14 +456,14 @@ const StudentDashboard: React.FC = () => {
               animate={{ rotate: isSidebarCollapsed ? 180 : 0 }}
               transition={{ duration: 0.3 }}
             >
-              {isSidebarCollapsed ? '➡️' : '⬅️'}
+               {isSidebarCollapsed ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
             </motion.div>
             {!isSidebarCollapsed && (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                Collapse
+                Collapse Sidebar
               </motion.span>
             )}
           </motion.button>
@@ -391,23 +474,23 @@ const StudentDashboard: React.FC = () => {
         isSidebarCollapsed ? 'ml-20' : 'ml-64'
       }`}>
         {/* Top Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
-          <div className="flex items-center justify-between px-6 py-4">
+        <header className="bg-white/60 backdrop-blur-xl border-b border-white/20 sticky top-0 z-30">
+          <div className="flex items-center justify-between px-8 py-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800 capitalize">
+              <h1 className="text-3xl font-bold bg-linear-to-br from-teal-600 to-indigo-600 bg-clip-text text-transparent capitalize">
                 {activeTab.replace('-', ' ')}
               </h1>
               <p className="text-gray-600">
                 {activeTab === 'dashboard' && 'Welcome to your learning dashboard'}
                 {activeTab === 'my-courses' && 'Continue your learning journey'}
                 {activeTab === 'resources' && 'Access learning materials'}
-                {activeTab === 'settings' && 'Manage your account settings'}
+
               </p>
             </div>
           </div>
         </header>
         {/* Dashboard Content */}
-        <main className="p-6">
+        <main className="p-8">
           <AnimatePresence mode="wait">
             {activeTab === 'dashboard' && (
               <motion.div
@@ -418,8 +501,10 @@ const StudentDashboard: React.FC = () => {
                 className="space-y-8"
               >
                 {/* Welcome Section */}
-                <div className="bg-gradient-to-r from-teal-500 to-blue-500 rounded-3xl shadow-2xl p-8 text-white">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div className="bg-linear-to-r from-teal-500 to-blue-500 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl -ml-10 -mb-10"></div>
+                  <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
                     <div>
                       <h1 className="text-3xl md:text-4xl font-bold mb-2">
                         Welcome back, John! 👋
@@ -440,10 +525,10 @@ const StudentDashboard: React.FC = () => {
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   {[
-                    { label: 'Courses Enrolled', value: '3', icon: '🎓', color: 'teal' },
-                    { label: 'Hours Learned', value: '24', icon: '⏱️', color: 'blue' },
-                    { label: 'Resources', value: '12', icon: '📚', color: 'purple' },
-                    { label: 'Learning Streak', value: '12 days', icon: '🔥', color: 'orange' }
+                    { label: 'Courses Enrolled', value: '3', icon: <GraduationCap size={24} />, color: 'teal' },
+                    { label: 'Hours Learned', value: '24', icon: <Clock size={24} />, color: 'blue' },
+                    { label: 'Resources', value: '12', icon: <Library size={24} />, color: 'purple' },
+                    { label: 'Learning Streak', value: '12 days', icon: <Flame size={24} />, color: 'orange' }
                   ].map((stat, index) => (
                     <motion.div
                       key={stat.label}
@@ -451,14 +536,14 @@ const StudentDashboard: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ scale: 1.05, y: -5 }}
-                      className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300"
+                      className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 hover:shadow-xl transition-all duration-300"
                     >
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="text-2xl font-bold text-gray-800">{stat.value}</div>
                           <div className="text-gray-600 text-sm">{stat.label}</div>
                         </div>
-                        <div className={`text-2xl bg-${stat.color}-100 p-3 rounded-xl`}>
+                        <div className={`w-12 h-12 bg-${stat.color}-100 rounded-2xl flex items-center justify-center text-${stat.color}-600`}>
                           {stat.icon}
                         </div>
                       </div>
@@ -502,10 +587,7 @@ const StudentDashboard: React.FC = () => {
                           whileHover={{ scale: 1.1 }}
                           className="bg-teal-500 text-white p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
+                          <Play size={20} fill="currentColor" />
                         </motion.button>
                       </motion.div>
                     ))}
@@ -623,7 +705,7 @@ const StudentDashboard: React.FC = () => {
                             {course.level}
                           </span>
                           <div className="flex items-center space-x-1 text-yellow-500">
-                            <span>⭐</span>
+                            <Star size={16} fill="currentColor" />
                             <span className="text-gray-700 font-semibold">{course.rating}</span>
                           </div>
                         </div>
@@ -632,13 +714,11 @@ const StudentDashboard: React.FC = () => {
                           <div className="text-sm text-gray-600">
                             Last accessed: {course.lastAccessed}
                           </div>
-                          <motion.button
+                            <motion.button
                             whileHover={{ scale: 1.1 }}
                             className="bg-teal-500 text-white p-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                            </svg>
+                            <Play size={20} fill="currentColor" />
                           </motion.button>
                         </div>
                       </div>
@@ -735,9 +815,7 @@ const StudentDashboard: React.FC = () => {
                             whileHover={{ scale: 1.1 }}
                             className="bg-teal-500 text-white p-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
+                            <Download size={20} />
                           </motion.a>
                         </div>
                       </div>
@@ -750,150 +828,16 @@ const StudentDashboard: React.FC = () => {
                     animate={{ opacity: 1 }}
                     className="text-center py-12"
                   >
-                    <div className="text-6xl mb-4">📚</div>
+                    <div className="flex justify-center mb-4">
+                      <Library size={64} className="text-gray-300" />
+                    </div>
                     <h3 className="text-2xl font-bold text-gray-800 mb-2">No Resources Found</h3>
                     <p className="text-gray-600">Try adjusting your filters to see more resources.</p>
                   </motion.div>
                 )}
               </motion.div>
             )}
-            {activeTab === 'settings' && (
-              <motion.div
-                key="settings"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="space-y-8"
-              >
-                <h1 className="text-3xl font-bold text-gray-800">Account Settings</h1>
-               
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  <div className="lg:col-span-2 space-y-6">
-                    {/* Profile Settings */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Profile Information</h3>
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                            <input
-                              type="text"
-                              defaultValue="John"
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                            <input
-                              type="text"
-                              defaultValue="Student"
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300"
-                            />
-                          </div>
-                        </div>
-                       
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                          <input
-                            type="email"
-                            defaultValue="john.student@example.com"
-                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300"
-                          />
-                        </div>
-                       
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
-                          <textarea
-                            rows={4}
-                            defaultValue="Passionate learner focused on web development and design."
-                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 resize-none"
-                          />
-                        </div>
-                       
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          className="bg-teal-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                        >
-                          Save Changes
-                        </motion.button>
-                      </div>
-                    </div>
-                    {/* Notification Settings */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Notification Preferences</h3>
-                      <div className="space-y-4">
-                        {[
-                          { label: 'Course updates and announcements', defaultChecked: true },
-                          { label: 'New resource available', defaultChecked: true },
-                          { label: 'Assignment deadlines', defaultChecked: true },
-                          { label: 'Weekly progress reports', defaultChecked: false },
-                          { label: 'Promotional emails', defaultChecked: false }
-                        ].map((pref, index) => (
-                          <div key={index} className="flex items-center justify-between">
-                            <span className="text-gray-700">{pref.label}</span>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                defaultChecked={pref.defaultChecked}
-                                className="sr-only peer"
-                              />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-500"></div>
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-6">
-                    {/* Account Type */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Account Type</h3>
-                      <div className="bg-gradient-to-r from-teal-500 to-blue-500 rounded-xl p-4 text-white text-center">
-                        <div className="text-2xl font-bold mb-2">Pro Member</div>
-                        <div className="text-teal-100">Full access to all courses</div>
-                      </div>
-                    </div>
-                    {/* Quick Actions */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
-                      <div className="space-y-3">
-                        {[
-                          { label: 'Download Learning Data', icon: '📥' },
-                          { label: 'Privacy Settings', icon: '🔒' },
-                          { label: 'Change Password', icon: '🔑' },
-                          { label: 'Delete Account', icon: '🗑️', color: 'text-red-500' }
-                        ].map((action, index) => (
-                          <motion.button
-                            key={action.label}
-                            whileHover={{ x: 4 }}
-                            className={`w-full flex items-center space-x-3 p-3 text-left rounded-xl hover:bg-gray-50 transition-all duration-300 ${
-                              action.color || 'text-gray-600'
-                            }`}
-                          >
-                            <span className="text-xl">{action.icon}</span>
-                            <span>{action.label}</span>
-                          </motion.button>
-                        ))}
-                      </div>
-                    </div>
-                    {/* Storage Usage */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Storage Usage</h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Downloaded Resources</span>
-                          <span className="font-semibold">1.2 GB / 5 GB</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-teal-500 h-2 rounded-full w-1/4"></div>
-                        </div>
-                        <p className="text-xs text-gray-500">24% of storage used</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+
           </AnimatePresence>
         </main>
       </div>
