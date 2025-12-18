@@ -25,12 +25,15 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
-  Loader2
+  Loader2,
+  Calendar
 } from 'lucide-react';
 import { getInstructors, addInstructor, updateInstructor, deleteInstructor } from '../services/instructor';
+import { getStudents, addStudent, updateStudent, deleteStudent } from '../services/students';
 // --- Interfaces ---
 interface Student {
-  id: number | string;
+  id?: number | string;
+  _id?: string;
   firstname: string;
   lastname: string;
   email: string;
@@ -116,42 +119,63 @@ const AdminDashboard: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   // --- Mock Data ---
   // --- Mock Data ---
-  const [students, setStudents] = useState<Student[]>([
-    {
-      id: 1,
-      firstname: 'John',
-      lastname: 'Smith',
-      email: 'john.smith@example.com',
-      roles: 'STUDENT',
-      createdAt: '2024-01-15',
-      updatedAt: '2024-01-15'
-    },
-    {
-      id: 2,
-      firstname: 'Sarah',
-      lastname: 'Johnson',
-      email: 'sarah.j@example.com',
-      roles: 'STUDENT',
-      createdAt: '2024-02-10',
-      updatedAt: '2024-02-10'
-    },
-    {
-      id: 3,
-      firstname: 'Mike',
-      lastname: 'Chen',
-      email: 'mike.chen@example.com',
-      roles: 'STUDENT',
-      createdAt: '2024-01-28',
-      updatedAt: '2024-03-10'
-    },
-  ]);
+  // const [students, setStudents] = useState<Student[]>([
+  //   {
+  //     id: 1,
+  //     firstname: 'John',
+  //     lastname: 'Smith',
+  //     email: 'john.smith@example.com',
+  //     roles: 'STUDENT',
+  //     createdAt: '2024-01-15',
+  //     updatedAt: '2024-01-15'
+  //   },
+  //   {
+  //     id: 2,
+  //     firstname: 'Sarah',
+  //     lastname: 'Johnson',
+  //     email: 'sarah.j@example.com',
+  //     roles: 'STUDENT',
+  //     createdAt: '2024-02-10',
+  //     updatedAt: '2024-02-10'
+  //   },
+  //   {
+  //     id: 3,
+  //     firstname: 'Mike',
+  //     lastname: 'Chen',
+  //     email: 'mike.chen@example.com',
+  //     roles: 'STUDENT',
+  //     createdAt: '2024-01-28',
+  //     updatedAt: '2024-03-10'
+  //   },
+  // ]);
+
+  const [students, setStudents] = useState<Student[]>([]);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await getStudents();
+        console.log("getStudents response:", response); // Debugging
+        if (response.message === 'success' || response.data) {
+            setStudents(response.data);
+        } else {
+            console.error("Failed to fetch students:", response.message);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchStudents();
+  }, []);
+
+
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   
   useEffect(() => {
     const fetchInstructors = async () => {
       try {
         const response = await getInstructors();
-        if (response.code === 200) {
+        if (response.message === 'success' || response.data) {
             setInstructors(response.data);
         } else {
             console.error("Failed to fetch instructors:", response.message);
@@ -250,10 +274,20 @@ const AdminDashboard: React.FC = () => {
       }
     }
   }, [isModalOpen, modalMode, modalType, selectedItem]);
-  const deleteStudent = (id: number | string) => {
+  const deleteStudentHandler = async (id: number | string) => {
     if (window.confirm('Are you sure you want to delete this student?')) {
-      setStudents(prev => prev.filter(student => student.id !== id));
-      toast.success('Student deleted successfully');
+      try {
+        const response = await deleteStudent(id.toString());
+        if (response.message === 'success' || response.data) {
+           setStudents(prev => prev.filter(student => String(student.id) !== String(id) && String(student._id) !== String(id)));
+           toast.success('Student deleted successfully');
+        } else {
+           toast.error(response.message || 'Failed to delete student');
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error('Failed to delete student');
+      }
     }
   };
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -307,17 +341,42 @@ const AdminDashboard: React.FC = () => {
   const handleSave = async () => {
     if (modalType === 'student') {
       if (modalMode === 'add') {
-        const newStudent = {
-          ...formData,
-          id: students.length + 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        setStudents([...students, newStudent]);
-        toast.success('Student added successfully');
+        try {
+          setIsSubmitting(true);
+          const response = await addStudent(formData);
+          if ((response.message === 'User registed' || response.message === 'User registered successfully' || response.code === 201 || response.code === 200) && response.data) {
+             setStudents([...students, response.data]);
+             toast.success('Student added successfully');
+          } else {
+             toast.error(response.message || 'Failed to add student');
+          }
+        } catch (error) {
+           console.error(error);
+           toast.error('An error occurred while adding student');
+        } finally {
+           setIsSubmitting(false);
+        }
       } else if (modalMode === 'edit') {
-        setStudents(prev => prev.map(s => s.id === formData.id ? { ...formData, updatedAt: new Date().toISOString() } : s));
-        toast.success('Student updated successfully');
+        try {
+           setIsSubmitting(true);
+           const studentId = formData.id || formData._id;
+           const response = await updateStudent(studentId, formData);
+            if ((response.message === 'User updated' || response.message === 'User updated successfully' || response.code === 200 || response.code === 201) && response.data) {
+               setStudents(prev => prev.map(s => {
+                   if (s.id && formData.id && s.id === formData.id) return response.data;
+                   if (s._id && formData._id && s._id === formData._id) return response.data;
+                   return s;
+               }));
+               toast.success('Student updated successfully');
+            } else {
+                toast.error(response.message || 'Failed to update student');
+           }
+        } catch (error) {
+            console.error(error);
+            toast.error('An error occurred while updating student');
+        } finally {
+            setIsSubmitting(false);
+        }
       }
     } else if (modalType === 'instructor') {
       if (modalMode === 'add') {
@@ -336,7 +395,7 @@ const AdminDashboard: React.FC = () => {
           }
 
           const response = await addInstructor(instructorData);
-          if (response.code === 201 || response.code === 200) {
+          if (response.message === 'success' || response.data) {
               setInstructors([...instructors, response.data]);
               toast.success('Instructor added successfully');
           } else {
@@ -364,8 +423,12 @@ const AdminDashboard: React.FC = () => {
           const instructorId = formData.id || formData._id;
           const response = await updateInstructor(instructorId, instructorData);
           
-          if (response.code === 200 || response.code === 201) {
-            setInstructors(prev => prev.map(i => (i.id === formData.id || i.id === formData._id) ? response.data : i));
+          if (response.message === 'success' || response.data) {
+            setInstructors(prev => prev.map(i => {
+                if (i.id && formData.id && i.id === formData.id) return response.data;
+                if (i._id && formData._id && i._id === formData._id) return response.data;
+                return i;
+            }));
             toast.success('Instructor updated successfully');
           } else {
              toast.error(response.message || 'Failed to update instructor');
@@ -403,11 +466,9 @@ const AdminDashboard: React.FC = () => {
       if (window.confirm('Are you sure you want to disable this instructor?')) {
         try {
             const response = await deleteInstructor(id.toString());
-            if (response.code === 200) {
+            if (response.message === 'success' || response.data) {
                  toast.success('Instructor disabled successfully');
-                 // For soft delete, we might want to keep it but mark inactive, or just remove from view.
-                 // Assuming "disable" means remove from active list for now.
-                 setInstructors(prev => prev.filter(inst => (inst.id !== id && inst._id !== id)));
+                 setInstructors(prev => prev.filter(inst => String(inst.id) !== String(id) && String(inst._id) !== String(id)));
             } else {
                  toast.error(response.message || 'Failed to disable instructor');
             }
@@ -428,18 +489,18 @@ const AdminDashboard: React.FC = () => {
   // --- Filters ---
   // --- Filters ---
   const filteredStudents = students.filter(student =>
-    (student.firstname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     student.lastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     student.email.toLowerCase().includes(searchTerm.toLowerCase()))
+    student && ((student.firstname?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+     (student.lastname?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+     (student.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()))
   );
   const filteredInstructors = instructors.filter(instructor =>
-    instructor.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (instructor.name?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
   const filteredCourses = courses.filter(course =>
-    course.title.toLowerCase().includes(searchTerm.toLowerCase())
+    (course.title?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
   const filteredPayments = payments.filter(payment =>
-    payment.student.toLowerCase().includes(searchTerm.toLowerCase())
+    (payment.student?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
   // --- Calculations ---
   const totalStudents = students.length;
@@ -661,55 +722,74 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
                 {/* Students Table (Reverted to Modern Table) */}
-                <div className="bg-white/80 backdrop-blur-xl rounded-4xl shadow-xl border border-white/60 overflow-hidden">
-                  <div className="overflow-x-auto">
+                <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/50 overflow-hidden relative">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-teal-400/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+                  <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl -ml-32 -mb-32 pointer-events-none"></div>
+                  <div className="overflow-x-auto relative z-10">
                     <table className="w-full">
                       <thead>
-                        <tr className="bg-gray-50/50 border-b border-gray-100">
-                          <th className="px-8 py-5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Student</th>
-                          <th className="px-8 py-5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Contact Info</th>
-                          <th className="px-8 py-5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Joined Date</th>
-                          <th className="px-8 py-5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                        <tr className="bg-gray-50/80 border-b border-gray-200/60 backdrop-blur-sm">
+                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Student</th>
+                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Contact</th>
+                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Status & Date</th>
+                          <th className="px-8 py-6 text-right text-xs font-extrabold text-gray-400 uppercase tracking-widest">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100">
+                      <tbody className="divide-y divide-gray-100/50">
                         {filteredStudents.map((student, index) => (
                           <motion.tr
-                            key={student.id}
-                            initial={{ opacity: 0, y: 10 }}
+                            key={student._id || student.id}
+                            initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            className="hover:bg-white/60 transition-colors duration-200 group"
+                            className="hover:bg-white/60 transition-all duration-300 group"
                           >
-                            <td className="px-8 py-5">
-                              <div className="flex items-center space-x-4">
-                                <div className="p-0.5 rounded-2xl bg-linear-to-br from-blue-400 to-teal-400 shadow-sm">
-                                  <User size={24} />
+                            <td className="px-8 py-6">
+                              <div className="flex items-center space-x-5">
+                                <div className="relative">
+                                  <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-teal-400 to-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:shadow-teal-500/30 transition-all duration-300 transform group-hover:scale-105">
+                                    {(student.firstname && student.firstname[0]) || 'S'}{(student.lastname && student.lastname[0]) || ''}
+                                  </div>
+                                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
                                 </div>
                                 <div>
-                                  <div className="font-bold text-gray-800 text-base">{student.firstname} {student.lastname}</div>
+                                  <div className="font-bold text-gray-800 text-lg group-hover:text-teal-600 transition-colors">{student.firstname} {student.lastname}</div>
+                                  <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">Student</div>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-8 py-5">
-                                <div className="space-y-1">
-                                  <div className="flex items-center text-gray-700 font-medium text-sm">
-                                    <Mail size={12} className="mr-2 text-teal-500" />
-                                    {student.email}
+                            <td className="px-8 py-6">
+                                <div className="flex flex-col space-y-1">
+                                  <div className="flex items-center text-gray-600 font-medium">
+                                      <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center mr-3 text-teal-500 group-hover:bg-teal-100 transition-colors">
+                                           <Mail size={14} />
+                                      </div>
+                                      {student.email}
                                   </div>
                                 </div>
                             </td>
-                            <td className="px-8 py-5 text-gray-600 text-sm font-medium">
-                                {new Date(student.createdAt).toLocaleDateString()}
+                            <td className="px-8 py-6">
+                                <div className="flex flex-col space-y-2">
+                                    <span className="inline-flex items-center w-fit px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+                                        Active
+                                    </span>
+                                    <div className="flex items-center text-gray-400 text-xs font-medium">
+                                        <Calendar size={12} className="mr-1.5" />
+                                        Joined {new Date(student.createdAt).toLocaleDateString()}
+                                    </div>
+                                </div>
                             </td>
-                            <td className="px-8 py-5">
-                              <div className="flex space-x-2">
-                                <button onClick={() => openModal('student', 'edit', student)} className="p-2 text-teal-600 hover:bg-teal-50 rounded-xl transition-colors" title="Edit">
+                            <td className="px-8 py-6 text-right">
+                              <div className="flex items-center justify-end space-x-3">
+                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} onClick={() => openModal('student', 'edit', student)} className="p-3 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-colors shadow-sm" title="Edit">
                                   <Edit size={18}/>
-                                </button>
-                                <button onClick={() => deleteStudent(student.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors" title="Delete">
+                                </motion.button>
+                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} onClick={() => {
+                                  const id = student._id || student.id;
+                                  if (id) deleteStudentHandler(id);
+                                }} className="p-3 bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors shadow-sm" title="Delete">
                                   <Trash2 size={18}/>
-                                </button>
+                                </motion.button>
                               </div>
                             </td>
                           </motion.tr>
@@ -741,7 +821,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredInstructors.map((instructor, index) => (
                     <motion.div
-                      key={instructor.id}
+                      key={instructor._id || instructor.id}
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1, duration: 0.5 }}
@@ -774,7 +854,10 @@ const AdminDashboard: React.FC = () => {
                                  <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => openModal('instructor', 'edit', instructor)} className="p-2.5 bg-white text-gray-700 hover:text-purple-600 rounded-xl shadow-sm border border-gray-100 transition-colors">
                                     <Edit size={16} />
                                  </motion.button>
-                                 <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => deleteInstructorHandler(instructor._id || instructor.id!)} className="p-2.5 bg-white text-gray-700 hover:text-red-500 rounded-xl shadow-sm border border-gray-100 transition-colors">
+                                 <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => {
+                                   const id = instructor._id || instructor.id;
+                                   if (id) deleteInstructorHandler(id);
+                                 }} className="p-2.5 bg-white text-gray-700 hover:text-red-500 rounded-xl shadow-sm border border-gray-100 transition-colors">
                                     <Trash2 size={16} />
                                  </motion.button>
                               </div>

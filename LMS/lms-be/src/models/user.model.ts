@@ -24,6 +24,7 @@ export interface IUSER extends Document {
     mobile?: string;
     profilePicLink?: string;
     address?: string;
+    isActive?: boolean;
     status: Status;
     createdAt: Date;
     updatedAt: Date;
@@ -39,6 +40,7 @@ const userSchema = new Schema<IUSER>(
     mobile: { type: String },
     profilePicLink: { type: String },
     address: { type: String },
+    isActive: { type: Boolean, default: true },
     status: { type: String, enum: Object.values(Status), default: Status.PENDING }
     }, { 
         timestamps: true 

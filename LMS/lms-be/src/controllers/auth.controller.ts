@@ -52,6 +52,10 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    if (!existingUser.isActive) {
+      return res.status(403).json({ message: "Account is inactive" });
+    }
+
     const valid = await bcrypt.compare(password, existingUser.password);
     if (!valid) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -87,6 +91,10 @@ export const getMyProfile = async (req: AUTHRequest, res: Response) => {
     return res.status(404).json({
       message: "User not found",
     });
+  }
+
+  if (!user.isActive) {
+    return res.status(403).json({ message: "Account is inactive" });
   }
 
   const { email, roles, _id } = user as IUSER;
@@ -491,3 +499,61 @@ export const resetPassword = async (req: Request, res: Response) => {
     });
   }
 }
+
+export const getAllStudents = async (req: AUTHRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const students = await User.find({ isActive: true, roles: { $in: [Role.STUDENT] } }).select("-password");
+    res.status(200).json({ code: 200, message: "success", data: students });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ code: 500, message: "Internal server error" });
+  }
+};
+
+export const updateMyProfile = async (req: AUTHRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { firstname, lastname, mobile, address, profilePicLink } = req.body;
+
+    const user = await User.findById(req.user.sub);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: "Account is inactive" });
+    }
+
+    user.firstname = firstname || user.firstname;
+    user.lastname = lastname || user.lastname;
+    user.mobile = mobile || user.mobile;
+    user.address = address || user.address;
+    user.profilePicLink = profilePicLink || user.profilePicLink;
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      code: 200,
+      message: "Profile updated successfully",
+      data: {
+        email: updatedUser.email,
+        roles: updatedUser.roles,
+        firstname: updatedUser.firstname,
+        lastname: updatedUser.lastname,
+        mobile: updatedUser.mobile,
+        address: updatedUser.address,
+        profilePicLink: updatedUser.profilePicLink
+      }
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ code: 500, message: "Internal server error" });
+  }
+};
