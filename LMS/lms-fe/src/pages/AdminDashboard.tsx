@@ -26,10 +26,13 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  Calendar
+  Calendar,
+  Search
 } from 'lucide-react';
 import { getInstructors, addInstructor, updateInstructor, deleteInstructor } from '../services/instructor';
 import { getStudents, addStudent, updateStudent, deleteStudent } from '../services/students';
+import { getAllCourses, addCourse, updateCourse, deleteCourse as deleteCourseService } from '../services/course';
+import Swal from 'sweetalert2';
 // --- Interfaces ---
 interface Student {
   id?: number | string;
@@ -57,33 +60,45 @@ interface Instructor {
   updatedAt: string;
 }
 interface Course {
-  id: number;
+  _id: string;
+  id?: string;
   title: string;
-  instructor: number | string; // Instructor ID (matches backend reference)
-  price: number;
-  rating: number;
-  students: number;
-  duration: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  description: string;
+  level: string;
   category: string;
   image: string;
-  description: string;
-  status: 'published' | 'draft' | 'archived';
+  students: number;
+  instructor: {
+      _id: string;
+      name: string;
+      role?: string;
+      image?: string;
+  }; // When sending to backend, we send string ID, but when receiving we get object
+  price: number;
+  lessons: number;
+  duration: number;
   createdAt: string;
-  revenue: number;
-  videos?: CourseVideo[];   
-  resources?: CourseResource[];
+  updatedAt: string;
+  videos: CourseVideo[];
+  resources: CourseResource[];
+  rating?: number;
+  status?: string;
 }
 interface CourseVideo {
+  _id?: string;
+  course_id?: string;
   video_title: string;
   video_url: string;
   video_order: number;
 }
 interface CourseResource {
+  _id?: string;
+  course_id?: string;
   resource_title: string;
   resource_url: string;
   resource_order: number;
 }
+
 interface Payment {
   id: number;
   student: string;
@@ -117,38 +132,6 @@ const AdminDashboard: React.FC = () => {
   const [formData, setFormData] = useState<any>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // --- Mock Data ---
-  // --- Mock Data ---
-  // const [students, setStudents] = useState<Student[]>([
-  //   {
-  //     id: 1,
-  //     firstname: 'John',
-  //     lastname: 'Smith',
-  //     email: 'john.smith@example.com',
-  //     roles: 'STUDENT',
-  //     createdAt: '2024-01-15',
-  //     updatedAt: '2024-01-15'
-  //   },
-  //   {
-  //     id: 2,
-  //     firstname: 'Sarah',
-  //     lastname: 'Johnson',
-  //     email: 'sarah.j@example.com',
-  //     roles: 'STUDENT',
-  //     createdAt: '2024-02-10',
-  //     updatedAt: '2024-02-10'
-  //   },
-  //   {
-  //     id: 3,
-  //     firstname: 'Mike',
-  //     lastname: 'Chen',
-  //     email: 'mike.chen@example.com',
-  //     roles: 'STUDENT',
-  //     createdAt: '2024-01-28',
-  //     updatedAt: '2024-03-10'
-  //   },
-  // ]);
-
   const [students, setStudents] = useState<Student[]>([]);
 
   useEffect(() => {
@@ -187,34 +170,23 @@ const AdminDashboard: React.FC = () => {
     fetchInstructors();
   }, []);
 
-  const [courses, setCourses] = useState<Course[]>([
-    {
-      id: 1,
-      title: 'Advanced React Development',
-      instructor: 1, // Instructor ID
-      price: 26500,
-      rating: 4.8,
-      students: 1245,
-      duration: '12 hours',
-      level: 'Intermediate',
-      category: 'development',
-      image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400',
-      description: 'Master React with hooks, context API, and advanced patterns',
-      status: 'published',
-      createdAt: '2024-01-10',
-      revenue: 32992500,
-      videos: [
-        { video_title: 'Introduction to React Hooks', video_url: 'https://youtube.com/watch?v=example1', video_order: 1 },
-        { video_title: 'Context API Mastery', video_url: 'https://youtube.com/watch?v=example2', video_order: 2 }
-      ],
-      resources: [
-        { resource_title: 'Project Source Code', resource_url: 'https://github.com/example/repo', resource_order: 1 },
-        { resource_title: 'React Cheatsheet PDF', resource_url: 'https://example.com/cheatsheet.pdf', resource_order: 2 }
-      ]
-    },
-    { id: 2, title: 'UI/UX Design Masterclass', instructor: 2, price: 23600, rating: 4.9, students: 892, duration: '15 hours', level: 'Beginner', category: 'design', image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400', description: 'Learn professional design principles and tools', status: 'published', createdAt: '2024-02-05', revenue: 21051200, videos: [], resources: [] },
-    { id: 3, title: 'Full Stack JavaScript', instructor: 3, price: 29500, rating: 4.8, students: 2034, duration: '20 hours', level: 'Advanced', category: 'development', image: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400', description: 'Become a full-stack developer with modern JavaScript', status: 'draft', createdAt: '2024-03-01', revenue: 0, videos: [], resources: [] }
-  ]);
+  const [courses, setCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await getAllCourses();
+        if (response.code === 200 && response.data) {
+          setCourses(response.data);
+        } else {
+          console.error("Failed to fetch courses:", response.message);
+        }
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+    fetchCourses();
+  }, []);
   const payments: Payment[] = [
     { id: 1, student: 'John Smith', course: 'Advanced React Development', amount: 26500, date: '2024-03-20', status: 'completed', method: 'Credit Card', transactionId: 'TXN_001' },
     { id: 2, student: 'Sarah Johnson', course: 'UI/UX Design Masterclass', amount: 23600, date: '2024-03-19', status: 'completed', method: 'PayPal', transactionId: 'TXN_002' },
@@ -255,38 +227,66 @@ const AdminDashboard: React.FC = () => {
           setFormData({
             title: '',
             description: '',
-            level: 'Beginner',
-            category: 'development',
+            level: 'BEGINNER',
+            category: 'DEVELOPMENT',
             image: '',
             students: 0,
-            instructor: '', // Instructor ID
+            instructor: '',
             price: 0,
-            duration: '0 hours',
-            status: 'draft',
+            duration: 0,
+            lessons: 0,
             videos: [],
             resources: [],
             rating: 0,
-            revenue: 0,
           });
         }
       } else {
-        setFormData({ ...selectedItem });
+         if (modalType === 'course' && selectedItem) {
+             setFormData({
+                 ...selectedItem,
+                 instructor: selectedItem.instructor?._id || selectedItem.instructor // Ensure we have the ID for the select input
+             });
+        } else {
+             setFormData({ ...selectedItem });
+        }
       }
     }
   }, [isModalOpen, modalMode, modalType, selectedItem]);
   const deleteStudentHandler = async (id: number | string) => {
-    if (window.confirm('Are you sure you want to delete this student?')) {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
       try {
         const response = await deleteStudent(id.toString());
         if (response.message === 'success' || response.data) {
            setStudents(prev => prev.filter(student => String(student.id) !== String(id) && String(student._id) !== String(id)));
-           toast.success('Student deleted successfully');
+           Swal.fire(
+             'Deleted!',
+             'Student has been deleted.',
+             'success'
+           );
         } else {
-           toast.error(response.message || 'Failed to delete student');
+           Swal.fire(
+             'Error!',
+             response.message || 'Failed to delete student',
+             'error'
+           );
         }
       } catch (error) {
         console.error(error);
-        toast.error('Failed to delete student');
+        Swal.fire(
+          'Error!',
+          'Failed to delete student',
+          'error'
+        );
       }
     }
   };
@@ -309,15 +309,46 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const deleteCourse = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this course?')) {
-      setCourses(prev => prev.filter(course => course.id !== id));
-      toast.success('Course deleted successfully');
+  const deleteCourse = async (id: string) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await deleteCourseService(id);
+        if (response.code === 200 || response.message === 'success') {
+          setCourses(prev => prev.filter(course => course._id !== id));
+          Swal.fire(
+            'Deleted!',
+            'Course has been deleted.',
+            'success'
+          );
+        } else {
+          Swal.fire(
+            'Error!',
+            response.message || 'Failed to delete course',
+            'error'
+          );
+        }
+      } catch (error) {
+        console.error(error);
+        Swal.fire(
+          'Error!',
+          'Failed to delete course',
+          'error'
+        );
+      }
     }
   };
-  const getInstructorName = (id: number | string) => {
-    return instructors.find(i => i.id === id)?.name || 'Unknown';
-  };
+  // Helper function removed as instructor is now populated in course object
+  // const getInstructorName ...
   // --- Handlers ---
   const handleLogout = () => {
     localStorage.clear();
@@ -346,13 +377,27 @@ const AdminDashboard: React.FC = () => {
           const response = await addStudent(formData);
           if ((response.message === 'User registed' || response.message === 'User registered successfully' || response.code === 201 || response.code === 200) && response.data) {
              setStudents([...students, response.data]);
-             toast.success('Student added successfully');
+             Swal.fire({
+               icon: 'success',
+               title: 'Success!',
+               text: 'Student added successfully',
+               timer: 2000,
+               showConfirmButton: false
+             });
           } else {
-             toast.error(response.message || 'Failed to add student');
+             Swal.fire({
+               icon: 'error',
+               title: 'Error!',
+               text: response.message || 'Failed to add student',
+             });
           }
         } catch (error) {
            console.error(error);
-           toast.error('An error occurred while adding student');
+           Swal.fire({
+             icon: 'error',
+             title: 'Error!',
+             text: 'An error occurred while adding student',
+           });
         } finally {
            setIsSubmitting(false);
         }
@@ -367,9 +412,20 @@ const AdminDashboard: React.FC = () => {
                    if (s._id && formData._id && s._id === formData._id) return response.data;
                    return s;
                }));
-               toast.success('Student updated successfully');
+                toast.dismiss(); // Dismiss previous if any, though swal is modal
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Updated!',
+                    text: 'Student updated successfully',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             } else {
-                toast.error(response.message || 'Failed to update student');
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error!',
+                  text: response.message || 'Failed to update student',
+                });
            }
         } catch (error) {
             console.error(error);
@@ -397,13 +453,27 @@ const AdminDashboard: React.FC = () => {
           const response = await addInstructor(instructorData);
           if (response.message === 'success' || response.data) {
               setInstructors([...instructors, response.data]);
-              toast.success('Instructor added successfully');
+              Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Instructor added successfully',
+                timer: 2000,
+                showConfirmButton: false
+              });
           } else {
-              toast.error(response.message || 'Failed to add instructor');
+              Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: response.message || 'Failed to add instructor',
+              });
           }
         } catch (error) {
             console.error(error);
-            toast.error('An error occurred while adding instructor');
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: 'An error occurred while adding instructor',
+            });
         } finally {
             setIsSubmitting(false);
           }
@@ -429,52 +499,136 @@ const AdminDashboard: React.FC = () => {
                 if (i._id && formData._id && i._id === formData._id) return response.data;
                 return i;
             }));
-            toast.success('Instructor updated successfully');
+            toast.dismiss();
+            Swal.fire({
+              icon: 'success',
+              title: 'Updated!',
+              text: 'Instructor updated successfully',
+              timer: 2000,
+              showConfirmButton: false
+            });
           } else {
-             toast.error(response.message || 'Failed to update instructor');
+             Swal.fire({
+               icon: 'error',
+               title: 'Error!',
+               text: response.message || 'Failed to update instructor',
+             });
           }
         } catch (error) {
              console.error(error);
-             toast.error('An error occurred while updating instructor');
+             Swal.fire({
+               icon: 'error',
+               title: 'Error!',
+               text: 'An error occurred while updating instructor',
+             });
         } finally {
              setIsSubmitting(false);
         }
       }
     } else if (modalType === 'course') {
+        const courseData = new FormData();
+        courseData.append('title', formData.title);
+        courseData.append('description', formData.description);
+        courseData.append('level', formData.level);
+        courseData.append('category', formData.category);
+        courseData.append('price', formData.price.toString());
+        courseData.append('duration', formData.duration.toString());
+        courseData.append('instructor', formData.instructor); // Should be the ID
+        
+        // Calculate lessons count based on videos
+        const lessonCount = formData.videos?.length || 0;
+        courseData.append('lessons', lessonCount.toString());
+        
+         // Handle Videos and Resources - usually sent as JSON string if using FormData for other fields, 
+         // or backend expects them separately. Assuming backend handles parsing or separate endpoint.
+         // Based on user request, let's try sending them as stringified JSON if the backend accepts it in one go.
+         courseData.append('videos', JSON.stringify(formData.videos || []));
+         courseData.append('resources', JSON.stringify(formData.resources || []));
+
+        if (formData.imageFile) {
+            courseData.append('image', formData.imageFile);
+        }
+
       if (modalMode === 'add') {
-        const newCourse = {
-          ...formData,
-          id: courses.length + 1,
-          createdAt: new Date().toISOString(),
-          revenue: 0,
-          rating: 0,
-          students: 0,
-          // In real backend, videos and resources would be saved separately via CourseVideo and CourseResource models
-          // Here, mock keeps them in course object
-        };
-        setCourses([...courses, newCourse]);
-        toast.success('Course added successfully');
+         try {
+             setIsSubmitting(true);
+             const response = await addCourse(courseData);
+             if (response.code === 201 || response.code === 200 || response.message === 'success' || response.data) {
+                 // Refresh list
+                 const allCourses = await getAllCourses();
+                 if(allCourses.data) setCourses(allCourses.data);
+                 toast.success('Course created successfully');
+             } else {
+              console.log(response);
+              console.log(response.message);
+                 toast.error(response.message || 'Failed to create course');
+             }
+         } catch (error) {
+             console.error(error);
+             toast.error("Error creating course");
+         } finally {
+             setIsSubmitting(false);
+         }
       } else if (modalMode === 'edit') {
-        setCourses(prev => prev.map(c => c.id === formData.id ? { ...formData } : c));
-        toast.success('Course updated successfully');
+         try {
+             setIsSubmitting(true);
+             const courseId = formData._id || formData.id;
+             // courseData.append('courseId', courseId); // Not needed in body if in params, but keeping extra data doesn't hurt. Backend uses params.
+             const response = await updateCourse(courseId, courseData);
+              if (response.code === 200 || response.message === 'success') {
+                  // Refresh list to see updates
+                  const allCourses = await getAllCourses();
+                  if(allCourses.data) setCourses(allCourses.data);
+                  toast.success('Course updated successfully');
+              } else {
+                  toast.error(response.message || 'Failed to update course');
+              }
+         } catch (error) {
+              console.error(error);
+              toast.error("Error updating course");
+         } finally {
+              setIsSubmitting(false);
+         }
       }
     }
     closeModal();
   };
 
   const deleteInstructorHandler = async (id: string | number) => {
-      if (window.confirm('Are you sure you want to disable this instructor?')) {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes'
+      });
+
+      if (result.isConfirmed) {
         try {
             const response = await deleteInstructor(id.toString());
             if (response.message === 'success' || response.data) {
-                 toast.success('Instructor disabled successfully');
+                 Swal.fire(
+                   'Disabled!',
+                   'Instructor has been disabled.',
+                   'success'
+                 );
                  setInstructors(prev => prev.filter(inst => String(inst.id) !== String(id) && String(inst._id) !== String(id)));
             } else {
-                 toast.error(response.message || 'Failed to disable instructor');
+                 Swal.fire(
+                   'Error!',
+                   response.message || 'Failed to disable instructor',
+                   'error'
+                 );
             }
         } catch (error) {
             console.error(error);
-            toast.error('Failed to disable instructor');
+            Swal.fire(
+              'Error!',
+              'Failed to disable instructor',
+              'error'
+            );
         }
       }
   };
@@ -505,7 +659,7 @@ const AdminDashboard: React.FC = () => {
   // --- Calculations ---
   const totalStudents = students.length;
   const totalInstructors = instructors.length;
-  const publishedCourses = courses.filter(c => c.status === 'published').length;
+  const publishedCourses = courses.length; // Simply count all courses as status might not be available or all fetched are valid
   const totalRevenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
   // --- Helper Colors ---
   // --- Helper Colors ---
@@ -520,10 +674,10 @@ const AdminDashboard: React.FC = () => {
     }
   };
   const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'Beginner': return 'bg-teal-100 text-teal-800 border-teal-200';
-      case 'Intermediate': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'Advanced': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+    switch (level?.toUpperCase()) {
+      case 'BEGINNER': return 'bg-teal-100 text-teal-800 border-teal-200';
+      case 'INTERMEDIATE': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'ADVANCED': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -666,7 +820,7 @@ const AdminDashboard: React.FC = () => {
                     { label: 'Total Students', value: totalStudents.toString(), icon: <GraduationCap size={24} />, color: 'teal', change: '+12%' },
                     { label: 'Total Instructors', value: totalInstructors.toString(), icon: <Users size={24} />, color: 'purple', change: '+4%' },
                     { label: 'Active Courses', value: publishedCourses.toString(), icon: <BookOpen size={24} />, color: 'blue', change: '+5%' },
-                    { label: 'Total Revenue', value: `₹${(totalRevenue / 100000).toFixed(1)}L`, icon: <CreditCard size={24} />, color: 'indigo', change: '+23%' },
+                    { label: 'Total Revenue', value: `LKR ${(totalRevenue).toLocaleString()}`, icon: <CreditCard size={24} />, color: 'indigo', change: '+23%' },
                   ].map((stat, index) => (
                     <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02, y: -5 }} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300">
                       <div className="flex items-center justify-between mb-4">
@@ -712,12 +866,28 @@ const AdminDashboard: React.FC = () => {
                     <h1 className="text-3xl font-bold text-gray-800">Student Management</h1>
                     <p className="text-gray-600 text-lg mt-2">Manage student accounts, progress, and access</p>
                   </div>
-                  <div className="flex space-x-4">
-                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-teal-500 focus:border-transparent opacity-0 pointer-events-none">
-                      <option value="all">All Status</option>
-                    </select>
-                    <motion.button whileHover={{ scale: 1.05 }} onClick={() => openModal('student', 'add')} className="px-6 py-3 bg-teal-500 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
-                      Add Student
+                  <div className="flex items-center gap-4">
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Search size={20} className="text-gray-400 group-focus-within:text-teal-500 transition-colors" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Search students..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-11 pr-6 py-3 bg-white/50 backdrop-blur-sm border border-white/60 text-gray-800 placeholder-gray-400 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-white shadow-sm hover:shadow-md transition-all duration-300 w-64 md:w-80"
+                      />
+                    </div>
+                    
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }} 
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => openModal('student', 'add')} 
+                      className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-teal-500 to-teal-600 text-white rounded-2xl font-semibold shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all duration-300"
+                    >
+                      <Plus size={20} />
+                      <span>Add Student</span>
                     </motion.button>
                   </div>
                 </div>
@@ -919,42 +1089,115 @@ const AdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredCourses.map((course, index) => (
                     <motion.div
-                      key={course.id}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }} 
-                      whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.15)" }}
-                      className="bg-white rounded-3xl shadow-xl overflow-hidden border border-white/50 hover:border-teal-200 transition-all duration-500"
+                      key={course._id || course.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="group relative bg-white rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 overflow-hidden flex flex-col h-full"
                     >
-                      <div className="relative overflow-hidden">
-                        <img src={course.image} alt={course.title} className="w-full h-48 object-cover transition-transform duration-700 hover:scale-110" />
-                        <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/70 to-transparent p-6 text-white">
-                          <h3 className="font-bold text-xl mb-2 line-clamp-2">{course.title}</h3>
-                          <p className="text-white/80 text-sm">{getInstructorName(course.instructor)}</p>
+                      {/* Image Section */}
+                      <div className="relative h-56 overflow-hidden shrink-0">
+                        <img 
+                          src={course.image} 
+                          alt={course.title} 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                        />
+                         {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-80" />
+                        
+                        {/* Badges */}
+                        <div className="absolute top-4 left-4 flex gap-2">
+                           <span className={`px-3 py-1.5 backdrop-blur-md bg-white/90 rounded-2xl text-[10px] font-extrabold uppercase tracking-widest shadow-sm ${
+                             course.level === 'BEGINNER' ? 'text-teal-600' : 
+                             course.level === 'INTERMEDIATE' ? 'text-blue-600' : 'text-purple-600'
+                           }`}>
+                             {course.level}
+                           </span>
+                        </div>
+                        <div className="absolute top-4 right-4">
+                           <span className="px-3 py-1.5 backdrop-blur-md bg-black/40 text-white rounded-2xl text-[10px] font-bold uppercase tracking-wider border border-white/20">
+                             {course.category}
+                           </span>
+                        </div>
+
+                        {/* Price Tag (Floating) */}
+                         <div className="absolute bottom-4 right-4">
+                           <div className="bg-white/95 backdrop-blur-xl px-4 py-2 rounded-2xl shadow-lg border border-white/50">
+                             <span className="text-gray-900 font-extrabold text-lg">
+                               {course.price > 0 ? `LKR ${course.price.toLocaleString()}` : 'Free'}
+                             </span>
+                           </div>
                         </div>
                       </div>
-                      <div className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <span className={`px-4 py-2 rounded-2xl text-sm font-semibold border ${getLevelColor(course.level)}`}>{course.level}</span>
-                          <div className="flex items-center space-x-1 text-yellow-500">
-                            {/* <span className="text-lg">★</span>
-                            <span className="text-gray-700 font-bold">{course.rating}</span> */}
-                          </div>
-                        </div>
-                        <p className="text-gray-600 mb-6 line-clamp-2">{course.description}</p>
-                        <div className="mb-6">
-                          <div className="flex items-center justify-center space-x-2 bg-gray-50/50 rounded-2xl p-3">
-                             <Users size={20} className="text-blue-500" />
-                             <span className="text-2xl font-bold text-gray-800">{course.students}</span>
-                             <span className="text-sm font-medium text-gray-500">Students</span>
-                          </div>
-                        </div>
-                        <div className="flex space-x-3 pt-4 border-t border-gray-100">
-                          <button onClick={() => openModal('course', 'view', course)} className="flex-1 py-3 text-teal-600 border border-teal-200 rounded-2xl font-bold hover:bg-teal-50 transition-colors">View</button>
-                          <button onClick={() => openModal('course', 'edit', course)} className="flex-1 py-3 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-indigo-500/30">Edit</button>
-                          <button onClick={() => deleteCourse(course.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors" title="Delete">
-                            <Trash2 size={18}/>
-                          </button>
+                      
+                      {/* Content Section */}
+                      <div className="p-6 flex flex-col flex-1 relative">
+                         {/* Main Content */}
+                         <div className="mb-6">
+                            <h3 className="text-xl font-bold text-gray-800 mb-2 leading-tight line-clamp-2 group-hover:text-teal-600 transition-colors">
+                              {course.title}
+                            </h3>
+                             {/* Instructor Row */}
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-8 h-8 rounded-full p-0.5 bg-gradient-to-tr from-teal-400 to-blue-500">
+                                   <img 
+                                     src={course.instructor?.image || ''} 
+                                     alt={course.instructor?.name || 'Instructor'} 
+                                     className="w-full h-full rounded-full object-cover border-2 border-white" 
+                                   />
+                                </div>
+                                <div className="flex flex-col">
+                                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">Instructor</span>
+                                   <span className="text-sm font-semibold text-gray-700">{course.instructor?.name || 'Unknown'}</span>
+                                </div>
+                            </div>
+                            
+                            <p className="text-gray-500 text-sm line-clamp-2 leading-relaxed font-medium">
+                              {course.description}
+                            </p>
+                         </div>
+
+                         {/* Stats Grid */}
+                         <div className="grid grid-cols-3 gap-2 py-4 border-t border-gray-100 mb-6 bg-gray-50/50 rounded-2xl px-4 mt-auto">
+                            <div className="flex flex-col items-center justify-center">
+                               <BookOpen size={16} className="text-teal-500 mb-1" />
+                               <span className="text-xs font-bold text-gray-700">{course.lessons}</span>
+                               <span className="text-[10px] text-gray-400 font-medium uppercase">Lessons</span>
+                            </div>
+                             <div className="flex flex-col items-center justify-center border-l border-gray-200/50">
+                               <Users size={16} className="text-blue-500 mb-1" />
+                               <span className="text-xs font-bold text-gray-700">{course.students}</span>
+                               <span className="text-[10px] text-gray-400 font-medium uppercase">Students</span>
+                            </div>
+                             <div className="flex flex-col items-center justify-center border-l border-gray-200/50">
+                               <Calendar size={16} className="text-purple-500 mb-1" />
+                               <span className="text-xs font-bold text-gray-700">{course.duration}h</span>
+                               <span className="text-[10px] text-gray-400 font-medium uppercase">Duration</span>
+                            </div>
+                         </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-3">
+                           <button 
+                             onClick={() => openModal('course', 'view', course)} 
+                             className="flex-1 py-3 rounded-xl font-bold text-sm bg-gray-50 text-gray-600 hover:bg-teal-50 hover:text-teal-600 transition-all active:scale-95"
+                           >
+                             Details
+                           </button>
+                           <button 
+                             onClick={() => openModal('course', 'edit', course)} 
+                             className="flex-1 py-3 rounded-xl font-bold text-sm bg-gray-900 text-white shadow-lg shadow-gray-200 hover:bg-gray-800 hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                           >
+                             <Edit size={14} />
+                             Edit
+                           </button>
+                           <button 
+                             onClick={() => deleteCourse(course._id || course.id!)} 
+                             className="w-12 flex items-center justify-center rounded-xl bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-500 transition-all active:scale-95"
+                             title="Delete Course"
+                           >
+                             <Trash2 size={18}/>
+                           </button>
                         </div>
                       </div>
                     </motion.div>
@@ -969,25 +1212,42 @@ const AdminDashboard: React.FC = () => {
                    <h1 className="text-3xl font-bold text-gray-800">Payment Management</h1>
                    <button className="px-6 py-3 bg-teal-500 text-white rounded-2xl font-semibold shadow-lg">Export Report</button>
                 </div>
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
-                  <div className="overflow-x-auto">
+                <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/50 overflow-hidden relative">
+                   <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-400/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+                   <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-400/10 rounded-full blur-3xl -ml-32 -mb-32 pointer-events-none"></div>
+                  <div className="overflow-x-auto relative z-10">
                     <table className="w-full">
                       <thead>
-                        <tr className="bg-gray-50/80 border-b border-gray-200">
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-800">Transaction ID</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-800">Student</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-800">Amount</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-800">Date</th>
+                        <tr className="bg-gray-50/80 border-b border-gray-200/60 backdrop-blur-sm">
+                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Transaction ID</th>
+                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Student</th>
+                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Amount</th>
+                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Date</th>
+                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-gray-100/50">
                         {filteredPayments.map((payment, index) => (
-                          <motion.tr key={payment.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.1 }} className="hover:bg-gray-50/50">
-                            <td className="px-6 py-4 font-mono text-sm text-gray-600">{payment.transactionId}</td>
-                            <td className="px-6 py-4 font-semibold text-gray-800">{payment.student}</td>
-                            <td className="px-6 py-4 font-bold text-gray-800">₹{payment.amount}</td>
-                            <td className="px-6 py-4 text-gray-600">{payment.date}</td>
-                            <td className="px-6 py-4"><span className={`px-3 py-1 rounded-2xl text-xs font-semibold border ${getStatusColor(payment.status)}`}>{payment.status}</span></td>
+                          <motion.tr 
+                            key={payment.id} 
+                            initial={{ opacity: 0, y: 10 }} 
+                            animate={{ opacity: 1, y: 0 }} 
+                            transition={{ delay: index * 0.05 }} 
+                            className="hover:bg-white/60 transition-all duration-300 group"
+                          >
+                            <td className="px-8 py-6 font-mono text-sm text-gray-500">{payment.transactionId}</td>
+                            <td className="px-8 py-6">
+                                <div className="font-bold text-gray-800">{payment.student}</div>
+                            </td>
+                            <td className="px-8 py-6">
+                                <span className="font-bold text-gray-800 bg-gray-100 px-3 py-1 rounded-lg">LKR {payment.amount.toLocaleString()}</span>
+                            </td>
+                            <td className="px-8 py-6 text-gray-600 font-medium">{payment.date}</td>
+                            <td className="px-8 py-6">
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(payment.status)}`}>
+                                    {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                                </span>
+                            </td>
                           </motion.tr>
                         ))}
                       </tbody>
@@ -1162,35 +1422,37 @@ const AdminDashboard: React.FC = () => {
                           <div className="grid grid-cols-2 gap-6">
                              <div className="space-y-2">
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Level</label>
-                                <select disabled={modalMode === 'view'} value={formData.level || 'Beginner'} onChange={(e) => setFormData({...formData, level: e.target.value})} className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 text-gray-800 font-medium transition-all cursor-pointer">
-                                  <option value="Beginner">Beginner</option>
-                                  <option value="Intermediate">Intermediate</option>
-                                  <option value="Advanced">Advanced</option>
+                                <select disabled={modalMode === 'view'} value={formData.level || 'BEGINNER'} onChange={(e) => setFormData({...formData, level: e.target.value})} className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 text-gray-800 font-medium transition-all cursor-pointer">
+                                  {['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map(level => (
+                                      <option key={level} value={level}>{level}</option>
+                                  ))}
                                 </select>
                              </div>
                              <div className="space-y-2">
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Category</label>
-                                <select disabled={modalMode === 'view'} value={formData.category || 'development'} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 text-gray-800 font-medium transition-all cursor-pointer">
-                                  <option value="development">Development</option>
-                                  <option value="design">Design</option>
-                                  <option value="business">Business</option>
-                                  <option value="marketing">Marketing</option>
+                                <select disabled={modalMode === 'view'} value={formData.category || 'DEVELOPMENT'} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 text-gray-800 font-medium transition-all cursor-pointer">
+                                  {['DEVELOPMENT', 'DESIGN', 'BUSINESS', 'MARKETING', 'IT & SOFTWARE', 'PERSONAL DEVELOPMENT', 'MUSIC', 'PHOTOGRAPHY', 'GENERAL'].map(category => (
+                                      <option key={category} value={category}>{category}</option>
+                                  ))}
                                 </select>
                              </div>
                           </div>
                           <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-2">
-                               <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Price (₹)</label>
+                               <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Price (LKR)</label>
                                <input disabled={modalMode === 'view'} value={formData.price || 0} onChange={(e) => setFormData({...formData, price: parseInt(e.target.value) || 0})} type="number" className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 text-gray-800 font-medium placeholder-gray-400 transition-all" placeholder="4999" />
                             </div>
-                            {/* Status field removed as per requirement */}
+                             <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Duration (Hours)</label>
+                                <input disabled={modalMode === 'view'} value={formData.duration || 0} onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value) || 0})} type="number" className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 text-gray-800 font-medium placeholder-gray-400 transition-all" placeholder="10" />
+                             </div>
                           </div>
                           <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Instructor</label>
                             <select disabled={modalMode === 'view'} value={formData.instructor || ''} onChange={(e) => setFormData({...formData, instructor: e.target.value})} className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 text-gray-800 font-medium transition-all cursor-pointer">
                               <option value="">Select Instructor</option>
                               {instructors.map((inst) => (
-                                <option key={inst.id} value={inst.id}>
+                                <option key={inst._id || inst.id} value={inst._id || inst.id}>
                                   {inst.name}
                                 </option>
                               ))}
