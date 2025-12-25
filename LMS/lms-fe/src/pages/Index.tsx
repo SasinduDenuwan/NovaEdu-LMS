@@ -4,10 +4,12 @@ import { getInstructors } from '../services/instructor';
 import { useNavigate } from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode'; // Assuming you have jwt-decode installed and imported
 import { getAllCourses } from '../services/course';
-import toast from 'react-hot-toast';
+// import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 import { getCartItems, addCartItem, deleteCartItem } from '../services/cart';
 import AiFloatingButton from '../components/AiFloatingButton';
-import { User, GraduationCap, LogOut, Rocket, Play } from 'lucide-react';
+import { User, GraduationCap, LogOut, Rocket, Play, Menu, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 interface Course {
   id: string; // Changed from number to string because backend sends string IDs
   title: string;
@@ -57,11 +59,36 @@ const Index: React.FC = () => {
     tax: 0,
     total: 0
   });
+
+  // Checkout Form State
+  const [checkoutForm, setCheckoutForm] = useState({
+    email: '',
+    emailUpdates: false,
+    cardNumber: '',
+    expiryDate: '',
+    cvc: '',
+    cardholderName: '',
+    firstName: '',
+    lastName: '',
+    address: '',
+    city: '',
+    zipCode: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setCheckoutForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
   const [currentBg, setCurrentBg] = useState<number>(0);
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
+
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [activeNav, setActiveNav] = useState<string>('home');
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
@@ -179,6 +206,12 @@ const Index: React.FC = () => {
       setLastname(decodedToken.lastname);
       setEmail(decodedToken.email);
       setRole(decodedToken.role);
+      
+      // Pre-fill checkout form
+      setCheckoutForm(prev => ({
+        ...prev,
+        email: decodedToken.email || ''
+      }));
     }
   }, [accessToken]);
   const filteredCourses = activeTab === 'all'
@@ -232,7 +265,12 @@ const Index: React.FC = () => {
 
   const addToCart = async (course: Course, openCart: boolean = true) => {
     if (!accessToken) {
-      toast.error('Please sign in to add courses to cart.');
+      Swal.fire({
+        icon: 'info',
+        title: 'Sign In Required',
+        text: 'Please sign in to add courses to cart.',
+        confirmButtonColor: '#0d9488'
+      });
       navigate('/');
       return;
     }
@@ -241,7 +279,16 @@ const Index: React.FC = () => {
     const userID = decodedToken.sub;
    
     if (cart.some(item => item.id === course.id)) {
-      toast.error('This course is already in your cart.');
+      Swal.fire({
+        icon: 'info',
+        title: 'In Cart',
+        text: 'This course is already in your cart.',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      });
       return;
     }
 
@@ -256,20 +303,52 @@ const Index: React.FC = () => {
         if (openCart) {
           setIsCartOpen(true);
         }
-        toast.success("Added to cart");
+        Swal.fire({
+          icon: 'success',
+          title: 'Added to cart',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
     } catch (error) {
         console.error("Error adding to cart:", error);
-        toast.error("Failed to add to cart");
+         Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to add to cart',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000
+        });
     }
   };
   const removeFromCart = async (courseId: string) => {
     try {
         await deleteCartItem(courseId); // Sending courseId 
         setCart(prev => prev.filter(item => item.id !== courseId));
-        toast.success("Removed from cart");
+        Swal.fire({
+          icon: 'success',
+          title: 'Removed from cart',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
     } catch (error) {
         console.error("Error removing from cart:", error);
-        toast.error("Failed to remove from cart");
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to remove from cart',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000
+        });
     }
   };
 
@@ -301,14 +380,82 @@ const Index: React.FC = () => {
     setIsCheckoutOpen(true);
     setPaymentStep('details');
   };
-  const handlePaymentSuccess = (): void => {
-    setPaymentStep('confirmation');
-    // In a real app, you would process the payment here
-    setTimeout(() => {
-      setCart([]);
-      setIsCheckoutOpen(false);
-      setPaymentStep('details');
-    }, 3000);
+
+  const validateDetailsStep = () => {
+    if (!checkoutForm.email) {
+      toast.error('Please enter your email address');
+      return false;
+    }
+    return true;
+  };
+
+  const validatePaymentStep = () => {
+    const requiredFields = [
+      'cardNumber', 'expiryDate', 'cvc', 'cardholderName',
+      'firstName', 'lastName', 'address', 'city', 'zipCode'
+    ];
+
+    const missingField = requiredFields.find(field => !checkoutForm[field as keyof typeof checkoutForm]);
+
+    if (missingField) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Incomplete Form',
+        text: 'Please fill in all required fields to complete payment',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const handleNextStep = () => {
+    if (paymentStep === 'details') {
+      if (validateDetailsStep()) {
+        setPaymentStep('payment');
+      }
+    }
+  };
+
+  const handlePaymentSuccess = async (): Promise<void> => {
+    if (!validatePaymentStep()) return;
+
+    try {
+      // Process payment (simulated)
+      
+      // Clear cart from backend
+      const deletePromises = cart.map(item => deleteCartItem(item.id));
+      await Promise.all(deletePromises);
+
+      setPaymentStep('confirmation');
+      
+      setTimeout(() => {
+        setCart([]);
+        setIsCheckoutOpen(false);
+        setPaymentStep('details');
+        // Reset form
+        setCheckoutForm({
+          email: '',
+          emailUpdates: false,
+          cardNumber: '',
+          expiryDate: '',
+          cvc: '',
+          cardholderName: '',
+          firstName: '',
+          lastName: '',
+          address: '',
+          city: '',
+          zipCode: ''
+        });
+      }, 3000);
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+      toast.error("Payment successful but failed to clear cart. Please refresh.");
+      setPaymentStep('confirmation'); // Still show success as payment "went through"
+    }
   };
   const scrollToSection = (sectionId: string) => {
     setActiveNav(sectionId);
@@ -320,7 +467,13 @@ const Index: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     setIsLoggedIn(false);
-    toast.success("Logged out successfully");
+    Swal.fire({
+      icon: 'success',
+      title: 'Logged Out',
+      text: 'Logged out successfully',
+      timer: 1500,
+      showConfirmButton: false
+    });
     window.location.href = "/";
   };
   return (
@@ -471,7 +624,7 @@ const Index: React.FC = () => {
                             <button
                               onClick={() => {
                                 setIsProfileMenuOpen(false);
-                                navigate('/student-dashboard');
+                                navigate('/profile');
                               }}
                               className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors"
                             >
@@ -482,7 +635,7 @@ const Index: React.FC = () => {
                               onClick={() => {
                                 setIsProfileMenuOpen(false);
                                 // navigate('/student-dashboard?tab=my-courses'); // Example query param if supported
-                                navigate('/student-dashboard');
+                                navigate('/student');
                               }}
                               className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors"
                             >
@@ -525,8 +678,49 @@ const Index: React.FC = () => {
                 </motion.button>
               )}
             </div>
+
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center ml-4">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-600 hover:text-teal-600 focus:outline-none"
+              >
+                {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden bg-white border-t border-gray-100 overflow-hidden"
+            >
+              <div className="px-6 py-4 space-y-4 flex flex-col">
+                {['home', 'courses', 'instructors', 'about', 'contact'].map((item) => (
+                  <motion.a
+                    key={item}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                        scrollToSection(item);
+                        setIsMobileMenuOpen(false);
+                    }}
+                    className={`block py-2 text-lg font-medium capitalize ${
+                      activeNav === item ? 'text-teal-500' : 'text-gray-600'
+                    }`}
+                  >
+                    {item}
+                  </motion.a>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.header>
       {/* Hero Section */}
       <section id="home" className="relative pt-36 pb-20 overflow-hidden">
@@ -548,7 +742,7 @@ const Index: React.FC = () => {
                   <Rocket size={16} className="inline mr-2" /> Transform Your Career
                 </span>
               </motion.div>
-              <h1 className="text-5xl lg:text-7xl font-bold text-gray-800 leading-tight mb-6">
+              <h1 className="text-4xl lg:text-7xl font-bold text-gray-800 leading-tight mb-6">
                 Learn Without
                 <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-500 to-blue-500 block">
                   Limits
@@ -708,7 +902,7 @@ const Index: React.FC = () => {
                 onClick={() => setActiveTab(category.id)}
                 className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 backdrop-blur-sm border ${
                   activeTab === category.id
-                    ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-2xl border-transparent'
+                    ? 'bg-linear-to-r from-teal-500 to-blue-500 text-white shadow-2xl border-transparent'
                     : 'bg-white/70 text-gray-600 hover:bg-white/90 border-white/20 shadow-lg hover:shadow-xl'
                 }`}
               >
@@ -1652,7 +1846,6 @@ const Index: React.FC = () => {
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Left Column - Forms */}
                         <div className="space-y-6">
-                          {/* Contact Information */}
                           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
                             <h3 className="text-xl font-bold text-gray-800 mb-4">Contact Information</h3>
                             <div className="space-y-4">
@@ -1660,12 +1853,23 @@ const Index: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                                 <input
                                   type="email"
+                                  name="email"
+                                  value={checkoutForm.email}
+                                  onChange={handleInputChange}
                                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                   placeholder="your@email.com"
+                                  required
                                 />
                               </div>
                               <div className="flex items-center space-x-2">
-                                <input type="checkbox" id="emailUpdates" className="rounded text-teal-500 focus:ring-teal-500" />
+                                <input 
+                                  type="checkbox" 
+                                  id="emailUpdates" 
+                                  name="emailUpdates"
+                                  checked={checkoutForm.emailUpdates}
+                                  onChange={handleInputChange}
+                                  className="rounded text-teal-500 focus:ring-teal-500" 
+                                />
                                 <label htmlFor="emailUpdates" className="text-sm text-gray-600">
                                   Email me with news and offers
                                 </label>
@@ -1735,7 +1939,7 @@ const Index: React.FC = () => {
                               boxShadow: "0 15px 30px -5px rgba(20, 184, 166, 0.4)"
                             }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => setPaymentStep('payment')}
+                            onClick={handleNextStep}
                             className="w-full bg-linear-to-r from-teal-500 to-blue-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
                           >
                             <span className="relative z-10">Continue to Payment</span>
@@ -1767,8 +1971,12 @@ const Index: React.FC = () => {
                                 <div className="relative">
                                   <input
                                     type="text"
+                                    name="cardNumber"
+                                    value={checkoutForm.cardNumber}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm pr-12"
                                     placeholder="1234 5678 9012 3456"
+                                    maxLength={19}
                                   />
                                   <div className="absolute right-3 top-3 flex space-x-1">
                                     {['💳', '🔵', '🟡'].map((icon, index) => (
@@ -1788,16 +1996,24 @@ const Index: React.FC = () => {
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
                                   <input
                                     type="text"
+                                    name="expiryDate"
+                                    value={checkoutForm.expiryDate}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                     placeholder="MM/YY"
+                                    maxLength={5}
                                   />
                                 </div>
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">CVC</label>
                                   <input
                                     type="text"
+                                    name="cvc"
+                                    value={checkoutForm.cvc}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                     placeholder="123"
+                                    maxLength={3}
                                   />
                                 </div>
                               </div>
@@ -1805,6 +2021,9 @@ const Index: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
                                 <input
                                   type="text"
+                                  name="cardholderName"
+                                  value={checkoutForm.cardholderName}
+                                  onChange={handleInputChange}
                                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                   placeholder="John Doe"
                                 />
@@ -1820,6 +2039,9 @@ const Index: React.FC = () => {
                                   <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                                   <input
                                     type="text"
+                                    name="firstName"
+                                    value={checkoutForm.firstName}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                     placeholder="John"
                                   />
@@ -1828,6 +2050,9 @@ const Index: React.FC = () => {
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
                                   <input
                                     type="text"
+                                    name="lastName"
+                                    value={checkoutForm.lastName}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                     placeholder="Doe"
                                   />
@@ -1837,6 +2062,9 @@ const Index: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
                                 <input
                                   type="text"
+                                  name="address"
+                                  value={checkoutForm.address}
+                                  onChange={handleInputChange}
                                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                   placeholder="123 Main Street"
                                 />
@@ -1846,6 +2074,9 @@ const Index: React.FC = () => {
                                   <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
                                   <input
                                     type="text"
+                                    name="city"
+                                    value={checkoutForm.city}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                     placeholder="New York"
                                   />
@@ -1854,6 +2085,9 @@ const Index: React.FC = () => {
                                   <label className="block text-sm font-medium text-gray-700 mb-2">ZIP Code</label>
                                   <input
                                     type="text"
+                                    name="zipCode"
+                                    value={checkoutForm.zipCode}
+                                    onChange={handleInputChange}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                     placeholder="10001"
                                   />

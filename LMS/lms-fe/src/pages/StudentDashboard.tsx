@@ -82,6 +82,7 @@ interface Resource {
 }
 
 const StudentDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'my-courses' | 'resources'>('dashboard');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
@@ -398,7 +399,10 @@ const StudentDashboard: React.FC = () => {
         </div>
         {/* User Profile */}
         <div className="p-6 border-b border-white/20">
-          <div className={`flex items-center space-x-4 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+          <div 
+            className={`flex items-center space-x-4 ${isSidebarCollapsed ? 'justify-center' : ''} cursor-pointer hover:bg-white/10 p-2 rounded-xl transition-all`}
+            onClick={() => navigate('/profile')}
+          >
              <div className="relative">
                <div className="w-12 h-12 bg-linear-to-br from-teal-400 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">JS</div>
                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-teal-400 rounded-full border-2 border-white"></div>
@@ -687,7 +691,7 @@ const StudentDashboard: React.FC = () => {
                           alt={course.title}
                           className="w-full h-48 object-cover transition-transform duration-700 group-hover:scale-110"
                         />
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 text-white">
+                        <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent p-4 text-white">
                           <h3 className="font-bold text-lg line-clamp-2">{course.title}</h3>
                           <p className="text-white/80 text-sm">{course.instructor}</p>
                         </div>

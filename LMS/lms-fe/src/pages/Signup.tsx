@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Eye, EyeOff, User, Lock, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+// import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 import { register } from '../services/auth';
 
 export default function SignUpPage() {
@@ -25,32 +26,62 @@ export default function SignUpPage() {
     e.preventDefault();
 
     if (firstname.trim() === '') {
-      toast.error("Please enter your first name!");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required',
+        text: 'Please enter your first name!',
+        confirmButtonColor: '#0d9488'
+      });
       firstnameRef.current?.focus();
       return;
     }
     if (lastname.trim() === '') {
-      toast.error("Please enter your last name!");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required',
+        text: 'Please enter your last name!',
+        confirmButtonColor: '#0d9488'
+      });
       lastnameRef.current?.focus();
       return;
     }
     if (email.trim() === '') {
-      toast.error("Please enter your email!");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required',
+        text: 'Please enter your email!',
+        confirmButtonColor: '#0d9488'
+      });
       emailRef.current?.focus();
       return;
     }
     if (password.trim() === '') {
-      toast.error("Please enter your password!");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required',
+        text: 'Please enter your password!',
+        confirmButtonColor: '#0d9488'
+      });
       passwordRef.current?.focus();
       return;
     }
     if (confirmPassword.trim() === '') {
-      toast.error("Please confirm your password!");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required',
+        text: 'Please confirm your password!',
+        confirmButtonColor: '#0d9488'
+      });
       confirmPasswordRef.current?.focus();
       return;
     }
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match!");
+      Swal.fire({
+        icon: 'error',
+        title: 'Mismatch',
+        text: 'Passwords do not match!',
+        confirmButtonColor: '#d33'
+      });
       confirmPasswordRef.current?.focus();
       return;
     }
@@ -60,12 +91,22 @@ export default function SignUpPage() {
       const data: any = await register(firstname, lastname, email, password);
 
       if (data) {
-        toast.success("Registration successful! Please log in.");
+        await Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'Registration successful! Please log in.',
+          confirmButtonColor: '#0d9488'
+        });
         navigate("/login");
       }
     } catch (err: any) {
       console.error("Registration Error : ", err);
-      toast.error("Registration failed. Please try again.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Registration Failed',
+        text: 'Registration failed. Please try again.',
+        confirmButtonColor: '#d33'
+      });
     } finally {
       setIsLoading(false);
     }

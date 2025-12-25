@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+// import toast from 'react-hot-toast';
 import {
   LayoutDashboard,
   GraduationCap,
@@ -11,13 +11,10 @@ import {
   CreditCard,
   LogOut,
   Plus,
-  Target,
   Image as ImageIcon,
   Trash2,
   Edit,
   Mail,
-  Phone,
-  MapPin,
   Camera,
   User,
   FileText,
@@ -27,7 +24,8 @@ import {
   EyeOff,
   Loader2,
   Calendar,
-  Search
+  Search,
+  Menu
 } from 'lucide-react';
 import { getInstructors, addInstructor, updateInstructor, deleteInstructor } from '../services/instructor';
 import { getStudents, addStudent, updateStudent, deleteStudent } from '../services/students';
@@ -124,6 +122,7 @@ const AdminDashboard: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentBg, setCurrentBg] = useState<number>(0);
   const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   // --- Modal / Form State ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'student' | 'instructor' | 'course' | null>(null);
@@ -352,7 +351,13 @@ const AdminDashboard: React.FC = () => {
   // --- Handlers ---
   const handleLogout = () => {
     localStorage.clear();
-    toast.success("Logged out successfully");
+    Swal.fire({
+      icon: 'success',
+      title: 'Logged Out',
+      text: 'Logged out successfully',
+      timer: 1500,
+      showConfirmButton: false
+    });
     navigate('/login');
   };
   const openModal = (type: 'student' | 'instructor' | 'course', mode: 'add' | 'edit' | 'view', item?: any) => {
@@ -411,8 +416,9 @@ const AdminDashboard: React.FC = () => {
                    if (s.id && formData.id && s.id === formData.id) return response.data;
                    if (s._id && formData._id && s._id === formData._id) return response.data;
                    return s;
+                return s;
                }));
-                toast.dismiss(); // Dismiss previous if any, though swal is modal
+                // toast.dismiss(); // Dismiss previous if any, though swal is modal
                 Swal.fire({
                     icon: 'success',
                     title: 'Updated!',
@@ -429,7 +435,11 @@ const AdminDashboard: React.FC = () => {
            }
         } catch (error) {
             console.error(error);
-            toast.error('An error occurred while updating student');
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: 'An error occurred while updating student',
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -499,7 +509,7 @@ const AdminDashboard: React.FC = () => {
                 if (i._id && formData._id && i._id === formData._id) return response.data;
                 return i;
             }));
-            toast.dismiss();
+            // toast.dismiss();
             Swal.fire({
               icon: 'success',
               title: 'Updated!',
@@ -557,15 +567,29 @@ const AdminDashboard: React.FC = () => {
                  // Refresh list
                  const allCourses = await getAllCourses();
                  if(allCourses.data) setCourses(allCourses.data);
-                 toast.success('Course created successfully');
+                 Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Course created successfully',
+                    timer: 2000,
+                    showConfirmButton: false
+                 });
              } else {
               console.log(response);
               console.log(response.message);
-                 toast.error(response.message || 'Failed to create course');
+                 Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: response.message || 'Failed to create course',
+                 });
              }
          } catch (error) {
              console.error(error);
-             toast.error("Error creating course");
+             Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Error creating course',
+             });
          } finally {
              setIsSubmitting(false);
          }
@@ -579,13 +603,27 @@ const AdminDashboard: React.FC = () => {
                   // Refresh list to see updates
                   const allCourses = await getAllCourses();
                   if(allCourses.data) setCourses(allCourses.data);
-                  toast.success('Course updated successfully');
+                  Swal.fire({
+                    icon: 'success',
+                    title: 'Updated!',
+                    text: 'Course updated successfully',
+                    timer: 2000,
+                    showConfirmButton: false
+                 });
               } else {
-                  toast.error(response.message || 'Failed to update course');
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: response.message || 'Failed to update course',
+                 });
               }
          } catch (error) {
               console.error(error);
-              toast.error("Error updating course");
+              Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Error updating course',
+             });
          } finally {
               setIsSubmitting(false);
          }
@@ -723,14 +761,28 @@ const AdminDashboard: React.FC = () => {
           ))}
         </div>
       </div>
+      {/* Sidebar Backdrop for Mobile */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
       {/* Admin Sidebar */}
       <motion.div
-        initial={{ x: -100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        className="bg-white/80 backdrop-blur-xl border-r border-white/20 flex flex-col w-80 transition-all duration-500 fixed h-full z-40 shadow-xl"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className={`bg-white/80 backdrop-blur-xl border-r border-white/20 flex flex-col w-80 transition-all duration-300 fixed h-full z-40 shadow-xl ${
+            isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
       >
         {/* Admin Profile */}
-        <div className="p-6 border-b border-white/20">
+        <div className="p-6 border-b border-white/20 flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <div className="relative">
               <div className="w-14 h-14 bg-linear-to-br from-teal-400 to-indigo-500 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">AD</div>
@@ -741,8 +793,10 @@ const AdminDashboard: React.FC = () => {
               <div className="font-bold text-gray-800 truncate text-lg">Admin User</div>
               <div className="text-sm text-teal-600 truncate">Super Administrator</div>
             </motion.div>
-           
           </div>
+           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 rounded-lg hover:bg-gray-100/50 text-gray-600">
+             <X size={24} />
+          </button>
         </div>
         {/* Navigation Menu */}
         <nav className="flex-1 p-6 space-y-3">
@@ -751,7 +805,10 @@ const AdminDashboard: React.FC = () => {
               key={item.id}
               whileHover={{ scale: 1.02, x: 4 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => setActiveTab(item.id as any)}
+              onClick={() => {
+                  setActiveTab(item.id as any);
+                  setIsSidebarOpen(false);
+              }}
               className={`w-full flex items-center space-x-4 p-4 rounded-2xl font-semibold transition-all duration-300 ${
                 activeTab === item.id
                   ? 'bg-white shadow-lg border border-white/50 text-gray-800'
@@ -786,13 +843,17 @@ const AdminDashboard: React.FC = () => {
         </div>
       </motion.div>
       {/* Main Content */}
-      <div className="flex-1 transition-all duration-500 ml-80 relative z-10">
+      <div className="flex-1 transition-all duration-300 lg:ml-80 relative z-10 w-full">
        
         {/* Admin Header */}
         <header className="bg-white/60 backdrop-blur-xl border-b border-white/20 sticky top-0 z-30">
-          <div className="flex items-center justify-between px-8 py-6">
-            <div>
-              <h1 className="text-3xl font-bold bg-linear-to-br from-teal-600 to-indigo-600 bg-clip-text text-transparent capitalize">
+          <div className="flex items-center justify-between px-6 py-4 md:px-8 md:py-6">
+            <div className="flex items-center space-x-4">
+                <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 rounded-xl hover:bg-white/50 text-gray-600 transition-colors">
+                  <Menu size={28} />
+               </button>
+               <div>
+              <h1 className="text-2xl md:text-3xl font-bold bg-linear-to-br from-teal-600 to-indigo-600 bg-clip-text text-transparent capitalize">
                 {activeTab}
               </h1>
               <p className="text-gray-500 text-lg mt-2">
@@ -804,9 +865,10 @@ const AdminDashboard: React.FC = () => {
               </p>
             </div>
           </div>
+          </div>
         </header>
         {/* Admin Content */}
-        <main className="p-8">
+        <main className="p-4 md:p-8">
           <AnimatePresence mode="wait">
            
             {/* --- DASHBOARD TAB --- */}
@@ -825,7 +887,7 @@ const AdminDashboard: React.FC = () => {
                     <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02, y: -5 }} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300">
                       <div className="flex items-center justify-between mb-4">
                         <div className={`w-12 h-12 bg-${stat.color}-100 rounded-2xl flex items-center justify-center text-${stat.color}-600`}>{stat.icon}</div>
-                        <span className="text-teal-600 font-bold text-sm bg-teal-50 px-2 py-1 rounded-lg">{stat.change}</span>
+                        {/* Removed percentage change */}
                       </div>
                       <div className="text-3xl font-bold text-gray-800 mb-1">{stat.value}</div>
                       <div className="text-gray-600 font-medium">{stat.label}</div>
@@ -835,7 +897,7 @@ const AdminDashboard: React.FC = () => {
                 {/* Quick Actions */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <motion.button whileHover={{ scale: 1.05 }} onClick={() => openModal('student', 'add')} className="bg-white border border-gray-200 rounded-2xl p-4 text-center hover:shadow-lg transition-all duration-300 group">
                       <div className="w-12 h-12 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
                         <span className="text-teal-600"><Plus size={32} /></span>
@@ -861,7 +923,7 @@ const AdminDashboard: React.FC = () => {
             {/* --- STUDENTS TAB --- */}
             {activeTab === 'students' && (
               <motion.div key="students" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <h1 className="text-3xl font-bold text-gray-800">Student Management</h1>
                     <p className="text-gray-600 text-lg mt-2">Manage student accounts, progress, and access</p>
@@ -876,7 +938,7 @@ const AdminDashboard: React.FC = () => {
                         placeholder="Search students..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-11 pr-6 py-3 bg-white/50 backdrop-blur-sm border border-white/60 text-gray-800 placeholder-gray-400 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-white shadow-sm hover:shadow-md transition-all duration-300 w-64 md:w-80"
+                        className="pl-11 pr-6 py-3 bg-white/50 backdrop-blur-sm border border-white/60 text-gray-800 placeholder-gray-400 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-white shadow-sm hover:shadow-md transition-all duration-300 w-full sm:w-64 md:w-80"
                       />
                     </div>
                     
@@ -899,10 +961,10 @@ const AdminDashboard: React.FC = () => {
                     <table className="w-full">
                       <thead>
                         <tr className="bg-gray-50/80 border-b border-gray-200/60 backdrop-blur-sm">
-                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Student</th>
-                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Contact</th>
-                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Status & Date</th>
-                          <th className="px-8 py-6 text-right text-xs font-extrabold text-gray-400 uppercase tracking-widest">Actions</th>
+                          <th className="px-4 py-3 md:px-8 md:py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Student</th>
+                          <th className="px-4 py-3 md:px-8 md:py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Contact</th>
+                          <th className="px-4 py-3 md:px-8 md:py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Status & Date</th>
+                          <th className="px-4 py-3 md:px-8 md:py-6 text-right text-xs font-extrabold text-gray-400 uppercase tracking-widest">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100/50">
@@ -914,8 +976,8 @@ const AdminDashboard: React.FC = () => {
                             transition={{ delay: index * 0.05 }}
                             className="hover:bg-white/60 transition-all duration-300 group"
                           >
-                            <td className="px-8 py-6">
-                              <div className="flex items-center space-x-5">
+                              <td className="px-4 py-3 md:px-8 md:py-6">
+                                <div className="flex items-center space-x-3 md:space-x-5">
                                 <div className="relative">
                                   <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-teal-400 to-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:shadow-teal-500/30 transition-all duration-300 transform group-hover:scale-105">
                                     {(student.firstname && student.firstname[0]) || 'S'}{(student.lastname && student.lastname[0]) || ''}
@@ -928,7 +990,7 @@ const AdminDashboard: React.FC = () => {
                                 </div>
                               </div>
                             </td>
-                            <td className="px-8 py-6">
+                            <td className="px-4 py-3 md:px-8 md:py-6">
                                 <div className="flex flex-col space-y-1">
                                   <div className="flex items-center text-gray-600 font-medium">
                                       <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center mr-3 text-teal-500 group-hover:bg-teal-100 transition-colors">
@@ -938,7 +1000,7 @@ const AdminDashboard: React.FC = () => {
                                   </div>
                                 </div>
                             </td>
-                            <td className="px-8 py-6">
+                            <td className="px-4 py-3 md:px-8 md:py-6">
                                 <div className="flex flex-col space-y-2">
                                     <span className="inline-flex items-center w-fit px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
                                         Active
@@ -949,7 +1011,7 @@ const AdminDashboard: React.FC = () => {
                                     </div>
                                 </div>
                             </td>
-                            <td className="px-8 py-6 text-right">
+                            <td className="px-4 py-3 md:px-8 md:py-6 text-right">
                               <div className="flex items-center justify-end space-x-3">
                                 <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} onClick={() => openModal('student', 'edit', student)} className="p-3 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-colors shadow-sm" title="Edit">
                                   <Edit size={18}/>
@@ -973,7 +1035,7 @@ const AdminDashboard: React.FC = () => {
             {/* --- INSTRUCTORS TAB --- */}
             {activeTab === 'instructors' && (
               <motion.div key="instructors" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
-                 <div className="flex items-center justify-between">
+                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <h1 className="text-3xl font-bold text-gray-800">Instructor Management</h1>
                     <p className="text-gray-600 text-lg mt-2">Manage course instructors and teaching staff</p>
@@ -1093,7 +1155,7 @@ const AdminDashboard: React.FC = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="group relative bg-white rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 overflow-hidden flex flex-col h-full"
+                      className="group relative bg-white rounded-4xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 overflow-hidden flex flex-col h-full"
                     >
                       {/* Image Section */}
                       <div className="relative h-56 overflow-hidden shrink-0">
@@ -1139,7 +1201,7 @@ const AdminDashboard: React.FC = () => {
                             </h3>
                              {/* Instructor Row */}
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="w-8 h-8 rounded-full p-0.5 bg-gradient-to-tr from-teal-400 to-blue-500">
+                                <div className="w-8 h-8 rounded-full p-0.5 bg-linear-to-tr from-teal-400 to-blue-500">
                                    <img 
                                      src={course.instructor?.image || ''} 
                                      alt={course.instructor?.name || 'Instructor'} 
@@ -1219,11 +1281,11 @@ const AdminDashboard: React.FC = () => {
                     <table className="w-full">
                       <thead>
                         <tr className="bg-gray-50/80 border-b border-gray-200/60 backdrop-blur-sm">
-                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Transaction ID</th>
-                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Student</th>
-                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Amount</th>
-                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Date</th>
-                          <th className="px-8 py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Status</th>
+                          <th className="px-4 py-3 md:px-8 md:py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Transaction ID</th>
+                          <th className="px-4 py-3 md:px-8 md:py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Student</th>
+                          <th className="px-4 py-3 md:px-8 md:py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Amount</th>
+                          <th className="px-4 py-3 md:px-8 md:py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Date</th>
+                          <th className="px-4 py-3 md:px-8 md:py-6 text-left text-xs font-extrabold text-gray-400 uppercase tracking-widest">Status</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100/50">
@@ -1235,15 +1297,15 @@ const AdminDashboard: React.FC = () => {
                             transition={{ delay: index * 0.05 }} 
                             className="hover:bg-white/60 transition-all duration-300 group"
                           >
-                            <td className="px-8 py-6 font-mono text-sm text-gray-500">{payment.transactionId}</td>
-                            <td className="px-8 py-6">
+                            <td className="px-4 py-3 md:px-8 md:py-6 font-mono text-sm text-gray-500">{payment.transactionId}</td>
+                            <td className="px-4 py-3 md:px-8 md:py-6">
                                 <div className="font-bold text-gray-800">{payment.student}</div>
                             </td>
-                            <td className="px-8 py-6">
+                            <td className="px-4 py-3 md:px-8 md:py-6">
                                 <span className="font-bold text-gray-800 bg-gray-100 px-3 py-1 rounded-lg">LKR {payment.amount.toLocaleString()}</span>
                             </td>
-                            <td className="px-8 py-6 text-gray-600 font-medium">{payment.date}</td>
-                            <td className="px-8 py-6">
+                            <td className="px-4 py-3 md:px-8 md:py-6 text-gray-600 font-medium">{payment.date}</td>
+                            <td className="px-4 py-3 md:px-8 md:py-6">
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(payment.status)}`}>
                                     {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                                 </span>
@@ -1299,7 +1361,7 @@ const AdminDashboard: React.FC = () => {
                   {/* --- STUDENT FIELDS --- */}
                    {modalType === 'student' && formData && (
                     <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">First Name</label>
                            <input disabled={modalMode === 'view'} value={formData.firstname || ''} onChange={(e) => setFormData({...formData, firstname: e.target.value})} type="text" className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 text-gray-800 font-medium placeholder-gray-400 transition-all" placeholder="John" />
@@ -1355,7 +1417,7 @@ const AdminDashboard: React.FC = () => {
                            </>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Full Name</label>
                            <input disabled={modalMode === 'view'} value={formData.name || ''} onChange={(e) => setFormData({...formData, name: e.target.value})} type="text" className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-purple-500/50 text-gray-800 font-medium placeholder-gray-400 transition-all" placeholder="Dr. Smith" />
@@ -1366,7 +1428,7 @@ const AdminDashboard: React.FC = () => {
                         </div>
                       </div>
                      
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Experience (Years)</label>
                            <input disabled={modalMode === 'view'} value={formData.experience || 0} onChange={(e) => setFormData({...formData, experience: parseInt(e.target.value) || 0})} type="number" className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-purple-500/50 text-gray-800 font-medium placeholder-gray-400 transition-all" placeholder="5" />
@@ -1419,7 +1481,7 @@ const AdminDashboard: React.FC = () => {
                              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Description</label>
                              <textarea disabled={modalMode === 'view'} value={formData.description || ''} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 text-gray-800 font-medium placeholder-gray-400 transition-all h-32 resize-none" placeholder="Course description..." />
                           </div>
-                          <div className="grid grid-cols-2 gap-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                              <div className="space-y-2">
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Level</label>
                                 <select disabled={modalMode === 'view'} value={formData.level || 'BEGINNER'} onChange={(e) => setFormData({...formData, level: e.target.value})} className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 text-gray-800 font-medium transition-all cursor-pointer">
@@ -1437,7 +1499,7 @@ const AdminDashboard: React.FC = () => {
                                 </select>
                              </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Price (LKR)</label>
                                <input disabled={modalMode === 'view'} value={formData.price || 0} onChange={(e) => setFormData({...formData, price: parseInt(e.target.value) || 0})} type="number" className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 text-gray-800 font-medium placeholder-gray-400 transition-all" placeholder="4999" />

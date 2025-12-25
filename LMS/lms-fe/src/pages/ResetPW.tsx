@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, type FormEvent, type JSX } from 'react';
 import { Lock, Eye, EyeOff, Check, ArrowLeft, Mail, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+// import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 import { forgotPassword, checkOTP, resetPassword } from '../services/auth';
 
 type Step = 1 | 2 | 3;
@@ -64,12 +65,22 @@ export default function ResetPasswordPage() {
   const handleSendOTP = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
     if (!email) {
-      toast.error('Please enter your email address');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required',
+        text: 'Please enter your email address',
+        confirmButtonColor: '#0d9488'
+      });
       return;
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-      toast.error('Please enter a valid email address');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Email',
+        text: 'Please enter a valid email address',
+        confirmButtonColor: '#0d9488'
+      });
       return;
     }
 
@@ -78,9 +89,20 @@ export default function ResetPasswordPage() {
       const data: any = await forgotPassword(email);
 
       if(data.code === 404){
-        toast.error(data.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'Not Found',
+          text: data.message,
+          confirmButtonColor: '#d33'
+        });
       }else{
-        toast.success(data.message || 'OTP sent successfully');
+        await Swal.fire({
+          icon: 'success',
+          title: 'OTP Sent',
+          text: data.message || 'OTP sent successfully',
+          timer: 1500,
+          showConfirmButton: false
+        });
         setStep(2);
         startTimer();
         setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
@@ -88,7 +110,12 @@ export default function ResetPasswordPage() {
 
   
     } catch (error) {
-      toast.error('Failed to send OTP. Please try again.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to send OTP. Please try again.',
+        confirmButtonColor: '#d33'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +123,12 @@ export default function ResetPasswordPage() {
 
   const handleResendOTP = async (): Promise<void> => {
     if (timer > 0) {
-      toast.error(`Please wait ${timer} seconds before resending`);
+      Swal.fire({
+        icon: 'info',
+        title: 'Please Wait',
+        text: `Please wait ${timer} seconds before resending`,
+        confirmButtonColor: '#3B82F6'
+      });
       return;
     }
 
@@ -107,10 +139,21 @@ export default function ResetPasswordPage() {
       const demoOTP = Math.floor(100000 + Math.random() * 900000).toString();
       console.log('New Demo OTP:', demoOTP);
       
-      toast.success(`OTP resent to ${email}!`);
+      Swal.fire({
+        icon: 'success',
+        title: 'Resent',
+        text: `OTP resent to ${email}!`,
+        timer: 1500,
+        showConfirmButton: false
+      });
       startTimer();
     } catch (error) {
-      toast.error('Failed to resend OTP. Please try again.');
+       Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to resend OTP. Please try again.',
+        confirmButtonColor: '#d33'
+      });
     } finally {
       setIsResending(false);
     }
@@ -148,7 +191,12 @@ export default function ResetPasswordPage() {
     const finalOtp = otpString || otp.join('');
     
     if (finalOtp.length !== 6) {
-      toast.error('Please enter the complete 6-digit OTP');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Incomplete',
+        text: 'Please enter the complete 6-digit OTP',
+        confirmButtonColor: '#0d9488'
+      });
       return;
     }
 
@@ -158,7 +206,13 @@ export default function ResetPasswordPage() {
       console.log(data.code);
       console.log(data.message);
       if (data.code === 200) {
-        toast.success('OTP verified successfully!');
+        await Swal.fire({
+          icon: 'success',
+          title: 'Verified',
+          text: 'OTP verified successfully!',
+          timer: 1000,
+          showConfirmButton: false
+        });
         setStep(3);
       }
       else {
@@ -172,11 +226,21 @@ export default function ResetPasswordPage() {
           otpInputRefs.current[0]?.focus();
         }, 100);
         
-        toast.error(data.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'Verification Failed',
+          text: data.message,
+          confirmButtonColor: '#d33'
+        });
       } 
 
     } catch (error) {
-      toast.error('Failed to verify OTP. Please try again.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to verify OTP. Please try again.',
+        confirmButtonColor: '#d33'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -189,20 +253,35 @@ export default function ResetPasswordPage() {
 
     try {
       if (!password || !confirmPassword) {
-        toast.error('Please fill in all fields');
+        Swal.fire({
+          icon: 'warning',
+          title: 'Required',
+          text: 'Please fill in all fields',
+          confirmButtonColor: '#0d9488'
+        });
         setIsLoading(false);
         return;
       }
 
       if (!validatePassword()) {
-        toast.error('Please meet all password requirements');
+         Swal.fire({
+          icon: 'warning',
+          title: 'Weak Password',
+          text: 'Please meet all password requirements',
+          confirmButtonColor: '#0d9488'
+        });
         setIsLoading(false);
         return;
       }
 
       const passwordsMatch = password === confirmPassword;
       if (!passwordsMatch) {
-        toast.error('Passwords do not match');
+         Swal.fire({
+          icon: 'error',
+          title: 'Mismatch',
+          text: 'Passwords do not match',
+          confirmButtonColor: '#d33'
+        });
         setIsLoading(false);
         return;
       }
@@ -210,15 +289,30 @@ export default function ResetPasswordPage() {
       const data = await resetPassword(email, password); 
 
       if (data.code === 200) {
-        toast.success('Password reset successfully! You can now login with your new password.');
+        await Swal.fire({
+          icon: 'success',
+          title: 'Password Reset',
+          text: 'Password reset successfully! You can now login with your new password.',
+          confirmButtonColor: '#0d9488'
+        });
         navigate('/login');
       }
       else {
-        toast.error(data.message);
+         Swal.fire({
+          icon: 'error',
+          title: 'Failed',
+          text: data.message,
+          confirmButtonColor: '#d33'
+        });
       }
       
     } catch (error) {
-      toast.error('Failed to reset password. Please try again.');
+       Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to reset password. Please try again.',
+        confirmButtonColor: '#d33'
+      });
       setIsLoading(false);
     }
   };
@@ -540,7 +634,12 @@ export default function ResetPasswordPage() {
           <p className="text-sm text-gray-600">
             Need help?{' '}
             <button 
-              onClick={() => toast.success('Contact support at help@example.com')} 
+              onClick={() => Swal.fire({
+                icon: 'info',
+                title: 'Contact Support',
+                text: 'Contact support at help@example.com',
+                confirmButtonColor: '#0d9488'
+              })} 
               className="text-[#14B8A6] hover:text-[#0D9488] font-semibold transition-colors"
             >
               Contact Support

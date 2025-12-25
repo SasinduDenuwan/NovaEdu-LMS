@@ -2,6 +2,8 @@ import { User } from "../models/user.model";
 import { Role } from "../models/user.model";
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
+import { AUTHRequest } from "../middleware/auth.middleware";
+import cloudinary from "../config/cloudinary.config";
 
 export const addStudent = async (req: Request, res: Response) => {
   try {
@@ -73,6 +75,111 @@ export const updateStudent = async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error(err);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export const getUserProfile = async (req: AUTHRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const user = await User.findById(req.user.sub).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "User profile fetched successfully",
+      data: user,
+    });
+  } catch (err) {
+    console.error("Error fetching user profile:", err);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export const updateUserProfile = async (req: AUTHRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { firstname, lastname } = req.body;
+    
+    // Find user
+    const user = await User.findById(req.user.sub);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    let imageUrl = user.profilePicLink;
+
+    if (req.file) {
+      const b64 = Buffer.from(req.file.buffer).toString("base64");
+      const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+      const cldRes = await cloudinary.uploader.upload(dataURI, {
+        folder: "students",
+      });
+      imageUrl = cldRes.secure_url;
+    }
+
+    // Update fields
+    if (firstname) user.firstname = firstname;
+    if (lastname) user.lastname = lastname;
+    if (imageUrl) user.profilePicLink = imageUrl;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "User profile updated successfully",
+      data: user,
+    });
+  } catch (err) {
+    console.error("Error updating user profile:", err);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export const changeUserPassword = async (req: AUTHRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Current and new password are required" });
+    }
+
+    const user = await User.findById(req.user.sub);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // specific check for current password
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) {
+      return res.status(400).json({ message: "Invalid current password" });
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    user.password = hash;
+    await user.save();
+
+    res.status(200).json({
+      message: "Password changed successfully",
+    });
+  } catch (err) {
+    console.error("Error changing user password:", err);
     res.status(500).json({
       message: "Internal server error",
     });

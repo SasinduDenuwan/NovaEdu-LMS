@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+// import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 import { login } from '../services/auth'; // Make sure you have a login service
 
 export default function LoginPage() {
@@ -18,13 +19,23 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (email.trim() === '') {
-      toast.error('Please enter your email!');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required',
+        text: 'Please enter your email!',
+        confirmButtonColor: '#0d9488'
+      });
       emailRef.current?.focus();
       return;
     }
 
     if (password.trim() === '') {
-      toast.error('Please enter your password!');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required',
+        text: 'Please enter your password!',
+        confirmButtonColor: '#0d9488'
+      });
       passwordRef.current?.focus();
       return;
     }
@@ -34,14 +45,25 @@ export default function LoginPage() {
       const data: any = await login(email, password);
 
       if (data.data || data) {
-        toast.success('Login successfully!');
+         await Swal.fire({
+          icon: 'success',
+          title: 'Welcome Back!',
+          text: 'Login successful!',
+          timer: 1500,
+          showConfirmButton: false
+        });
         localStorage.setItem('accessToken', data.data.accessToken);
         localStorage.setItem('refreshToken', data.data.refreshToken);
         navigate('/');
       }
     } catch (err: any) {
       console.error('Login Error: ', err);
-      toast.error('Login failed. Please try again.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Failed',
+        text: 'Invalid email or password. Please try again.',
+        confirmButtonColor: '#d33'
+      });
     } finally {
       setIsLoading(false);
     }
