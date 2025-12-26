@@ -3,13 +3,15 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 // import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import { login } from '../services/auth'; // Make sure you have a login service
+import { login, getMyDetails } from '../services/auth'; // Make sure you have a login service
+import { useAuth } from '../context/authContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { setUser } = useAuth();
 
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -54,6 +56,17 @@ export default function LoginPage() {
         });
         localStorage.setItem('accessToken', data.data.accessToken);
         localStorage.setItem('refreshToken', data.data.refreshToken);
+        
+        // Update Auth Context Immediately
+        try {
+            const userRes = await getMyDetails();
+            if (userRes.data) {
+                setUser(userRes.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch user details after login", error);
+        }
+
         navigate('/');
       }
     } catch (err: any) {

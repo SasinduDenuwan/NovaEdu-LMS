@@ -465,7 +465,7 @@ const Index: React.FC = () => {
     }
   };
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
+    localStorage.clear();
     setIsLoggedIn(false);
     Swal.fire({
       icon: 'success',
@@ -474,7 +474,7 @@ const Index: React.FC = () => {
       timer: 1500,
       showConfirmButton: false
     });
-    window.location.href = "/";
+    navigate('/');
   };
   return (
     <div className="min-h-screen bg-linear-to-br from-teal-50 to-blue-50 relative overflow-x-hidden">
@@ -723,7 +723,7 @@ const Index: React.FC = () => {
         </AnimatePresence>
       </motion.header>
       {/* Hero Section */}
-      <section id="home" className="relative pt-36 pb-20 overflow-hidden">
+      <section id="home" className="relative pt-24 pb-12 md:pt-36 md:pb-20 overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <div className="flex flex-col lg:flex-row items-center justify-between">
             <motion.div
@@ -742,7 +742,7 @@ const Index: React.FC = () => {
                   <Rocket size={16} className="inline mr-2" /> Transform Your Career
                 </span>
               </motion.div>
-              <h1 className="text-4xl lg:text-7xl font-bold text-gray-800 leading-tight mb-6">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-gray-800 leading-tight mb-6">
                 Learn Without
                 <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-500 to-blue-500 block">
                   Limits
@@ -818,7 +818,7 @@ const Index: React.FC = () => {
                 <motion.img
                   src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600"
                   alt="Students learning"
-                  className="rounded-3xl shadow-2xl border-8 border-white/20"
+                  className="w-full rounded-3xl shadow-2xl border-8 border-white/20"
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
                 />
@@ -833,7 +833,7 @@ const Index: React.FC = () => {
                     repeat: Infinity,
                     ease: "easeInOut"
                   }}
-                  className="absolute -top-6 -left-6 bg-white p-6 rounded-2xl shadow-2xl border border-white/20 backdrop-blur-sm"
+                  className="hidden sm:block absolute -top-6 -left-6 bg-white p-6 rounded-2xl shadow-2xl border border-white/20 backdrop-blur-sm"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-4 h-4 bg-teal-500 rounded-full animate-pulse"></div>
@@ -851,7 +851,7 @@ const Index: React.FC = () => {
                     ease: "easeInOut",
                     delay: 1
                   }}
-                  className="absolute -bottom-6 -right-6 bg-white p-6 rounded-2xl shadow-2xl border border-white/20 backdrop-blur-sm"
+                  className="hidden sm:block absolute -bottom-6 -right-6 bg-white p-6 rounded-2xl shadow-2xl border border-white/20 backdrop-blur-sm"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
@@ -875,7 +875,7 @@ const Index: React.FC = () => {
         </div>
       </section>
       {/* Categories & Courses */}
-      <section id="courses" className="py-16 relative z-10">
+      <section id="courses" className="py-12 md:py-16 relative z-10">
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -883,7 +883,7 @@ const Index: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className="text-5xl font-bold text-gray-800 mb-4">Browse Categories</h2>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4">Browse Categories</h2>
             <p className="text-gray-600 text-lg bg-white/50 backdrop-blur-sm inline-block px-6 py-3 rounded-2xl shadow-lg">
               Find the perfect course for your learning journey
             </p>
@@ -1017,7 +1017,7 @@ const Index: React.FC = () => {
         </div>
       </section>
       {/* Instructors Section */}
-      <section id="instructors" className="py-20 relative z-10 bg-linear-to-br from-white/50 to-teal-50/30">
+      <section id="instructors" className="py-12 md:py-20 relative z-10 bg-linear-to-br from-white/50 to-teal-50/30">
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -1025,7 +1025,7 @@ const Index: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-5xl font-bold text-gray-800 mb-4">Meet Our Expert Instructors</h2>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4">Meet Our Expert Instructors</h2>
             <p className="text-gray-600 text-lg bg-white/50 backdrop-blur-sm inline-block px-6 py-3 rounded-2xl shadow-lg">
               Learn from industry professionals with real-world experience
             </p>
@@ -1085,7 +1085,7 @@ const Index: React.FC = () => {
         </div>
       </section>
       {/* Features Section */}
-      <section className="py-20 relative z-10">
+      <section className="py-12 md:py-20 relative z-10">
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -1093,7 +1093,7 @@ const Index: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-5xl font-bold text-gray-800 mb-4">Why Choose EduLearn?</h2>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4">Why Choose EduLearn?</h2>
             <p className="text-gray-600 text-lg bg-white/50 backdrop-blur-sm inline-block px-6 py-3 rounded-2xl shadow-lg">
               Experience learning like never before with our cutting-edge platform
             </p>
@@ -1159,7 +1159,7 @@ const Index: React.FC = () => {
         </div>
       </section>
       {/* About Section */}
-      <section id="about" className="py-20 relative z-10 bg-linear-to-br from-blue-50/50 to-teal-50/50">
+      <section id="about" className="py-12 md:py-20 relative z-10 bg-linear-to-br from-blue-50/50 to-teal-50/50">
         <div className="container mx-auto px-6">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
             <motion.div
@@ -1178,7 +1178,7 @@ const Index: React.FC = () => {
                   🎯 Our Mission
                 </span>
               </motion.div>
-              <h2 className="text-5xl font-bold text-gray-800 mb-6">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
                 Transforming Education Through
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-500 block">
                   Innovation
@@ -1223,7 +1223,7 @@ const Index: React.FC = () => {
                 <motion.img
                   src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600"
                   alt="About EduLearn"
-                  className="rounded-3xl shadow-2xl border-8 border-white/20"
+                  className="w-full rounded-3xl shadow-2xl border-8 border-white/20"
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
                 />
@@ -1238,7 +1238,7 @@ const Index: React.FC = () => {
                     repeat: Infinity,
                     ease: "easeInOut"
                   }}
-                  className="absolute -top-6 -left-6 bg-white p-6 rounded-2xl shadow-2xl border border-white/20 backdrop-blur-sm"
+                  className="hidden sm:block absolute -top-6 -left-6 bg-white p-6 rounded-2xl shadow-2xl border border-white/20 backdrop-blur-sm"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-4 h-4 bg-teal-500 rounded-full animate-pulse"></div>
@@ -1256,7 +1256,7 @@ const Index: React.FC = () => {
                     ease: "easeInOut",
                     delay: 1
                   }}
-                  className="absolute -bottom-6 -right-6 bg-white p-6 rounded-2xl shadow-2xl border border-white/20 backdrop-blur-sm"
+                  className="hidden sm:block absolute -bottom-6 -right-6 bg-white p-6 rounded-2xl shadow-2xl border border-white/20 backdrop-blur-sm"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
@@ -1269,7 +1269,7 @@ const Index: React.FC = () => {
         </div>
       </section>
       {/* Contact Section */}
-      <section id="contact" className="py-20 relative z-10">
+      <section id="contact" className="py-12 md:py-20 relative z-10">
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -1277,7 +1277,7 @@ const Index: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-5xl font-bold text-gray-800 mb-4">Get In Touch</h2>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4">Get In Touch</h2>
             <p className="text-gray-600 text-lg bg-white/50 backdrop-blur-sm inline-block px-6 py-3 rounded-2xl shadow-lg">
               We'd love to hear from you. Let's start a conversation!
             </p>
@@ -1443,7 +1443,7 @@ const Index: React.FC = () => {
         </div>
       </section>
       {/* CTA Section */}
-      <section className="py-20 relative z-10">
+      <section className="py-12 md:py-20 relative z-10">
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -1474,7 +1474,7 @@ const Index: React.FC = () => {
                 }}
                 className="absolute -bottom-20 -left-20 w-40 h-40 bg-white/10 rounded-full"
               />
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
                 Ready to Start Your Learning Journey?
               </h2>
               <p className="text-xl text-teal-100 mb-8 max-w-2xl mx-auto">
@@ -1643,7 +1643,7 @@ const Index: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-96 bg-white/95 backdrop-blur-lg shadow-2xl z-50 overflow-y-auto border-l border-white/20"
+              className="fixed right-0 top-0 h-full w-full md:w-96 bg-white/95 backdrop-blur-lg shadow-2xl z-50 overflow-y-auto border-l border-white/20"
             >
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-6">
