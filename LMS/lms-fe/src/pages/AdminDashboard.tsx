@@ -711,14 +711,6 @@ const AdminDashboard: React.FC = () => {
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
-  const getLevelColor = (level: string) => {
-    switch (level?.toUpperCase()) {
-      case 'BEGINNER': return 'bg-teal-100 text-teal-800 border-teal-200';
-      case 'INTERMEDIATE': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'ADVANCED': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
   return (
     <div className="min-h-screen bg-linear-to-br from-teal-50 to-blue-50 flex relative overflow-hidden">
       {/* Animated Background */}

@@ -867,7 +867,7 @@ const StudentDashboard: React.FC = () => {
                 </div>
 
                 {/* Player Sidebar */}
-                <div className="w-96 bg-white border-l border-gray-200 flex flex-col shrink-0 hidden lg:flex">
+                <div className="w-96 bg-white border-l border-gray-200 flex-col shrink-0 hidden lg:flex">
                      <div className="flex border-b border-gray-200">
                          {['lessons', 'resources'].map((tab) => (
                              <button
