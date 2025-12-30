@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addInstructor, getInstructors, updateInstructor, deleteInstructor } from "../controllers/instructor.controll";
+import { addInstructor, getInstructors, updateInstructor, deleteInstructor } from "../controllers/instructor.controller";
 import { authenticate } from "../middleware/auth.middleware";
 import { upload } from "../middleware/upload.middleware";
 

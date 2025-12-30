@@ -10,6 +10,8 @@ import { getCartItems, addCartItem, deleteCartItem } from '../services/cart';
 import AiFloatingButton from '../components/AiFloatingButton';
 import { User, GraduationCap, LogOut, Rocket, Play, Menu, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { createPayment } from '../services/payment';
+import { createOrder } from '../services/order';
 interface Course {
   id: string; // Changed from number to string because backend sends string IDs
   title: string;
@@ -41,6 +43,7 @@ const Index: React.FC = () => {
   const navigate = useNavigate();
   const [firstname, setFirstname] = useState<string>('');
   const [lastname, setLastname] = useState<string>('');
+  const [userId, setUserId] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [, setRole] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('all');
@@ -204,6 +207,7 @@ const Index: React.FC = () => {
       const decodedToken: any = jwtDecode(accessToken);
       setFirstname(decodedToken.firstname);
       setLastname(decodedToken.lastname);
+      setUserId(decodedToken.sub);
       setEmail(decodedToken.email);
       setRole(decodedToken.role);
       
@@ -423,39 +427,87 @@ const Index: React.FC = () => {
   const handlePaymentSuccess = async (): Promise<void> => {
     if (!validatePaymentStep()) return;
 
-    try {
-      // Process payment (simulated)
-      
-      // Clear cart from backend
-      const deletePromises = cart.map(item => deleteCartItem(item.id));
-      await Promise.all(deletePromises);
+    Swal.fire({
+      title: 'Confirm Payment?',
+      text: `Are you sure you want to pay Rs. ${orderSummary.total.toFixed(0)}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#14b8a6', // teal-500
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const paymentData = {
+            userID: userId,
+            transactionID: Math.random().toString(36).substring(2, 9),   // using real payment gatway we cannot host the site free. so I used randamized transaction ID
+            amount: orderSummary.total
+          }         
+          
+          const payData = await createPayment(paymentData);
 
-      setPaymentStep('confirmation');
-      
-      setTimeout(() => {
-        setCart([]);
-        setIsCheckoutOpen(false);
-        setPaymentStep('details');
-        // Reset form
-        setCheckoutForm({
-          email: '',
-          emailUpdates: false,
-          cardNumber: '',
-          expiryDate: '',
-          cvc: '',
-          cardholderName: '',
-          firstName: '',
-          lastName: '',
-          address: '',
-          city: '',
-          zipCode: ''
-        });
-      }, 3000);
-    } catch (error) {
-      console.error("Error clearing cart:", error);
-      toast.error("Payment successful but failed to clear cart. Please refresh.");
-      setPaymentStep('confirmation'); // Still show success as payment "went through"
-    }
+           const orderData = {
+            userID: userId,
+            paymentID: payData.data._id,
+            courseIDs: cart.map(item => item.id),
+            amount: orderSummary.total,
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString()
+          };
+
+          const orData = await createOrder(orderData);
+
+          if(orData.code === 200){
+
+            Swal.fire({
+              icon: 'success',
+              title: 'Order placed successfully',
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true
+            });            
+
+            navigate('/student')
+          
+          }else{
+            Swal.fire({
+              icon: 'error',
+              title: 'Order failed',
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true
+            });
+          }
+          // Clear cart from backend
+          const deletePromises = cart.map(item => deleteCartItem(item.id));
+          await Promise.all(deletePromises);
+          
+          setTimeout(() => {
+            setCart([]);
+            setIsCheckoutOpen(false);
+            setPaymentStep('details');
+            // Reset form
+            setCheckoutForm({
+              email: '',
+              emailUpdates: false,
+              cardNumber: '',
+              expiryDate: '',
+              cvc: '',
+              cardholderName: '',
+              firstName: '',
+              lastName: '',
+              address: '',
+              city: '',
+              zipCode: ''
+            });
+          }, 3000);
+        } catch (error) {
+          console.error("Error clearing cart:", error);
+          toast.error("Payment successful but failed to clear cart. Please refresh.");
+
+        }
+      }
+    });
   };
   const scrollToSection = (sectionId: string) => {
     setActiveNav(sectionId);
@@ -1787,7 +1839,7 @@ const Index: React.FC = () => {
                     <h2 className="text-2xl font-bold text-gray-800">
                       {paymentStep === 'details' && 'Checkout'}
                       {paymentStep === 'payment' && 'Payment Method'}
-                      {paymentStep === 'confirmation' && 'Order Confirmed!'}
+
                     </h2>
                   </div>
                   <motion.button
@@ -2166,7 +2218,7 @@ const Index: React.FC = () => {
                       </div>
                     </motion.div>
                   )}
-                  {paymentStep === 'confirmation' && (
+                  {false && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}

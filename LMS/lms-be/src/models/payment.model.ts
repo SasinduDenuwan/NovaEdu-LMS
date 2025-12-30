@@ -19,6 +19,7 @@ export enum PaymentMethod {
 export interface IPayment extends Document {
     _id: mongoose.Types.ObjectId;
     user_id: mongoose.Schema.Types.ObjectId;
+    order_id?: mongoose.Schema.Types.ObjectId;
     transaction_id: string;
     payment_status: Status;
     amount: number;
@@ -30,6 +31,7 @@ export interface IPayment extends Document {
 const paymentSchema = new Schema<IPayment>(
     {
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    order_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
     transaction_id: { type: String },
     payment_status: { type: String, enum: Object.values(Status), default: Status.PENDING },
     amount: { type: Number },

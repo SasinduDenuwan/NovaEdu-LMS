@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface IStudentCourse extends Document {
     _id: mongoose.Types.ObjectId;
-    student_id: mongoose.Schema.Types.ObjectId;
+    user_id: mongoose.Schema.Types.ObjectId;
     course_id: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
@@ -10,7 +10,7 @@ export interface IStudentCourse extends Document {
 
 const studentCourseSchema = new Schema<IStudentCourse>(
     {
-    student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     course_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
     }, { 
         timestamps: true 

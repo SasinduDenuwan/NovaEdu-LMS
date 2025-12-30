@@ -5,6 +5,8 @@ import instructorRouter from './routes/instructor.route';
 import courseRouter from './routes/course.route';
 import cartRouter from './routes/cart.route';
 import studentRouter from './routes/student.route';
+import paymentRouter from './routes/payment.route';
+import orderRouter from './routes/order.route';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 dotenv.config();
@@ -27,6 +29,8 @@ app.use("/api/v1/instructor", instructorRouter)
 app.use("/api/v1/course", courseRouter)
 app.use("/api/v1/cart", cartRouter)
 app.use("/api/v1/student", studentRouter)
+app.use("/api/v1/payment", paymentRouter)
+app.use("/api/v1/order", orderRouter)
 
 mongoose
     .connect(MONGO_URI)
