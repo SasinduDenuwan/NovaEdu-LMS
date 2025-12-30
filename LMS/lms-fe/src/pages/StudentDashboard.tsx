@@ -195,7 +195,7 @@ const StudentDashboard: React.FC = () => {
                          title: r.resource_title,
                          type: 'document', // Default type
                          category: c.category,
-                         size: 'Unknown',
+                         size: '',
                          uploadDate: r.createdAt.split('T')[0],
                          course: c.title,
                          downloadUrl: r.resource_url,
@@ -804,6 +804,28 @@ const StudentDashboard: React.FC = () => {
                            <p>{currentLesson?.description}</p>
                        </div>
 
+                       {/* Course Resources (Visible below video) */}
+                        <div className="mt-8">
+                            <h3 className="text-lg font-bold text-gray-800 mb-4">Course Resources</h3>
+                            {resources.filter(r => r.courseId === selectedCourse.id).length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {resources.filter(r => r.courseId === selectedCourse.id).map((res, idx) => (
+                                        <div key={idx} className="flex items-center p-4 bg-white rounded-xl border border-gray-200 hover:border-teal-300 transition-colors cursor-pointer group" onClick={() => window.open(res.downloadUrl, '_blank')}>
+                                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-4 text-xl">
+                                                {getResourceIcon(res.type)}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="font-semibold text-gray-800 group-hover:text-teal-600 transition-colors">{res.title}</div>
+                                                <div className="text-xs text-gray-500">{res.size}</div>
+                                            </div>
+                                            <Download size={18} className="text-gray-400 group-hover:text-teal-500"/>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500 italic">No specific resources for this course.</p>
+                            )}
+                        </div>
                    </div>
                 </div>
 
