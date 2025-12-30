@@ -440,7 +440,7 @@ const Index: React.FC = () => {
         try {
           const paymentData = {
             userID: userId,
-            transactionID: Math.random().toString(36).substring(2, 9),   // using real payment gatway we cannot host the site free. so I used randamized transaction ID
+            transactionID: `pay_${Math.floor(100000000 + Math.random() * 900000000)}`,
             amount: orderSummary.total
           }         
           

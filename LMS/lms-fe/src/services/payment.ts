@@ -6,6 +6,6 @@ export const createPayment = async (paymentData: any) => {
 }
 
 export const getAllPayments = async () => {
-    const res = await api.get("/payment/get-all-payments");
+    const res = await api.get("/payment/get-all-payment");
     return res.data;
 }

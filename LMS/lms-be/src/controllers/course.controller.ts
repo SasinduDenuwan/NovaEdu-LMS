@@ -3,6 +3,7 @@ import { Response } from "express";
 import { Course } from "../models/course.model";
 import { CourseVideo } from "../models/course_video.model";
 import { CourseResource } from "../models/course_resource.model";
+import { StudentCourse } from "../models/student_courses";
 import cloudinary from "../config/cloudinary.config";
 
 export const getAllCourses = async (req: AUTHRequest, res: Response) => {
@@ -206,7 +207,6 @@ export const updateCourse = async (req: AUTHRequest, res: Response) => {
 }
 
 export const getAllCoursesAdmin = async (req: AUTHRequest, res: Response) =>{
-  console.log("HIIII")
   try {
     if (!req.user) {
       return res.status(401).json({ code: 401, message: "Unauthorized" });
@@ -220,6 +220,35 @@ export const getAllCoursesAdmin = async (req: AUTHRequest, res: Response) =>{
     return res.status(200).json({
       code: 200,
       message: "All courses fetched successfully",
+      data: courses,
+    });
+    
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ code: 500, message: "Internal Server Error" });
+    
+  }
+}
+
+export const getCoursesUser = async (req: AUTHRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ code: 401, message: "Unauthorized" });
+    }
+
+    const userId = req.params.userId;
+
+    const studentCourses = await StudentCourse.find({ user_id: userId });
+    const courseIds = studentCourses.map(sc => sc.course_id);
+
+    const courses = await Course.find({ _id: { $in: courseIds } })
+      .populate("instructor", "name _id image role experience")
+      .populate("videos")
+      .populate("resources");
+
+    return res.status(200).json({
+      code: 200,
+      message: "User courses fetched successfully",
       data: courses,
     });
     

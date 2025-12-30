@@ -30,6 +30,7 @@ import {
 import { getInstructors, addInstructor, updateInstructor, deleteInstructor } from '../services/instructor';
 import { getStudents, addStudent, updateStudent, deleteStudent } from '../services/students';
 import { getAllCourses, addCourse, updateCourse, deleteCourse as deleteCourseService } from '../services/course';
+import { getAllPayments } from '../services/payment';
 import Swal from 'sweetalert2';
 // --- Interfaces ---
 interface Student {
@@ -98,14 +99,15 @@ interface CourseResource {
 }
 
 interface Payment {
-  id: number;
-  student: string;
-  course: string;
+  _id: string;
+  user_id: string;
+  transaction_id: string;
+  payment_status: string;
   amount: number;
-  date: string;
-  status: 'completed' | 'pending' | 'failed' | 'refunded';
-  method: string;
-  transactionId: string;
+  payment_method: string;
+  createdAt: string;
+  updatedAt: string;
+  order_id?: string;
 }
 const backgroundImages = [
   'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600',
@@ -186,11 +188,25 @@ const AdminDashboard: React.FC = () => {
     };
     fetchCourses();
   }, []);
-  const payments: Payment[] = [
-    { id: 1, student: 'John Smith', course: 'Advanced React Development', amount: 26500, date: '2024-03-20', status: 'completed', method: 'Credit Card', transactionId: 'TXN_001' },
-    { id: 2, student: 'Sarah Johnson', course: 'UI/UX Design Masterclass', amount: 23600, date: '2024-03-19', status: 'completed', method: 'PayPal', transactionId: 'TXN_002' },
-    { id: 3, student: 'Mike Chen', course: 'Full Stack JavaScript', amount: 29500, date: '2024-03-18', status: 'pending', method: 'Bank Transfer', transactionId: 'TXN_003' },
-  ];
+
+  const [payments, setPayments] = useState<Payment[]>([]);
+
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const response = await getAllPayments();
+        if (response.message === 'Payments fetched successfully' && response.data) {
+          setPayments(response.data);
+        } else {
+          console.error("Failed to fetch payments:", response.message);
+        }
+      } catch (error) {
+        console.error("Error fetching payments:", error);
+      }
+    };
+    fetchPayments();
+  }, []);
+
   // --- Effects ---
   useEffect(() => {
     const interval = setInterval(() => {
@@ -692,13 +708,13 @@ const AdminDashboard: React.FC = () => {
     (course.title?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
   const filteredPayments = payments.filter(payment =>
-    (payment.student?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+    (payment.transaction_id.toLowerCase()).includes(searchTerm.toLowerCase())
   );
   // --- Calculations ---
   const totalStudents = students.length;
   const totalInstructors = instructors.length;
-  const publishedCourses = courses.length; // Simply count all courses as status might not be available or all fetched are valid
-  const totalRevenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
+  const publishedCourses = courses.length;
+  const totalRevenue = payments.filter(p => p.payment_status === 'Completed').reduce((sum, p) => sum + p.amount, 0);
   // --- Helper Colors ---
   // --- Helper Colors ---
   const getStatusColor = (status: string) => {
@@ -1281,29 +1297,33 @@ const AdminDashboard: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100/50">
-                        {filteredPayments.map((payment, index) => (
+                        {filteredPayments.map((payment, index) => {
+                          const student = students.find(s => s._id === payment.user_id || s.id === payment.user_id);
+                          const studentName = student ? `${student.firstname} ${student.lastname}` : 'Unknown Student';
+                          
+                          return (
                           <motion.tr 
-                            key={payment.id} 
+                            key={payment._id} 
                             initial={{ opacity: 0, y: 10 }} 
                             animate={{ opacity: 1, y: 0 }} 
                             transition={{ delay: index * 0.05 }} 
                             className="hover:bg-white/60 transition-all duration-300 group"
                           >
-                            <td className="px-4 py-3 md:px-8 md:py-6 font-mono text-sm text-gray-500">{payment.transactionId}</td>
+                            <td className="px-4 py-3 md:px-8 md:py-6 font-mono text-sm text-gray-500">{payment.transaction_id}</td>
                             <td className="px-4 py-3 md:px-8 md:py-6">
-                                <div className="font-bold text-gray-800">{payment.student}</div>
+                                <div className="font-bold text-gray-800">{studentName}</div>
                             </td>
                             <td className="px-4 py-3 md:px-8 md:py-6">
                                 <span className="font-bold text-gray-800 bg-gray-100 px-3 py-1 rounded-lg">LKR {payment.amount.toLocaleString()}</span>
                             </td>
-                            <td className="px-4 py-3 md:px-8 md:py-6 text-gray-600 font-medium">{payment.date}</td>
+                            <td className="px-4 py-3 md:px-8 md:py-6 text-gray-600 font-medium">{new Date(payment.createdAt).toLocaleDateString()}</td>
                             <td className="px-4 py-3 md:px-8 md:py-6">
-                                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(payment.status)}`}>
-                                    {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(payment.payment_status.toLowerCase())}`}>
+                                    {payment.payment_status}
                                 </span>
                             </td>
                           </motion.tr>
-                        ))}
+                        )})}
                       </tbody>
                     </table>
                   </div>
