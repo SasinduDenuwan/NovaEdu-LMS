@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from "jwt-decode";
 import {
   LayoutDashboard,
   GraduationCap,
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/authContext';
 import { getUserProfile } from '../services/students';
+import { getCourseForStudentByUserID } from '../services/course';
 
 const backgroundImages = [
   'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600',
@@ -30,14 +32,14 @@ const backgroundImages = [
 ];
 
 interface Course {
-  id: number;
+  id: string;
   title: string;
   instructor: string;
   price: number;
   rating: number;
   students: number;
   duration: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';  
+  level: string;  
   category: string;
   image: string;
   description: string;
@@ -50,8 +52,8 @@ interface Course {
 }
 
 interface Lesson {
-  id: number;
-  courseId: number;
+  id: string;
+  courseId: string;
   title: string;
   duration: string;
   videoUrl: string; // Now using YouTube embed URLs
@@ -66,7 +68,8 @@ interface Lesson {
 }
 
 interface Resource {
-  id: number;
+  id: string;
+  courseId: string;
   title: string;
   type: 'pdf' | 'video' | 'zip' | 'code' | 'document';
   category: string;
@@ -92,6 +95,23 @@ const StudentDashboard: React.FC = () => {
   const [currentBg, setCurrentBg] = useState<number>(0);
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
+  const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
+
+  const getEmbedUrl = (url: string) => {
+    if (!url) return '';
+    // Handle standard YouTube links
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+
+    if (match && match[2].length === 11) {
+      return `https://www.youtube.com/embed/${match[2]}`;
+    }
+    // Return original if it doesn't match (could be already an embed link or another provider)
+    return url;
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBg((prev) => (prev + 1) % backgroundImages.length);
@@ -105,189 +125,99 @@ const StudentDashboard: React.FC = () => {
     getUserProfile().then(res => {
          if(res?.data) setProfile(res.data);
     }).catch(err => console.error("Failed to load profile", err));
-  }, []);
 
-  // Mock data for enrolled courses
-  const enrolledCourses: Course[] = [
-    {
-      id: 1,
-      title: 'Advanced React Development',
-      instructor: 'Sarah Johnson',
-      price: 26500,
-      rating: 4.8,
-      students: 1245,
-      duration: '12 hours',
-      level: 'Intermediate',
-      category: 'development',
-      image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400',
-      description: 'Master React with hooks, context API, and advanced patterns',
-      enrolledDate: '2024-01-15',
-      lastAccessed: '2024-03-20',
-      lessons: 45,
-      projects: 3
-    },
-    {
-      id: 2,
-      title: 'UI/UX Design Masterclass',
-      instructor: 'Mike Chen',
-      price: 23600,
-      rating: 4.9,
-      students: 892,
-      duration: '15 hours',
-      level: 'Beginner',
-      category: 'design',
-      image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400',
-      description: 'Learn professional design principles and tools',
-      enrolledDate: '2024-02-10',
-      lastAccessed: '2024-03-18',
-      lessons: 52,
-      projects: 4
-    },
-    {
-      id: 5,
-      title: 'Full Stack JavaScript',
-      instructor: 'Alex Rodriguez',
-      price: 29500,
-      rating: 4.8,
-      students: 2034,
-      duration: '20 hours',
-      level: 'Advanced',
-      category: 'development',
-      image: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400',
-      description: 'Become a full-stack developer with modern JavaScript',
-      enrolledDate: '2024-03-01',
-      lastAccessed: '2024-03-19',
-      lessons: 65,
-      projects: 5
-    }
-  ];
+    const token = localStorage.getItem('accessToken');
+    let userId = user?._id;
 
-  // Mock lessons data with YouTube embed URLs
-  const lessons: Lesson[] = [
-    {
-      id: 1,
-      courseId: 1,
-      title: 'Introduction to React Hooks',
-      duration: '15:30',
-      videoUrl: 'https://www.youtube.com/embed/TNhaISOUy6Q', // Sample React Hooks intro video
-      description: 'Learn the fundamentals of React Hooks and how they simplify state management',
-      isLocked: false,
-      resources: [
-        { type: 'pdf', name: 'Lecture Notes.pdf', url: '#', size: '2.4 MB' },
-        { type: 'zip', name: 'Starter Code.zip', url: '#', size: '1.2 MB' }
-      ]
-    },
-    {
-      id: 2,
-      courseId: 1,
-      title: 'useState and useEffect Deep Dive',
-      duration: '22:15',
-      videoUrl: 'https://www.youtube.com/embed/-p0VspoXWC8', // Sample useState/useEffect video
-      description: 'Master the most commonly used hooks with practical examples',
-      isLocked: false,
-      resources: [
-        { type: 'pdf', name: 'Cheat Sheet.pdf', url: '#', size: '1.8 MB' }
-      ]
-    },
-    {
-      id: 3,
-      courseId: 1,
-      title: 'Custom Hooks and Composition',
-      duration: '18:45',
-      videoUrl: 'https://www.youtube.com/embed/6ThXsUwLWvc', // Sample custom hooks video
-      description: 'Create reusable custom hooks and understand hook composition patterns',
-      isLocked: false
-    },
-    // Add sample lessons for other courses if needed
-    {
-      id: 4,
-      courseId: 2,
-      title: 'Introduction to UI/UX',
-      duration: '10:00',
-      videoUrl: 'https://www.youtube.com/embed/5RjkPoDeVZS',
-      description: 'Basics of UI/UX design',
-      isLocked: false
-    },
-    {
-      id: 5,
-      courseId: 5,
-      title: 'JavaScript Fundamentals',
-      duration: '20:00',
-      videoUrl: 'https://www.youtube.com/embed/PkZNo7MFNFg',
-      description: 'Core JavaScript concepts',
-      isLocked: false
+    if (!userId && token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        userId = decoded.id || decoded._id || decoded.sub;
+        console.log("Decoded User ID from token:", userId);
+      } catch (error) {
+        console.error("Failed to decode token:", error);
+      }
     }
-  ];
 
-  // Mock resources data
-  const resources: Resource[] = [
-    {
-      id: 1,
-      title: 'React Hooks Cheat Sheet',
-      type: 'pdf',
-      category: 'development',
-      size: '2.1 MB',
-      uploadDate: '2024-03-15',
-      course: 'Advanced React Development',
-      downloadUrl: '#',
-      description: 'Complete reference guide for React Hooks with examples'
-    },
-    {
-      id: 2,
-      title: 'Design System Components',
-      type: 'zip',
-      category: 'design',
-      size: '4.5 MB',
-      uploadDate: '2024-03-10',
-      course: 'UI/UX Design Masterclass',
-      downloadUrl: '#',
-      description: 'Figma components and design system assets'
-    },
-    {
-      id: 3,
-      title: 'JavaScript Best Practices',
-      type: 'document',
-      category: 'development',
-      size: '1.8 MB',
-      uploadDate: '2024-03-12',
-      course: 'Full Stack JavaScript',
-      downloadUrl: '#',
-      description: 'Modern JavaScript coding standards and best practices'
-    },
-    {
-      id: 4,
-      title: 'API Integration Examples',
-      type: 'code',
-      category: 'development',
-      size: '3.2 MB',
-      uploadDate: '2024-03-08',
-      course: 'Full Stack JavaScript',
-      downloadUrl: '#',
-      description: 'Sample code for REST API integration and authentication'
-    },
-    {
-      id: 5,
-      title: 'User Research Template',
-      type: 'pdf',
-      category: 'design',
-      size: '1.5 MB',
-      uploadDate: '2024-03-05',
-      course: 'UI/UX Design Masterclass',
-      downloadUrl: '#',
-      description: 'Templates for conducting user research and interviews'
-    },
-    {
-      id: 6,
-      title: 'Project Setup Guide',
-      type: 'video',
-      category: 'development',
-      size: '15.7 MB',
-      uploadDate: '2024-03-18',
-      course: 'Advanced React Development',
-      downloadUrl: '#',
-      description: 'Step-by-step video guide for project setup and configuration'
+    console.log("DEBUG: Using User ID:", userId);
+
+    if (userId) {
+      console.log("DEBUG: Fetching courses for user:", userId);
+      getCourseForStudentByUserID(userId).then(res => {
+        console.log("DEBUG: API Response:", res);
+        if (res?.data) {
+          console.log("DEBUG: Raw Course Data:", res.data);
+          const fetchedCourses = res.data.map((c: any) => ({
+            id: c._id,
+            title: c.title,
+            instructor: c.instructor?.name || 'Unknown Instructor',
+            price: c.price,
+            rating: 5, // Default rating
+            students: c.students,
+            duration: `${c.duration} hours`,
+            level: c.level.charAt(0).toUpperCase() + c.level.slice(1).toLowerCase(),
+            category: c.category,
+            image: c.image,
+            description: c.description,
+            enrolledDate: c.createdAt.split('T')[0],
+            lastAccessed: c.updatedAt.split('T')[0],
+            lessons: c.lessons,
+            projects: 0
+          }));
+          console.log("DEBUG: Mapped Courses:", fetchedCourses);
+          setEnrolledCourses(fetchedCourses);
+
+          const fetchedLessons: Lesson[] = [];
+          const fetchedResources: Resource[] = [];
+
+          res.data.forEach((c: any) => {
+             // Map videos to lessons
+             if (c.videos) {
+                c.videos.forEach((v: any) => {
+                    fetchedLessons.push({
+                        id: v._id,
+                        courseId: c._id,
+                        title: v.video_title,
+                        duration: '00:00', // Backend doesn't provide video duration
+                        videoUrl: v.video_url,
+                        description: v.video_title,
+                        isLocked: false // Assuming purchased courses have unlocked videos
+                    });
+                });
+             }
+             
+             // Map resources
+             if (c.resources) {
+                 c.resources.forEach((r: any) => {
+                     fetchedResources.push({
+                         id: r._id,
+                         courseId: c._id,
+                         title: r.resource_title,
+                         type: 'document', // Default type
+                         category: c.category,
+                         size: 'Unknown',
+                         uploadDate: r.createdAt.split('T')[0],
+                         course: c.title,
+                         downloadUrl: r.resource_url,
+                         description: r.resource_title
+                     });
+                 });
+             }
+          });
+          
+          console.log("DEBUG: Mapped Lessons:", fetchedLessons);
+          console.log("DEBUG: Mapped Resources:", fetchedResources);
+
+          setLessons(fetchedLessons);
+          setResources(fetchedResources);
+        } else {
+            console.log("DEBUG: No data in response or invalid structure", res);
+        }
+      }).catch(err => console.error("DEBUG: Failed to load courses", err));
+    } else {
+        console.log("DEBUG: User ID is missing, skipping fetch. User Object:", user);
     }
-  ];
+  }, [user]);
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={24} />, color: 'teal' },
@@ -297,9 +227,9 @@ const StudentDashboard: React.FC = () => {
 
   const openCoursePlayer = (course: Course) => {
     setSelectedCourse(course);
-    const firstUnlockedLesson = lessons.find(lesson =>
-      lesson.courseId === course.id && !lesson.isLocked
-    );
+    // Find lessons for this specific course
+    const courseLessons = lessons.filter(l => l.courseId === course.id);
+    const firstUnlockedLesson = courseLessons.find(lesson => !lesson.isLocked) || courseLessons[0];
     setCurrentLesson(firstUnlockedLesson || null);
     setIsCoursePlayerOpen(true);
   };
@@ -522,7 +452,7 @@ const StudentDashboard: React.FC = () => {
                   {[
                     { label: 'Courses Enrolled', value: enrolledCourses.length.toString(), icon: <GraduationCap size={24} />, color: 'teal' },
                     { label: 'Hours Learned', value: '24', icon: <Clock size={24} />, color: 'blue' },
-                    { label: 'Resources', value: '12', icon: <Library size={24} />, color: 'purple' },
+                    { label: 'Resources', value: resources.length.toString(), icon: <Library size={24} />, color: 'purple' },
                     { label: 'Learning Streak', value: '12 days', icon: <Flame size={24} />, color: 'orange' }
                   ].map((stat, index) => (
                     <motion.div
@@ -556,50 +486,56 @@ const StudentDashboard: React.FC = () => {
                       View All <ChevronRight size={16} />
                     </motion.button>
                   </div>
-                  <div className="space-y-4">
-                    {enrolledCourses.map((course, index) => (
-                      <motion.div
-                        key={course.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        whileHover={{ scale: 1.01 }}
-                        className="flex flex-col sm:flex-row items-center gap-6 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-teal-100 transition-all duration-300 group cursor-pointer"
-                        onClick={() => openCoursePlayer(course)}
-                      >
-                         <div className="w-full sm:w-24 h-48 sm:h-24 rounded-xl overflow-hidden shrink-0">
-                             <img
-                              src={course.image}
-                              alt={course.title}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            />
-                         </div>
-                        
-                        <div className="flex-1 min-w-0 w-full">
-                           <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-bold text-teal-600 uppercase tracking-widest">{course.category}</span>
-                                <div className="flex items-center text-yellow-500 text-xs font-bold gap-1">
-                                    <Star size={12} fill="currentColor"/> {course.rating}
-                                </div>
-                           </div>
-                          <h3 className="text-lg font-bold text-gray-800 mb-1 group-hover:text-teal-600 transition-colors">
-                            {course.title}
-                          </h3>
-                          <div className="flex items-center text-gray-500 text-sm gap-4">
-                             <span className="flex items-center gap-1"><User size={14} /> {course.instructor}</span>
-                             <span className="flex items-center gap-1"><Clock size={14} /> {course.duration}</span>
-                          </div>
-                        </div>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="w-12 h-12 bg-teal-500 text-white rounded-xl shadow-lg shadow-teal-500/30 flex items-center justify-center shrink-0"
+                  {enrolledCourses.length > 0 ? (
+                    <div className="space-y-4">
+                      {enrolledCourses.slice(0, 3).map((course, index) => (
+                        <motion.div
+                          key={course.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          whileHover={{ scale: 1.01 }}
+                          className="flex flex-col sm:flex-row items-center gap-6 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-teal-100 transition-all duration-300 group cursor-pointer"
+                          onClick={() => openCoursePlayer(course)}
                         >
-                          <Play size={20} fill="currentColor" className="ml-1" />
-                        </motion.button>
-                      </motion.div>
-                    ))}
-                  </div>
+                           <div className="w-full sm:w-24 h-48 sm:h-24 rounded-xl overflow-hidden shrink-0">
+                               <img
+                                src={course.image}
+                                alt={course.title}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              />
+                           </div>
+                          
+                          <div className="flex-1 min-w-0 w-full">
+                             <div className="flex items-center justify-between mb-1">
+                                  <span className="text-xs font-bold text-teal-600 uppercase tracking-widest">{course.category}</span>
+                                  <div className="flex items-center text-yellow-500 text-xs font-bold gap-1">
+                                      <Star size={12} fill="currentColor"/> {course.rating}
+                                  </div>
+                             </div>
+                            <h3 className="text-lg font-bold text-gray-800 mb-1 group-hover:text-teal-600 transition-colors">
+                              {course.title}
+                            </h3>
+                            <div className="flex items-center text-gray-500 text-sm gap-4">
+                               <span className="flex items-center gap-1"><User size={14} /> {course.instructor}</span>
+                               <span className="flex items-center gap-1"><Clock size={14} /> {course.duration}</span>
+                            </div>
+                          </div>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="w-12 h-12 bg-teal-500 text-white rounded-xl shadow-lg shadow-teal-500/30 flex items-center justify-center shrink-0"
+                          >
+                            <Play size={20} fill="currentColor" className="ml-1" />
+                          </motion.button>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 text-center py-8">
+                        No courses enrolled yet.
+                    </div>
+                  )}
                 </div>
 
                 {/* Recent Resources */}
@@ -623,6 +559,7 @@ const StudentDashboard: React.FC = () => {
                         transition={{ delay: index * 0.1 }}
                         whileHover={{ y: -5 }}
                         className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-teal-200 shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer"
+                        onClick={() => window.open(resource.downloadUrl, '_blank')}
                       >
                          <div className="flex items-start justify-between mb-4">
                             <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
@@ -642,6 +579,11 @@ const StudentDashboard: React.FC = () => {
                         </div>
                       </motion.div>
                     ))}
+                    {resources.length === 0 && (
+                        <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center text-gray-500 py-8">
+                            No resources available.
+                        </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -664,70 +606,76 @@ const StudentDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {enrolledCourses.map((course, index) => (
-                    <motion.div
-                      key={course.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{
-                         y: -5
-                      }}
-                       className="group relative bg-white rounded-4xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 overflow-hidden flex flex-col h-full cursor-pointer"
-                      onClick={() => openCoursePlayer(course)}
-                    >
-                      {/* Image Section */}
-                      <div className="relative h-60 overflow-hidden shrink-0">
-                        <img
-                          src={course.image}
-                          alt={course.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                         {/* Gradient Overlay */}
-                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-60" />
+                {enrolledCourses.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {enrolledCourses.map((course, index) => (
+                      <motion.div
+                        key={course.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{
+                           y: -5
+                        }}
+                         className="group relative bg-white rounded-4xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 overflow-hidden flex flex-col h-full cursor-pointer"
+                        onClick={() => openCoursePlayer(course)}
+                      >
+                        {/* Image Section */}
+                        <div className="relative h-60 overflow-hidden shrink-0">
+                          <img
+                            src={course.image}
+                            alt={course.title}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
+                           {/* Gradient Overlay */}
+                          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-60" />
 
-                        {/* Badges */}
-                        <div className="absolute top-4 left-4 flex gap-2">
-                             <span className={`px-3 py-1.5 backdrop-blur-md bg-white/90 rounded-2xl text-[10px] font-extrabold uppercase tracking-widest shadow-sm ${
-                                course.level === 'Beginner' ? 'text-green-600' :
-                                course.level === 'Intermediate' ? 'text-blue-600' : 'text-purple-600'
-                            }`}>
-                                {course.level}
-                            </span>
+                          {/* Badges */}
+                          <div className="absolute top-4 left-4 flex gap-2">
+                               <span className={`px-3 py-1.5 backdrop-blur-md bg-white/90 rounded-2xl text-[10px] font-extrabold uppercase tracking-widest shadow-sm ${
+                                  course.level === 'Beginner' ? 'text-green-600' :
+                                  course.level === 'Intermediate' ? 'text-blue-600' : 'text-purple-600'
+                              }`}>
+                                  {course.level}
+                              </span>
+                          </div>
+                           <div className="absolute bottom-4 left-4 right-4 text-white">
+                               <div className="flex items-center gap-2 mb-1 text-yellow-400 text-xs font-bold">
+                                   <Star size={14} fill="currentColor" /> {course.rating}
+                               </div>
+                               <h3 className="font-bold text-xl leading-tight line-clamp-2 mb-1">{course.title}</h3>
+                               <p className="text-white/80 text-sm font-medium">{course.instructor}</p>
+                           </div>
                         </div>
-                         <div className="absolute bottom-4 left-4 right-4 text-white">
-                             <div className="flex items-center gap-2 mb-1 text-yellow-400 text-xs font-bold">
-                                 <Star size={14} fill="currentColor" /> {course.rating}
-                             </div>
-                             <h3 className="font-bold text-xl leading-tight line-clamp-2 mb-1">{course.title}</h3>
-                             <p className="text-white/80 text-sm font-medium">{course.instructor}</p>
-                         </div>
-                      </div>
 
-                      <div className="p-6 flex flex-col flex-1">
-                         <div className="flex items-center justify-between text-sm text-gray-500 mb-6 font-medium">
-                             <span className="flex items-center gap-1.5"><Clock size={16} className="text-teal-500"/> {course.duration}</span>
-                             <span className="flex items-center gap-1.5"><BookOpen size={16} className="text-purple-500"/> {course.lessons} Lessons</span>
-                         </div>
-                         
-                         <div className="mt-auto">
-                              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                                      Last Accessed: <br/> <span className="text-gray-600 normal-case">{course.lastAccessed}</span>
-                                  </div>
-                                   <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    className="w-10 h-10 bg-teal-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-teal-500/30"
-                                  >
-                                    <Play size={18} fill="currentColor" className="ml-0.5" />
-                                  </motion.button>
-                              </div>
-                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                        <div className="p-6 flex flex-col flex-1">
+                           <div className="flex items-center justify-between text-sm text-gray-500 mb-6 font-medium">
+                               <span className="flex items-center gap-1.5"><Clock size={16} className="text-teal-500"/> {course.duration}</span>
+                               <span className="flex items-center gap-1.5"><BookOpen size={16} className="text-purple-500"/> {course.lessons} Lessons</span>
+                           </div>
+                           
+                           <div className="mt-auto">
+                                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                                        Last Accessed: <br/> <span className="text-gray-600 normal-case">{course.lastAccessed}</span>
+                                    </div>
+                                     <motion.button
+                                      whileHover={{ scale: 1.1 }}
+                                      className="w-10 h-10 bg-teal-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-teal-500/30"
+                                    >
+                                      <Play size={18} fill="currentColor" className="ml-0.5" />
+                                    </motion.button>
+                                </div>
+                           </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 mt-12 text-lg">
+                    No enrolled courses found.
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -747,37 +695,47 @@ const StudentDashboard: React.FC = () => {
                   <div className="flex space-x-4">
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {resources.map((resource, index) => (
-                    <motion.div
-                      key={resource.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ y: -5 }}
-                      className="bg-white rounded-4xl p-8 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_10px_30px_rgb(0,0,0,0.06)] transition-all duration-300 group"
-                    >
-                      <div className="flex items-start justify-between mb-6">
-                         <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors duration-300">
-                             {getResourceIcon(resource.type)}
+                {resources.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {resources.map((resource, index) => (
+                      <motion.div
+                        key={resource.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ y: -5 }}
+                        className="bg-white rounded-4xl p-8 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_10px_30px_rgb(0,0,0,0.06)] transition-all duration-300 group"
+                      >
+                        <div className="flex items-start justify-between mb-6">
+                           <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors duration-300">
+                               {getResourceIcon(resource.type)}
+                           </div>
+                           <div className="flex items-center gap-2">
+                               <button 
+                                onClick={() => window.open(resource.downloadUrl, '_blank')}
+                                className="p-2 text-gray-400 hover:text-teal-600 transition-colors">
+                                  <Download size={20}/>
+                               </button>
+                           </div>
+                        </div>
+                        
+                        <h3 className="text-xl font-bold text-gray-800 mb-2 leading-tight group-hover:text-teal-600 transition-colors">{resource.title}</h3>
+                        <p className="text-gray-500 text-sm mb-6 line-clamp-2 leading-relaxed">{resource.description}</p>
+                        
+                         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                             <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase ${
+                                  resource.category === 'development' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
+                             }`}>{resource.category}</span>
+                             <span className="text-xs font-bold text-gray-400">{resource.size}</span>
                          </div>
-                         <div className="flex items-center gap-2">
-                             <button className="p-2 text-gray-400 hover:text-teal-600 transition-colors"><Download size={20}/></button>
-                         </div>
-                      </div>
-                      
-                      <h3 className="text-xl font-bold text-gray-800 mb-2 leading-tight group-hover:text-teal-600 transition-colors">{resource.title}</h3>
-                      <p className="text-gray-500 text-sm mb-6 line-clamp-2 leading-relaxed">{resource.description}</p>
-                      
-                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                           <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase ${
-                                resource.category === 'development' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
-                           }`}>{resource.category}</span>
-                           <span className="text-xs font-bold text-gray-400">{resource.size}</span>
-                       </div>
-                    </motion.div>
-                  ))}
-                </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 mt-12 text-lg">
+                    No resources available.
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -793,7 +751,7 @@ const StudentDashboard: React.FC = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-white flex flex-col"
           >
-            {/* Player Header */}
+             {/* Player Header */}
              <div className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
                <div className="flex items-center space-x-4">
                   <button onClick={() => setIsCoursePlayerOpen(false)} className="p-2 hover:bg-gray-800 rounded-full transition-colors">
@@ -805,7 +763,11 @@ const StudentDashboard: React.FC = () => {
                   </div>
                </div>
                 <div className="flex items-center space-x-4">
-                     <span className="text-sm font-medium bg-gray-800 px-3 py-1 rounded-full">{Math.round((lessons.findIndex(l => l.id === currentLesson?.id) + 1) / lessons.length * 100)}% Complete</span>
+                     <span className="text-sm font-medium bg-gray-800 px-3 py-1 rounded-full">{
+                       lessons.filter(l => l.courseId === selectedCourse.id).length > 0 
+                       ? Math.round((lessons.filter(l => l.courseId === selectedCourse.id).findIndex(l => l.id === currentLesson?.id) + 1) / lessons.filter(l => l.courseId === selectedCourse.id).length * 100) 
+                       : 0
+                     }% Complete</span>
                 </div>
              </div>
 
@@ -818,7 +780,7 @@ const StudentDashboard: React.FC = () => {
                          <iframe
                            width="100%"
                            height="100%"
-                           src={currentLesson.videoUrl}
+                           src={getEmbedUrl(currentLesson.videoUrl)}
                            title={currentLesson.title}
                            frameBorder="0"
                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -836,33 +798,12 @@ const StudentDashboard: React.FC = () => {
                    <div className="p-8 max-w-5xl mx-auto w-full">
                        <div className="flex items-center justify-between mb-6">
                            <h1 className="text-2xl font-bold text-gray-800">{currentLesson?.title}</h1>
-
                        </div>
                        
                        <div className="prose max-w-none text-gray-600 leading-relaxed">
                            <p>{currentLesson?.description}</p>
                        </div>
 
-                       {/* Lesson Resources */}
-                       {currentLesson?.resources && (
-                           <div className="mt-8">
-                               <h3 className="text-lg font-bold text-gray-800 mb-4">Lesson Resources</h3>
-                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                   {currentLesson.resources.map((res, idx) => (
-                                       <div key={idx} className="flex items-center p-4 bg-white rounded-xl border border-gray-200 hover:border-teal-300 transition-colors cursor-pointer group">
-                                           <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-4 text-xl">
-                                               {getResourceIcon(res.type)}
-                                           </div>
-                                           <div className="flex-1">
-                                               <div className="font-semibold text-gray-800 group-hover:text-teal-600 transition-colors">{res.name}</div>
-                                               <div className="text-xs text-gray-500">{res.size}</div>
-                                           </div>
-                                           <Download size={18} className="text-gray-400 group-hover:text-teal-500"/>
-                                       </div>
-                                   ))}
-                               </div>
-                           </div>
-                       )}
                    </div>
                 </div>
 
@@ -885,7 +826,7 @@ const StudentDashboard: React.FC = () => {
                      <div className="flex-1 overflow-y-auto">
                          {activeSidebar === 'lessons' && (
                              <div className="divide-y divide-gray-100">
-                                 {lessons.map((lesson, idx) => (
+                                 {lessons.filter(l => l.courseId === selectedCourse.id).map((lesson, idx) => (
                                      <div
                                        key={lesson.id}
                                        onClick={() => {
@@ -915,9 +856,28 @@ const StudentDashboard: React.FC = () => {
                              </div>
                          )}
                          {activeSidebar === 'resources' && (
-                             <div className="p-6 text-center text-gray-500">
-                                 <Library size={48} className="mx-auto mb-4 text-gray-300"/>
-                                 <p>Select a lesson to view specific resources</p>
+                             <div className="divide-y divide-gray-100">
+                                {resources.filter(r => r.courseId === selectedCourse.id).length > 0 ? (
+                                   resources.filter(r => r.courseId === selectedCourse.id).map((res, idx) => (
+                                       <div key={idx} className="flex items-center p-4 hover:bg-gray-50 transition-colors cursor-pointer group" onClick={() => window.open(res.downloadUrl, '_blank')}>
+                                           <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-4 text-xl group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                                               {getResourceIcon(res.type)}
+                                           </div>
+                                           <div className="flex-1 min-w-0">
+                                               <div className="font-semibold text-gray-800 group-hover:text-teal-600 transition-colors truncate">{res.title}</div>
+                                               <div className="text-xs text-gray-500 flex items-center gap-2">
+                                                 <span>{res.size}</span>
+                                               </div>
+                                           </div>
+                                           <Download size={18} className="text-gray-400 group-hover:text-teal-500"/>
+                                       </div>
+                                   ))
+                                ) : (
+                                   <div className="p-6 text-center text-gray-500">
+                                       <Library size={48} className="mx-auto mb-4 text-gray-300"/>
+                                       <p>No specific resources for this course</p>
+                                   </div>
+                                )}
                              </div>
                          )}
                      </div>

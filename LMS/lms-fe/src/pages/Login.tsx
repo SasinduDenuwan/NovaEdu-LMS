@@ -56,6 +56,7 @@ export default function LoginPage() {
         });
         localStorage.setItem('accessToken', data.data.accessToken);
         localStorage.setItem('refreshToken', data.data.refreshToken);
+        localStorage.setItem('userID', data.data.userID);
         
         // Update Auth Context Immediately
         try {
