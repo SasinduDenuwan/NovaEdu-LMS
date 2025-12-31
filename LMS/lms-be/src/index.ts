@@ -7,6 +7,7 @@ import cartRouter from './routes/cart.route';
 import studentRouter from './routes/student.route';
 import paymentRouter from './routes/payment.route';
 import orderRouter from './routes/order.route';
+import chatRouter from './routes/chat.route';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 dotenv.config();
@@ -31,6 +32,8 @@ app.use("/api/v1/cart", cartRouter)
 app.use("/api/v1/student", studentRouter)
 app.use("/api/v1/payment", paymentRouter)
 app.use("/api/v1/order", orderRouter)
+app.use("/api/v1/chat", chatRouter)
+
 
 mongoose
     .connect(MONGO_URI)

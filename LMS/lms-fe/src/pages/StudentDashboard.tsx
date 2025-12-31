@@ -56,7 +56,7 @@ interface Lesson {
   courseId: string;
   title: string;
   duration: string;
-  videoUrl: string; // Now using YouTube embed URLs
+  videoUrl: string;
   description: string;
   isLocked: boolean;
   resources?: {

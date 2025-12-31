@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X, Bot, User, Sparkles } from 'lucide-react';
+import { useAI } from '../context/aiContext';
 
 interface AiChatWindowProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface Message {
 }
 
 const AiChatWindow: React.FC<AiChatWindowProps> = ({ isOpen, onClose }) => {
+  const { ask, loading } = useAI(); // Use the hook
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -24,7 +26,6 @@ const AiChatWindow: React.FC<AiChatWindowProps> = ({ isOpen, onClose }) => {
     }
   ]);
   const [inputValue, setInputValue] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -33,9 +34,9 @@ const AiChatWindow: React.FC<AiChatWindowProps> = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [messages, loading]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputValue.trim()) return;
 
     const userMessage: Message = {
@@ -47,18 +48,18 @@ const AiChatWindow: React.FC<AiChatWindowProps> = ({ isOpen, onClose }) => {
 
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
-    setIsTyping(true);
+    
+    // Call the AI context
+    const responseText = await ask(userMessage.text);
 
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "I'm currently a demo version, but I'll be fully connected to the backend soon! I can help you find courses, track your progress, or answer questions about the platform.",
-        sender: 'ai',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, aiResponse]);
-      setIsTyping(false);
-    }, 1500);
+    const aiMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: responseText,
+      sender: 'ai',
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, aiMessage]);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -79,7 +80,7 @@ const AiChatWindow: React.FC<AiChatWindowProps> = ({ isOpen, onClose }) => {
           className="fixed bottom-28 right-8 z-50 w-96 h-[600px] max-h-[calc(100vh-150px)] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 flex flex-col overflow-hidden font-sans"
         >
           {/* Header */}
-          <div className="p-4 bg-gradient-to-r from-teal-500 to-blue-600 flex items-center justify-between shadow-md">
+          <div className="p-4 bg-linear-to-r from-teal-500 to-blue-600 flex items-center justify-between shadow-md">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                 <Bot className="w-5 h-5 text-white" />
@@ -111,7 +112,7 @@ const AiChatWindow: React.FC<AiChatWindowProps> = ({ isOpen, onClose }) => {
               >
                 <div className={`flex items-end max-w-[80%] space-x-2 ${message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : 'flex-row'}`}>
                   {/* Avatar */}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                     message.sender === 'user' 
                       ? 'bg-blue-100 text-blue-600' 
                       : 'bg-teal-100 text-teal-600'
@@ -137,7 +138,7 @@ const AiChatWindow: React.FC<AiChatWindowProps> = ({ isOpen, onClose }) => {
             ))}
             
             {/* Typing Indicator */}
-            {isTyping && (
+            {loading && (
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -167,11 +168,12 @@ const AiChatWindow: React.FC<AiChatWindowProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyPress}
                 placeholder="Type your message..."
-                className="flex-1 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all text-sm"
+                disabled={loading}
+                className="flex-1 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all text-sm disabled:opacity-50"
               />
               <button
                 onClick={handleSend}
-                disabled={!inputValue.trim()}
+                disabled={!inputValue.trim() || loading}
                 className="p-3 bg-linear-to-r from-teal-500 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all duration-200"
               >
                 <Send size={18} />

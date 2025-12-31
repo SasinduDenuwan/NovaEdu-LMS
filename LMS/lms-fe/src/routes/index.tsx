@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ReactNode, useState, useEffect } from "react"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { useAuth } from "../context/authContext"
+import { AIProvider } from "../context/aiContext"
 import Index from "../pages/Index"
 import StudentDashboard from "../pages/StudentDashboard"
 import AdminDashboard from "../pages/AdminDashboard"
@@ -49,48 +50,50 @@ export default function Router() {
 
   return (
     <BrowserRouter>
-      <Suspense
-        fallback= {<LoadingPage />}
-      >
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/student" element={
-            <RequireAuth>
-              <StudentDashboard />
-            </RequireAuth>
-          } />
-          <Route path="/admin" element={<AdminDashboard />} />
-          {/* <Route path="/" element={<TestCode2 />} /> */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/forgot-pw" element={<ResetPWPage />} /> 
-          <Route path="/profile" element={
-            <RequireAuth>
-              <ProfilePage />
-            </RequireAuth>
-          } />
-          {/* <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route>
-            element={
+      <AIProvider>
+        <Suspense
+          fallback= {<LoadingPage />}
+        >
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/student" element={
               <RequireAuth>
-                <Layout />
+                <StudentDashboard />
               </RequireAuth>
-            }
-          > */}
-            {/* <Route path="/home" element={<Home />} />
-            <Route path="/post" element={<Post />} />
-            <Route
-              path="/my-post"
+            } />
+            <Route path="/admin" element={<AdminDashboard />} />
+            {/* <Route path="/" element={<TestCode2 />} /> */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-pw" element={<ResetPWPage />} /> 
+            <Route path="/profile" element={
+              <RequireAuth>
+                <ProfilePage />
+              </RequireAuth>
+            } />
+            {/* <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route>
               element={
-                <RequireAuth roles={["ADMIN", "AUTHOR"]}>
-                  <MyPost />
+                <RequireAuth>
+                  <Layout />
                 </RequireAuth>
               }
-            />
-          </Route> */}
-        </Routes>
-      </Suspense>
+            > */}
+              {/* <Route path="/home" element={<Home />} />
+              <Route path="/post" element={<Post />} />
+              <Route
+                path="/my-post"
+                element={
+                  <RequireAuth roles={["ADMIN", "AUTHOR"]}>
+                    <MyPost />
+                  </RequireAuth>
+                }
+              />
+            </Route> */}
+          </Routes>
+        </Suspense>
+      </AIProvider>
     </BrowserRouter>
   )
 }

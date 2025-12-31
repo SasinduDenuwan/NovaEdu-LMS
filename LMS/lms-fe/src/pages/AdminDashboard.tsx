@@ -32,6 +32,7 @@ import { getStudents, addStudent, updateStudent, deleteStudent } from '../servic
 import { getAllCourses, addCourse, updateCourse, deleteCourse as deleteCourseService } from '../services/course';
 import { getAllPayments } from '../services/payment';
 import Swal from 'sweetalert2';
+import { generatePDF } from '../utils/pdfGenerator';
 // --- Interfaces ---
 interface Student {
   id?: number | string;
@@ -686,6 +687,81 @@ const AdminDashboard: React.FC = () => {
         }
       }
   };
+
+  // --- Export Handlers ---
+  const handleExportStudents = () => {
+    const columns = ['First Name', 'Last Name', 'Email', 'Role', 'Joined Date'];
+    const data = filteredStudents.map(student => [
+        student.firstname,
+        student.lastname,
+        student.email,
+        student.roles,
+        new Date(student.createdAt).toLocaleDateString()
+    ]);
+    generatePDF({
+        title: 'Student Report',
+        columns,
+        data,
+        filename: 'students_report'
+    });
+  };
+
+  const handleExportInstructors = () => {
+      const columns = ['Name', 'Role', 'Experience', 'Students', 'Courses'];
+      const data = filteredInstructors.map(inst => [
+          inst.name,
+          inst.role || 'N/A',
+          `${inst.experience || 0} Years`,
+          inst.students || 0,
+          inst.courses || 0
+      ]);
+      generatePDF({
+          title: 'Instructor Report',
+          columns,
+          data,
+          filename: 'instructors_report'
+      });
+  };
+
+  const handleExportCourses = () => {
+      const columns = ['Title', 'Level', 'Category', 'Price', 'Instructor', 'Students'];
+      const data = filteredCourses.map(course => [
+          course.title,
+          course.level,
+          course.category,
+          `LKR ${course.price}`,
+          course.instructor?.name || 'Unknown',
+          course.students
+      ]);
+      generatePDF({
+          title: 'Course Listing Report',
+          columns,
+          data,
+          filename: 'courses_report'
+      });
+  };
+
+  const handleExportPayments = () => {
+      const columns = ['Transaction ID', 'Student', 'Amount', 'Date', 'Status'];
+      const data = filteredPayments.map(payment => {
+          const student = students.find(s => s._id === payment.user_id || s.id === payment.user_id);
+          const studentName = student ? `${student.firstname} ${student.lastname}` : 'Unknown';
+          return [
+              payment.transaction_id,
+              studentName,
+              `LKR ${payment.amount}`,
+              new Date(payment.createdAt).toLocaleDateString(),
+              payment.payment_status
+          ];
+      });
+      generatePDF({
+          title: 'Payment Transaction Report',
+          columns,
+          data,
+          filename: 'payments_report'
+      });
+  };
+
   // --- Navigation ---
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={24} />, color: 'teal' },
@@ -953,6 +1029,15 @@ const AdminDashboard: React.FC = () => {
                     <motion.button 
                       whileHover={{ scale: 1.05 }} 
                       whileTap={{ scale: 0.95 }}
+                      onClick={handleExportStudents}
+                      className="flex items-center gap-2 px-6 py-3 bg-white text-teal-600 border border-teal-100 rounded-2xl font-semibold shadow-sm hover:shadow-md transition-all duration-300"
+                    >
+                      <FileText size={20} />
+                      <span>Export PDF</span>
+                    </motion.button>
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }} 
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => openModal('student', 'add')} 
                       className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-teal-500 to-teal-600 text-white rounded-2xl font-semibold shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all duration-300"
                     >
@@ -1052,6 +1137,9 @@ const AdminDashboard: React.FC = () => {
                     <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-teal-500 focus:border-transparent opacity-0 pointer-events-none">
                       <option value="all">All Status</option>
                     </select>
+                    <motion.button whileHover={{ scale: 1.05 }} onClick={handleExportInstructors} className="px-6 py-3 bg-white text-purple-600 border border-purple-100 rounded-2xl font-semibold shadow-sm hover:shadow-md transition-all duration-300 mr-2">
+                      Export PDF
+                    </motion.button>
                     <motion.button whileHover={{ scale: 1.05 }} onClick={() => openModal('instructor', 'add')} className="px-6 py-3 bg-purple-600 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
                       Add Instructor
                     </motion.button>
@@ -1152,6 +1240,9 @@ const AdminDashboard: React.FC = () => {
                     </select> */}
                     <motion.button whileHover={{ scale: 1.05 }} onClick={() => openModal('course', 'add')} className="px-6 py-3 bg-teal-500 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
                       Add Course
+                    </motion.button>
+                    <motion.button whileHover={{ scale: 1.05 }} onClick={handleExportCourses} className="px-6 py-3 bg-white text-teal-600 border border-teal-100 rounded-2xl font-semibold shadow-sm hover:shadow-md transition-all duration-300">
+                      Export PDF
                     </motion.button>
                   </div>
                 </div>
@@ -1280,7 +1371,7 @@ const AdminDashboard: React.FC = () => {
               <motion.div key="payments" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
                 <div className="flex items-center justify-between">
                    <h1 className="text-3xl font-bold text-gray-800">Payment Management</h1>
-                   <button className="px-6 py-3 bg-teal-500 text-white rounded-2xl font-semibold shadow-lg">Export Report</button>
+                   <button onClick={handleExportPayments} className="px-6 py-3 bg-teal-500 text-white rounded-2xl font-semibold shadow-lg hover:bg-teal-600 transition-colors">Export Report</button>
                 </div>
                 <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/50 overflow-hidden relative">
                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-400/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
