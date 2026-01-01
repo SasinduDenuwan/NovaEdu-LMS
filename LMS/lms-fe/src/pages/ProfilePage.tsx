@@ -17,7 +17,8 @@ import {
   Bell, 
   ChevronRight,
   Eye,
-  EyeOff
+  EyeOff,
+  Home
 } from 'lucide-react';
 
 interface UserProfile {
@@ -307,6 +308,18 @@ const ProfilePage: React.FC = () => {
             <nav className="bg-white/80 backdrop-blur-xl p-4 rounded-3xl shadow-xl shadow-blue-900/5 border border-white/40 space-y-2">
               <SidebarItem id="general" icon={User} label="General" />
               <SidebarItem id="security" icon={Lock} label="Security" />
+              
+              <button
+                onClick={() => navigate('/')}
+                className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-300 group relative overflow-hidden text-gray-600 hover:bg-white hover:shadow-md hover:text-teal-600 border border-transparent"
+              >
+                  <div className="flex items-center gap-3 relative z-10">
+                    <div className="p-2 rounded-lg bg-gray-50 text-gray-400 group-hover:bg-teal-50 group-hover:text-teal-500 transition-colors duration-300 shadow-sm">
+                      <Home size={18} />
+                    </div>
+                    <span className="font-medium">Home</span>
+                  </div>
+              </button>
             </nav>
           </div>
 

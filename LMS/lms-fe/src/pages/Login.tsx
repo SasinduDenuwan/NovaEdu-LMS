@@ -61,12 +61,20 @@ export default function LoginPage() {
             const userRes = await getMyDetails();
             if (userRes.data) {
                 setUser(userRes.data);
+                
+                // Check if user is admin
+                if (userRes.data.roles && (userRes.data.roles.includes('ADMIN') || userRes.data.roles.includes('admin'))) {
+                  navigate('/admin');
+                } else {
+                  navigate('/');
+                }
+            } else {
+              navigate('/');
             }
         } catch (error) {
             console.error("Failed to fetch user details after login", error);
+            navigate('/');
         }
-
-        navigate('/');
       }
     } catch (err: any) {
       console.error('Login Error: ', err);
