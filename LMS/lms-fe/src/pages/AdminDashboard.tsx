@@ -33,6 +33,8 @@ import { getAllCourses, addCourse, updateCourse, deleteCourse as deleteCourseSer
 import { getAllPayments } from '../services/payment';
 import Swal from 'sweetalert2';
 import { generatePDF } from '../utils/pdfGenerator';
+import DashboardAnalytics from '../components/DashboardAnalytics';
+import Pagination from '../components/Pagination';
 // --- Interfaces ---
 interface Student {
   id?: number | string;
@@ -135,6 +137,15 @@ const AdminDashboard: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
+
+  // --- Pagination State ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
+
+  // Reset page when tab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchTerm, statusFilter]);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -803,6 +814,28 @@ const AdminDashboard: React.FC = () => {
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
+
+  // --- Pagination Logic ---
+  const paginatedStudents = filteredStudents.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+  
+  const paginatedInstructors = filteredInstructors.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const paginatedCourses = filteredCourses.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const paginatedPayments = filteredPayments.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <div className="min-h-screen bg-linear-to-br from-teal-50 to-blue-50 flex relative overflow-hidden">
       {/* Animated Background */}
@@ -978,6 +1011,9 @@ const AdminDashboard: React.FC = () => {
                     </motion.div>
                   ))}
                 </div>
+                
+                {/* Analytics Section */}
+                <DashboardAnalytics students={students} payments={payments} courses={courses} />
                 {/* Quick Actions */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
@@ -1061,7 +1097,7 @@ const AdminDashboard: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100/50">
-                        {filteredStudents.map((student, index) => (
+                        {paginatedStudents.map((student, index) => (
                           <motion.tr
                             key={student._id || student.id}
                             initial={{ opacity: 0, y: 20 }}
@@ -1123,6 +1159,12 @@ const AdminDashboard: React.FC = () => {
                     </table>
                   </div>
                 </div>
+                {/* Pagination */}
+                <Pagination 
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(filteredStudents.length / ITEMS_PER_PAGE)}
+                  onPageChange={setCurrentPage}
+                />
               </motion.div>
             )}
             {/* --- INSTRUCTORS TAB --- */}
@@ -1147,7 +1189,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 {/* Instructors Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredInstructors.map((instructor, index) => (
+                  {paginatedInstructors.map((instructor, index) => (
                     <motion.div
                       key={instructor._id || instructor.id}
                       initial={{ opacity: 0, y: 30 }}
@@ -1221,6 +1263,12 @@ const AdminDashboard: React.FC = () => {
                     </motion.div>
                   ))}
                 </div>
+                {/* Pagination */}
+                <Pagination 
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(filteredInstructors.length / ITEMS_PER_PAGE)}
+                  onPageChange={setCurrentPage}
+                />
               </motion.div>
             )}
             {/* --- COURSES TAB --- */}
@@ -1248,7 +1296,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 {/* Courses Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredCourses.map((course, index) => (
+                  {paginatedCourses.map((course, index) => (
                     <motion.div
                       key={course._id || course.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -1364,6 +1412,12 @@ const AdminDashboard: React.FC = () => {
                     </motion.div>
                   ))}
                 </div>
+                {/* Pagination */}
+                <Pagination 
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(filteredCourses.length / ITEMS_PER_PAGE)}
+                  onPageChange={setCurrentPage}
+                />
               </motion.div>
             )}
             {/* --- PAYMENTS TAB --- */}
@@ -1388,7 +1442,7 @@ const AdminDashboard: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100/50">
-                        {filteredPayments.map((payment, index) => {
+                        {paginatedPayments.map((payment, index) => {
                           const student = students.find(s => s._id === payment.user_id || s.id === payment.user_id);
                           const studentName = student ? `${student.firstname} ${student.lastname}` : 'Unknown Student';
                           
@@ -1419,6 +1473,12 @@ const AdminDashboard: React.FC = () => {
                     </table>
                   </div>
                 </div>
+                {/* Pagination */}
+                <Pagination 
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(filteredPayments.length / ITEMS_PER_PAGE)}
+                  onPageChange={setCurrentPage}
+                />
               </motion.div>
             )}
           </AnimatePresence>
