@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { validate, showErrorToast } from '../utils/validation';
 import { Eye, EyeOff, User, Lock, ArrowRight, Mail } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 // import toast from 'react-hot-toast';
@@ -26,62 +27,59 @@ export default function SignUpPage() {
     e.preventDefault();
 
     if (firstname.trim() === '') {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Required',
-        text: 'Please enter your first name!',
-        confirmButtonColor: '#0d9488'
-      });
+      showErrorToast("Please enter your first name!");
       firstnameRef.current?.focus();
       return;
     }
+    const firstnameError = validate(firstname, 'name');
+    if (firstnameError) {
+      showErrorToast(firstnameError);
+      firstnameRef.current?.focus();
+      return;
+    }
+
     if (lastname.trim() === '') {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Required',
-        text: 'Please enter your last name!',
-        confirmButtonColor: '#0d9488'
-      });
+      showErrorToast("Please enter your last name!");
       lastnameRef.current?.focus();
       return;
     }
+    const lastnameError = validate(lastname, 'name');
+    if (lastnameError) {
+      showErrorToast(lastnameError);
+      lastnameRef.current?.focus();
+      return;
+    }
+
     if (email.trim() === '') {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Required',
-        text: 'Please enter your email!',
-        confirmButtonColor: '#0d9488'
-      });
+      showErrorToast("Please enter your email!");
       emailRef.current?.focus();
       return;
     }
+    const emailError = validate(email, 'email');
+    if (emailError) {
+      showErrorToast(emailError);
+      emailRef.current?.focus();
+      return;
+    }
+
     if (password.trim() === '') {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Required',
-        text: 'Please enter your password!',
-        confirmButtonColor: '#0d9488'
-      });
+      showErrorToast("Please enter your password!");
+      passwordRef.current?.focus();
+      return;
+    }
+    const passwordError = validate(password, 'password');
+    if (passwordError) {
+      showErrorToast(passwordError);
       passwordRef.current?.focus();
       return;
     }
     if (confirmPassword.trim() === '') {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Required',
-        text: 'Please confirm your password!',
-        confirmButtonColor: '#0d9488'
-      });
+      showErrorToast("Please confirm your password!");
       confirmPasswordRef.current?.focus();
       return;
     }
     if (password !== confirmPassword) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Mismatch',
-        text: 'Passwords do not match!',
-        confirmButtonColor: '#d33'
-      });
+      showErrorToast("Passwords do not match!");
       confirmPasswordRef.current?.focus();
       return;
     }

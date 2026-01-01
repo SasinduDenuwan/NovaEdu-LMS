@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { validate, showErrorToast } from '../utils/validation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 // import { useAuth } from '../context/authContext';
@@ -99,6 +100,26 @@ const ProfilePage: React.FC = () => {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formData.firstname.trim()) {
+      showErrorToast("First name is required");
+      return;
+    }
+    const fnError = validate(formData.firstname, 'name');
+    if (fnError) {
+      showErrorToast(fnError);
+      return;
+    }
+
+    if (!formData.lastname.trim()) {
+      showErrorToast("Last name is required");
+      return;
+    }
+    const lnError = validate(formData.lastname, 'name');
+    if (lnError) {
+      showErrorToast(lnError);
+      return;
+    }
+
     Swal.fire({
       title: 'Are you sure?',
       text: "Do you want to update your profile details?",
@@ -150,24 +171,13 @@ const ProfilePage: React.FC = () => {
     e.preventDefault();
     
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      Swal.fire({
-        title: 'Error!',
-        text: 'New passwords do not match',
-        icon: 'error',
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#d33'
-      });
+      showErrorToast("New passwords do not match");
       return;
     }
 
-    if (passwordData.newPassword.length < 6) {
-      Swal.fire({
-        title: 'Error!',
-        text: 'Password must be at least 6 characters',
-        icon: 'error',
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#d33'
-      });
+    const passwordError = validate(passwordData.newPassword, 'password');
+    if (passwordError) {
+      showErrorToast(passwordError);
       return;
     }
 

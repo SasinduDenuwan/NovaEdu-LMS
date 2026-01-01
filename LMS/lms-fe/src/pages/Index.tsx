@@ -13,6 +13,7 @@ import Footer from '../components/Footer';
 import toast from 'react-hot-toast';
 import { createPayment } from '../services/payment';
 import { createOrder } from '../services/order';
+import { showErrorToast, validate } from '../utils/validation';
 interface Course {
   id: string; // Changed from number to string because backend sends string IDs
   title: string;
@@ -2126,7 +2127,19 @@ const Index: React.FC = () => {
                               boxShadow: "0 15px 30px -5px rgba(20, 184, 166, 0.4)"
                             }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={handleNextStep}
+                            onClick={() => {
+                              if (!checkoutForm.email) {
+                                showErrorToast("Please enter your email!");
+                                return;
+                              }
+                              const emailError = validate(checkoutForm.email, 'email');
+                              if (emailError) {
+                                showErrorToast(emailError);
+                                return;
+                              }
+                              
+                              handleNextStep();
+                            }}
                             className="w-full bg-linear-to-r from-teal-500 to-blue-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
                           >
                             <span className="relative z-10">Continue to Payment</span>
@@ -2339,7 +2352,49 @@ const Index: React.FC = () => {
                               boxShadow: "0 15px 30px -5px rgba(20, 184, 166, 0.4)"
                             }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={handlePaymentSuccess}
+                            onClick={() => {
+                              if (!checkoutForm.cardNumber) {
+                                showErrorToast("Please enter card number");
+                                return;
+                              }
+                              const cardError = validate(checkoutForm.cardNumber, 'cardNumber');
+                              if (cardError) {
+                                showErrorToast(cardError);
+                                return;
+                              }
+
+                              if (!checkoutForm.expiryDate) {
+                                showErrorToast("Please enter expiry date");
+                                return; 
+                              }
+                              const expiryError = validate(checkoutForm.expiryDate, 'expiryDate');
+                              if (expiryError) {
+                                showErrorToast(expiryError);
+                                return;
+                              }
+
+                              if (!checkoutForm.cvc) {
+                                showErrorToast("Please enter CVC");
+                                return;
+                              }
+                              const cvcError = validate(checkoutForm.cvc, 'cvv');
+                              if (cvcError) {
+                                showErrorToast(cvcError);
+                                return;
+                              }
+                              
+                              if (!checkoutForm.cardholderName) {
+                                showErrorToast("Please enter cardholder name");
+                                return;
+                              }
+                              const nameError = validate(checkoutForm.cardholderName, 'name');
+                              if (nameError) {
+                                showErrorToast(nameError);
+                                return;
+                              }
+
+                              handlePaymentSuccess();
+                            }}
                             className="w-full bg-linear-to-r from-teal-500 to-blue-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
                           >
                             <span className="relative z-10">Pay Rs. {orderSummary.total.toFixed(0)}</span>

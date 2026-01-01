@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { validate, showErrorToast } from '../utils/validation';
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 // import toast from 'react-hot-toast';
@@ -21,23 +22,20 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (email.trim() === '') {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Required',
-        text: 'Please enter your email!',
-        confirmButtonColor: '#0d9488'
-      });
+      showErrorToast("Please enter your email!");
+      emailRef.current?.focus();
+      return;
+    }
+
+    const emailError = validate(email, 'email');
+    if (emailError) {
+      showErrorToast(emailError);
       emailRef.current?.focus();
       return;
     }
 
     if (password.trim() === '') {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Required',
-        text: 'Please enter your password!',
-        confirmButtonColor: '#0d9488'
-      });
+      showErrorToast("Please enter your password!");
       passwordRef.current?.focus();
       return;
     }
