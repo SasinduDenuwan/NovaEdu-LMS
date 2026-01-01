@@ -140,7 +140,20 @@ const AdminDashboard: React.FC = () => {
 
   // --- Pagination State ---
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 6;
+  
+  const getItemsPerPage = () => {
+    switch (activeTab) {
+      case 'students':
+        return 5;
+      case 'payments':
+        return 8; 
+      case 'instructors':
+      case 'courses':
+      default:
+        return 6; 
+    }
+  };
+  const itemsPerPage = getItemsPerPage();
 
   // Reset page when tab changes
   useEffect(() => {
@@ -817,23 +830,23 @@ const AdminDashboard: React.FC = () => {
 
   // --- Pagination Logic ---
   const paginatedStudents = filteredStudents.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
   
   const paginatedInstructors = filteredInstructors.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const paginatedCourses = filteredCourses.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const paginatedPayments = filteredPayments.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   return (
@@ -1162,7 +1175,7 @@ const AdminDashboard: React.FC = () => {
                 {/* Pagination */}
                 <Pagination 
                   currentPage={currentPage}
-                  totalPages={Math.ceil(filteredStudents.length / ITEMS_PER_PAGE)}
+                  totalPages={Math.ceil(filteredStudents.length / itemsPerPage)}
                   onPageChange={setCurrentPage}
                 />
               </motion.div>
@@ -1266,7 +1279,7 @@ const AdminDashboard: React.FC = () => {
                 {/* Pagination */}
                 <Pagination 
                   currentPage={currentPage}
-                  totalPages={Math.ceil(filteredInstructors.length / ITEMS_PER_PAGE)}
+                  totalPages={Math.ceil(filteredInstructors.length / itemsPerPage)}
                   onPageChange={setCurrentPage}
                 />
               </motion.div>
@@ -1415,7 +1428,7 @@ const AdminDashboard: React.FC = () => {
                 {/* Pagination */}
                 <Pagination 
                   currentPage={currentPage}
-                  totalPages={Math.ceil(filteredCourses.length / ITEMS_PER_PAGE)}
+                  totalPages={Math.ceil(filteredCourses.length / itemsPerPage)}
                   onPageChange={setCurrentPage}
                 />
               </motion.div>
@@ -1476,7 +1489,7 @@ const AdminDashboard: React.FC = () => {
                 {/* Pagination */}
                 <Pagination 
                   currentPage={currentPage}
-                  totalPages={Math.ceil(filteredPayments.length / ITEMS_PER_PAGE)}
+                  totalPages={Math.ceil(filteredPayments.length / itemsPerPage)}
                   onPageChange={setCurrentPage}
                 />
               </motion.div>

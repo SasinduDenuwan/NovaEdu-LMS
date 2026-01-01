@@ -6,6 +6,6 @@ import { Role } from "../models/user.model";
 
 const router = Router();
 
-router.post("/create-order", authenticate, requireRole([Role.ADMIN, Role.USER]), createOrder);
+router.post("/create-order", authenticate, requireRole([Role.USER]), createOrder);
 
 export default router;

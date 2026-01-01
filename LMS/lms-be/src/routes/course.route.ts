@@ -7,11 +7,11 @@ import { upload } from "../middleware/upload.middleware";
 
 const router = Router();
 
-router.post("/add-course", authenticate, requireRole([Role.ADMIN, Role.USER]), upload.single("image"), addCourse);
+router.post("/add-course", authenticate, requireRole([Role.ADMIN]), upload.single("image"), addCourse);
 router.get("/get-all-courses", authenticate, requireRole([Role.ADMIN, Role.USER]), getAllCourses);
-router.put("/update-course/:courseId", authenticate, requireRole([Role.ADMIN, Role.USER]), upload.single("image"), updateCourse);
-router.delete("/delete-course/:courseId", authenticate, requireRole([Role.ADMIN, Role.USER]), deleteCourse);
-router.get("/get-all-courses-admin", authenticate, requireRole([Role.ADMIN, Role.USER]), getAllCoursesAdmin)
-router.get("/get-courses-user/:userId", authenticate, requireRole([Role.ADMIN, Role.USER]), getCoursesUser)
+router.put("/update-course/:courseId", authenticate, requireRole([Role.ADMIN]), upload.single("image"), updateCourse);
+router.delete("/delete-course/:courseId", authenticate, requireRole([Role.ADMIN]), deleteCourse);
+router.get("/get-all-courses-admin", authenticate, requireRole([Role.ADMIN]), getAllCoursesAdmin)
+router.get("/get-courses-user/:userId", authenticate, requireRole([Role.USER]), getCoursesUser)
 
 export default router;

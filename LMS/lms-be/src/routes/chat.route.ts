@@ -6,6 +6,6 @@ import { Role } from "../models/user.model";
 
 const router = Router();
 
-router.post(["/post-chat", "/post-chat/:prompt"], authenticate, requireRole([Role.ADMIN, Role.USER]), postChat);
+router.post(["/post-chat", "/post-chat/:prompt"], authenticate, requireRole([Role.USER]), postChat);
 
 export default router;

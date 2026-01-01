@@ -8,6 +8,6 @@ const router = Router();
 
 router.get("/get-all-payment", authenticate, requireRole([Role.ADMIN, Role.USER]), getPayments);
 
-router.post("/create-payment", authenticate, requireRole([Role.ADMIN, Role.USER]), createPayment);
+router.post("/create-payment", authenticate, requireRole([Role.USER]), createPayment);
 
 export default router;

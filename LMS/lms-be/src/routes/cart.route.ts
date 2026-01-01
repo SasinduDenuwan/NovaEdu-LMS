@@ -6,8 +6,8 @@ import { getAllCartItems, addCartItem, deleteCartItem } from "../controllers/car
 
 const router = Router();
 
-router.get("/get-all-cart-items/:userId", authenticate, requireRole([Role.ADMIN, Role.USER]), getAllCartItems);
-router.post("/add-cart-item", authenticate, requireRole([Role.ADMIN, Role.USER]), addCartItem);
-router.delete("/delete-cart-item", authenticate, requireRole([Role.ADMIN, Role.USER]), deleteCartItem);
+router.get("/get-all-cart-items/:userId", authenticate, requireRole([Role.USER]), getAllCartItems);
+router.post("/add-cart-item", authenticate, requireRole([Role.USER]), addCartItem);
+router.delete("/delete-cart-item", authenticate, requireRole([Role.USER]), deleteCartItem);
 
 export default router;
