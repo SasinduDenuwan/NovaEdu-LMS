@@ -26,14 +26,12 @@ import StudentDashboard from "../pages/StudentDashboard";
 import AdminDashboard from "../pages/AdminDashboard";
 import LoadingPage from "../components/LoadingPage";
 
-/* ---------------- Lazy Pages ---------------- */
 const AccessDenied = lazy(() => import("../components/AccessDenid"));
 const LoginPage = lazy(() => import("../pages/Login"));
 const SignupPage = lazy(() => import("../pages/Signup"));
 const ResetPWPage = lazy(() => import("../pages/ResetPW"));
 const ProfilePage = lazy(() => import("../pages/ProfilePage"));
 
-/* ---------------- Providers Layout ---------------- */
 const AppProvidersLayout = () => (
   <AIProvider>
     <CartProvider>
@@ -52,7 +50,6 @@ const AppProvidersLayout = () => (
   </AIProvider>
 );
 
-/* ---------------- Auth Layout ---------------- */
 const AuthLayout = ({ roles }: { roles?: string[] }) => {
   const { user, loading } = useAuth();
 
@@ -69,7 +66,6 @@ const AuthLayout = ({ roles }: { roles?: string[] }) => {
   return <Outlet />;
 };
 
-/* ---------------- Router ---------------- */
 export default function Router() {
   const [isLoading, setIsLoading] = useState(true);
 
