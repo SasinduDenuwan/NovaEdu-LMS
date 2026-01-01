@@ -84,44 +84,42 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="relative bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 transform transition-all duration-500 hover:shadow-3xl">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-linear-to-br from-indigo-50 via-white to-cyan-50">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-linear-to-br from-teal-400/20 to-blue-500/20 blur-3xl animate-blob"></div>
+        <div className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] rounded-full bg-linear-to-br from-purple-400/20 to-pink-500/20 blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-[10%] left-[20%] w-[35%] h-[35%] rounded-full bg-linear-to-br from-blue-400/20 to-indigo-500/20 blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="w-full max-w-md z-10 relative">
+        <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-8 sm:p-10 border border-white/50 transform transition-all duration-500 hover:shadow-cyan-100/50">
           {/* Header */}
-          <div className="text-center mb-8 animate-fade-in">
-            <div
-              className="inline-block p-4 rounded-2xl mb-4 shadow-lg transform transition-transform hover:rotate-12 duration-300"
-              style={{ background: 'linear-gradient(135deg, #14B8A6 0%, #2563EB 100%)' }}
-            >
-              <Lock className="w-8 h-8 text-white" />
+          <div className="text-center mb-10 animate-fade-in-down">
+            <div className="inline-flex p-4 rounded-2xl mb-6 shadow-lg shadow-teal-500/20 bg-linear-to-br from-teal-500 to-blue-600 transform hover:scale-110 hover:rotate-6 transition-all duration-300">
+              <Lock className="w-8 h-8 text-white drop-shadow-md" strokeWidth={2.5} />
             </div>
-            <h1
-              className="text-3xl font-bold mb-2"
-              style={{
-                background: 'linear-gradient(135deg, #0D9488 0%, #2563EB 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
+            <h1 className="text-4xl font-extrabold mb-3 bg-linear-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent tracking-tight">
               Welcome Back
             </h1>
-            <p className="text-gray-600">Sign in to continue your journey</p>
+            <p className="text-gray-500 font-medium">Sign in to continue your journey</p>
           </div>
 
           {/* Form */}
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-in-up">
             {/* Email input */}
             <div className="relative group">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#14B8A6] transition-colors duration-300 w-5 h-5" />
+              <label className="block text-sm font-semibold text-gray-700 mb-2 ml-1">Email Address</label>
+              <div className="relative transition-transform duration-300 transform group-focus-within:scale-[1.02]">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-teal-500 transition-colors duration-300" />
+                </div>
                 <input
                   ref={emailRef}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#14B8A6] focus:outline-none transition-all duration-300 bg-[#F0FDFA] focus:bg-white"
+                  className="block w-full pl-11 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:bg-white transition-all duration-200 ease-out placeholder-gray-400"
                   placeholder="you@example.com"
                 />
               </div>
@@ -129,40 +127,49 @@ export default function LoginPage() {
 
             {/* Password input */}
             <div className="relative group">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#14B8A6] transition-colors duration-300 w-5 h-5" />
+              <label className="block text-sm font-semibold text-gray-700 mb-2 ml-1">Password</label>
+              <div className="relative transition-transform duration-300 transform group-focus-within:scale-[1.02]">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-teal-500 transition-colors duration-300" />
+                </div>
                 <input
                   ref={passwordRef}
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-[#14B8A6] focus:outline-none transition-all duration-300 bg-[#F0FDFA] focus:bg-white"
+                  className="block w-full pl-11 pr-12 py-3.5 bg-gray-50/50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:bg-white transition-all duration-200 ease-out placeholder-gray-400"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#14B8A6] transition-colors duration-300"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-teal-600 transition-colors focus:outline-none"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
 
             {/* Remember & Forgot */}
             <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center cursor-pointer group">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 border-gray-300 rounded cursor-pointer"
-                  style={{ accentColor: '#14B8A6' }}
-                />
-                <span className="ml-2 text-gray-600 group-hover:text-[#0D9488] transition-colors">Remember me</span>
+              <label className="flex items-center cursor-pointer group select-none">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    className="peer sr-only"
+                  />
+                  <div className="w-5 h-5 border-2 border-gray-300 rounded-md peer-checked:bg-teal-500 peer-checked:border-teal-500 transition-all duration-200"></div>
+                  <div className="absolute top-0.5 left-0.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                </div>
+                <span className="ml-2.5 text-gray-600 group-hover:text-gray-900 transition-colors font-medium">Remember me</span>
               </label>
               <Link
                 to="/forgot-pw"
-                className="text-[#14B8A6] hover:text-[#0D9488] font-medium transition-colors"
+                className="text-teal-600 hover:text-teal-700 font-semibold hover:underline decoration-2 underline-offset-2 transition-all"
               >
                 Forgot password?
               </Link>
@@ -172,72 +179,72 @@ export default function LoginPage() {
             <button
               onClick={handleSubmit}
               disabled={isLoading}
-              className="w-full text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
-              style={{ background: 'linear-gradient(135deg, #14B8A6 0%, #2563EB 100%)' }}
+              className="w-full relative overflow-hidden group bg-linear-to-r from-teal-500 to-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-teal-500/20 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
-                <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-                </>
-              )}
+              <span className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer"></span>
+              <div className="flex items-center justify-center gap-2">
+                {isLoading ? (
+                  <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <span>Sign In</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                  </>
+                )}
+              </div>
             </button>
           </div>
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">Or continue with</span>
-            </div>
-          </div>
 
-          {/* Social login */}
-          <div className="grid grid-cols-3 gap-3">
-            {/* Google */}
-            <button className="flex items-center justify-center px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-[#14B8A6] hover:bg-[#F0FDFA] transition-all duration-300 transform hover:-translate-y-0.5">
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-            </button>
-            {/* Facebook */}
-            <button className="flex items-center justify-center px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-[#14B8A6] hover:bg-[#F0FDFA] transition-all duration-300 transform hover:-translate-y-0.5">
-              <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-              </svg>
-            </button>
-            {/* GitHub */}
-            <button className="flex items-center justify-center px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-[#14B8A6] hover:bg-[#F0FDFA] transition-all duration-300 transform hover:-translate-y-0.5">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-              </svg>
-            </button>
-          </div>
 
           {/* Sign up link */}
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p className="text-center text-sm text-gray-500 mt-8 font-medium animate-fade-in-up animation-delay-500">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-[#14B8A6] hover:text-[#0D9488] font-semibold transition-colors">
-              Sign up
+            <Link to="/signup" className="text-teal-600 hover:text-teal-700 font-bold hover:underline transition-all">
+              Create an account
             </Link>
           </p>
         </div>
       </div>
 
       <style>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(-10px); }
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+        .animate-fade-in-down {
+          animation: fadeInDown 0.8s ease-out;
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out;
+        }
+        @keyframes fadeInDown {
+          from { opacity: 0; transform: translateY(-20px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in { animation: fade-in 0.6s ease-out; }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shimmer {
+          100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
       `}</style>
     </div>
+
   );
 }

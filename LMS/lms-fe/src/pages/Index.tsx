@@ -8,7 +8,7 @@ import { getAllCourses } from '../services/course';
 import Swal from 'sweetalert2';
 import { getCartItems, addCartItem, deleteCartItem } from '../services/cart';
 import AiFloatingButton from '../components/AiFloatingButton';
-import { User, GraduationCap, LogOut, Rocket, Play, Menu, X } from 'lucide-react';
+import { User, GraduationCap, LogOut, Rocket, Play, Menu, X, Star, Quote, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { createPayment } from '../services/payment';
 import { createOrder } from '../services/order';
@@ -39,6 +39,43 @@ interface Instructor {
   image: string;
   bio: string;
 }
+
+const FAQItem = ({ question, answer }: { question: string, answer: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg border border-white/20 transition-all duration-300 hover:shadow-xl"
+    >
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-6 py-5 text-left flex items-center justify-between focus:outline-none"
+      >
+        <span className="font-semibold text-gray-800 text-lg">{question}</span>
+        <ChevronDown 
+          className={`text-teal-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} 
+          size={24} 
+        />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="px-6 pb-6 text-gray-600 leading-relaxed border-t border-gray-100 mt-2 pt-4">
+              {answer}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const [firstname, setFirstname] = useState<string>('');
@@ -845,8 +882,8 @@ const Index: React.FC = () => {
                 className="grid grid-cols-3 gap-6 mt-12"
               >
                 {[
-                  { number: '50K+', label: 'Students' },
-                  { number: '2.5K+', label: 'Courses' },
+                  { number: courses.reduce((acc, curr) => acc + (curr.students || 0), 0) + '+', label: 'Students' },
+                  { number: courses.length + '+', label: 'Courses' },
                   { number: '98%', label: 'Success Rate' }
                 ].map((stat) => (
                   <motion.div
@@ -889,7 +926,7 @@ const Index: React.FC = () => {
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-4 h-4 bg-teal-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-semibold text-gray-800">2,500+ Courses</span>
+                    <span className="text-sm font-semibold text-gray-800">{courses.length}+ Courses</span>
                   </div>
                 </motion.div>
                 <motion.div
@@ -926,6 +963,8 @@ const Index: React.FC = () => {
           </div>
         </div>
       </section>
+      
+
       {/* Categories & Courses */}
       <section id="courses" className="py-12 md:py-16 relative z-10">
         <div className="container mx-auto px-6">
@@ -1205,6 +1244,71 @@ const Index: React.FC = () => {
                   {feature.title}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+      
+      {/* Testimonials Section */}
+      <section className="py-12 md:py-20 relative z-10 bg-linear-to-tr from-teal-50/30 to-blue-50/30">
+        <div className="container mx-auto px-6">
+           <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4">Student Success Stories</h2>
+            <p className="text-gray-600 text-lg bg-white/50 backdrop-blur-sm inline-block px-6 py-3 rounded-2xl shadow-lg">
+              Hear from our community of life-long learners
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Sarah Johnson",
+                role: "Frontend Developer",
+                content: "EduLearn transformed my career. The courses are top-notch and the instructors are amazing. I went from zero to hired in 6 months!",
+                image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100"
+              },
+               {
+                name: "Michael Chen",
+                role: "Data Scientist",
+                content: "The depth of content in the Data Science track is incredible. I landed my dream job after completing the specialization.",
+                image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100"
+              },
+               {
+                name: "Emily Davis",
+                role: "UX Designer",
+                content: "I loved the practical projects. They helped me build a portfolio that got me hired immediately. Highly recommended!",
+                image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100"
+              }
+            ].map((testimonial, index) => (
+               <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -10 }}
+                className="bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border border-white/20 relative flex flex-col h-full"
+              >
+                <div className="absolute -top-4 -right-4 bg-linear-to-r from-teal-500 to-blue-500 w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg">
+                  <Quote size={20} fill="currentColor" />
+                </div>
+                <div className="flex items-center space-x-4 mb-6">
+                  <img src={testimonial.image} alt={testimonial.name} className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-md" />
+                  <div>
+                    <h4 className="font-bold text-gray-800">{testimonial.name}</h4>
+                    <p className="text-teal-600 text-sm font-bold">{testimonial.role}</p>
+                  </div>
+                </div>
+                <p className="text-gray-600 leading-relaxed italic flex-grow">"{testimonial.content}"</p>
+                <div className="flex text-yellow-400 mt-6 bg-yellow-50/50 p-2 rounded-xl w-fit">
+                  {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" className="mr-1 last:mr-0" />)}
+                </div>
               </motion.div>
             ))}
           </div>
@@ -1494,6 +1598,36 @@ const Index: React.FC = () => {
           </div>
         </div>
       </section>
+      
+      {/* FAQ Section */}
+      <section className="py-12 md:py-20 relative z-10">
+        <div className="container mx-auto px-6 max-w-4xl">
+           <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4">Frequently Asked Questions</h2>
+            <p className="text-gray-600 text-lg bg-white/50 backdrop-blur-sm inline-block px-6 py-3 rounded-2xl shadow-lg">
+              Find answers to common questions about our platform
+            </p>
+          </motion.div>
+          <div className="space-y-4">
+            {[
+              { q: "How do I get access to the courses?", a: "Once you purchase a course, you get instant lifetime access to all its content, including videos, resources, and future updates. You can access it anytime, anywhere." },
+              { q: "Is there a money-back guarantee?", a: "Yes, we offer a 30-day money-back guarantee. If you are not completely satisfied with your purchase, simply contact our support team for a full refund." },
+              { q: "Can I watch the courses on mobile?", a: "Absolutely! Our platform is fully responsive and works beautifully on all devices, including smartphones and tablets. You can learn on the go!" },
+              { q: "Do I get a certificate upon completion?", a: "Yes, upon successful completion of any course, you will receive a verified certificate that you can share on LinkedIn or include in your resume." },
+              { q: "Are there any prerequisites?", a: "Most of our courses are designed for beginners, but some advanced courses may require prior knowledge. Check the course description for specific requirements." }
+            ].map((faq, index) => (
+              <FAQItem key={index} question={faq.q} answer={faq.a} />
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-12 md:py-20 relative z-10">
         <div className="container mx-auto px-6">

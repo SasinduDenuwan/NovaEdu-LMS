@@ -18,7 +18,8 @@ import {
   Download,
   Star,
   Menu,
-  X
+  X,
+  Home
 } from 'lucide-react';
 import { useAuth } from '../context/authContext';
 import { getUserProfile } from '../services/students';
@@ -220,6 +221,7 @@ const StudentDashboard: React.FC = () => {
   }, [user]);
 
   const navigationItems = [
+    { id: 'home', label: 'Home', icon: <Home size={24} />, color: 'indigo' },
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={24} />, color: 'teal' },
     { id: 'my-courses', label: 'My Courses', icon: <BookOpen size={24} />, color: 'blue' },
     { id: 'resources', label: 'Resources', icon: <Library size={24} />, color: 'purple' },
@@ -340,7 +342,11 @@ const StudentDashboard: React.FC = () => {
               whileHover={{ scale: 1.02, x: 4 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                  setActiveTab(item.id as any);
+                  if (item.id === 'home') {
+                      navigate('/');
+                  } else {
+                      setActiveTab(item.id as any);
+                  }
                   setIsSidebarOpen(false);
               }}
               className={`w-full flex items-center space-x-4 p-4 rounded-2xl font-semibold transition-all duration-300 ${
