@@ -907,7 +907,7 @@ const AdminDashboard: React.FC = () => {
             </div>
            
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 min-w-0">
-              <div className="font-bold text-gray-800 truncate text-lg">Admin User</div>
+              <div className="font-bold text-gray-800 truncate text-lg">ADMIN USER</div>
               <div className="text-sm text-teal-600 truncate">Super Administrator</div>
             </motion.div>
           </div>
