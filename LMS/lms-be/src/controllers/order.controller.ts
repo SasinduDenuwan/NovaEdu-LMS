@@ -5,6 +5,7 @@ import { Payment, PaymentMethod, Status } from "../models/payment.model";
 import { OrderItem } from "../models/order_item.model";
 import { Course } from "../models/course.model";
 import { StudentCourse } from "../models/student_courses";
+import { Instructor } from "../models/instructor.model";
 
 export const createOrder = async (req: AUTHRequest, res: Response) => {
   try {
@@ -53,6 +54,10 @@ export const createOrder = async (req: AUTHRequest, res: Response) => {
               course_id: courseId
             })
             await studentCourse.save();
+
+            if (course && course.instructor) {
+              await Instructor.findByIdAndUpdate(course.instructor, { $inc: { students: 1 } });
+            }
         }
     }
 

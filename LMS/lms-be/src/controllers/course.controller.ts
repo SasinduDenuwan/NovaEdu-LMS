@@ -5,6 +5,7 @@ import { CourseVideo } from "../models/course_video.model";
 import { CourseResource } from "../models/course_resource.model";
 import { StudentCourse } from "../models/student_courses";
 import cloudinary from "../config/cloudinary.config";
+import { Instructor } from "../models/instructor.model";
 
 export const getAllCourses = async (req: AUTHRequest, res: Response) => {
   try {
@@ -51,6 +52,10 @@ export const addCourse = async (req: AUTHRequest, res: Response) => {
     console.log(courseData);
 
     const course = await Course.create(courseData);
+
+    if (course.instructor) {
+      await Instructor.findByIdAndUpdate(course.instructor, { $inc: { courses: 1 } });
+    }
 
     // Parse and save videos
     if (req.body.videos) {
