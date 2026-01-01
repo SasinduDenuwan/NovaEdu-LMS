@@ -3,8 +3,8 @@ declare module "@dukebot/open-router" {
     prompt: string;
     system?: string;
     model?: string;
-    max_tokens?: number; // optional, recommended for free models like TNG-R1T-Chimera
-    temperature?: number; // optional
+    max_tokens?: number;
+    temperature?: number;
   }
 
   export interface CompleteChatResponse {
