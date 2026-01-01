@@ -1,38 +1,43 @@
-import { lazy, Suspense, type ReactNode, useState, useEffect } from "react"
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
-import { useAuth } from "../context/authContext"
-import { AIProvider } from "../context/aiContext"
-import { CartProvider } from "../context/cartContext"
-import Index from "../pages/Index"
-import StudentDashboard from "../pages/StudentDashboard"
-import AdminDashboard from "../pages/AdminDashboard"
-import LoadingPage from "../components/LoadingPage"
+import { lazy, Suspense, type ReactNode, useState, useEffect } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useAuth } from "../context/authContext";
+import { AIProvider as AIContext } from "../context/aiContext";
+import { CartProvider as CartContext } from "../context/cartContext";
+import { CourseProvider as CourseContext } from "../context/courseContext";
+import { InstructorProvider as InstructorContext } from "../context/instructorContext";
+import { StudentProvider as StudentContext } from "../context/studentContext";
+import { PaymentProvider as PaymentContext } from "../context/paymentContext";
+import { OrderProvider as OrderContext } from "../context/orderContext";
+import Index from "../pages/Index";
+import StudentDashboard from "../pages/StudentDashboard";
+import AdminDashboard from "../pages/AdminDashboard";
+import LoadingPage from "../components/LoadingPage";
 
-const AccessDenied = lazy(() => import("../components/AccessDenid"))
-const LoginPage = lazy(() => import("../pages/Login"))
-const SignupPage = lazy(() => import("../pages/Signup"))
-const ResetPWPage = lazy(() => import("../pages/ResetPW"))
-const ProfilePage = lazy(() => import("../pages/ProfilePage"))
+const AccessDenied = lazy(() => import("../components/AccessDenid"));
+const LoginPage = lazy(() => import("../pages/Login"));
+const SignupPage = lazy(() => import("../pages/Signup"));
+const ResetPWPage = lazy(() => import("../pages/ResetPW"));
+const ProfilePage = lazy(() => import("../pages/ProfilePage"));
 
-type RequireAuthTypes = { children: ReactNode; roles?: string[] }
+type RequireAuthTypes = { children: ReactNode; roles?: string[] };
 
 const RequireAuth = ({ children, roles }: RequireAuthTypes) => {
-  const { user, loading } = useAuth()
+  const { user, loading } = useAuth();
 
   if (loading) {
-    return <LoadingPage />
+    return <LoadingPage />;
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace />;
   }
 
   if (roles && !roles.some((role) => user.roles?.includes(role))) {
-    return <AccessDenied />
+    return <AccessDenied />;
   }
 
-  return <>{children}</>
-}
+  return <>{children}</>;
+};
 
 export default function Router() {
   const [isLoading, setIsLoading] = useState(true);
@@ -51,35 +56,53 @@ export default function Router() {
 
   return (
     <BrowserRouter>
-        <Suspense
-          fallback= {<LoadingPage />}
-        >
-          <AIProvider>
-           <CartProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/student" element={
-                <RequireAuth roles={["student", "user","USER"]}>
-                  <StudentDashboard />
-                </RequireAuth>
-              } />
-              <Route path="/admin" element={
-                <RequireAuth roles={["admin","ADMIN"]}>
-                  <AdminDashboard />
-                </RequireAuth>
-              } />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="/forgot-pw" element={<ResetPWPage />} /> 
-              <Route path="/profile" element={
-                <RequireAuth roles={["student", "user","USER"]}>
-                  <ProfilePage />
-                </RequireAuth>
-              } />
-            </Routes>
-           </CartProvider>
-          </AIProvider>
+      <Suspense fallback={<LoadingPage />}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-pw" element={<ResetPWPage />} />
+            <AIContext>
+              <CartContext>
+                <CourseContext>
+                  <InstructorContext>
+                    <StudentContext>
+                      <PaymentContext>
+                        <OrderContext>
+                          <Route path="/" element={<Index />} />
+                        <Route
+                          path="/student"
+                          element={
+                            <RequireAuth roles={["student", "user", "USER"]}>
+                              <StudentDashboard />
+                            </RequireAuth>
+                          }
+                        />
+                        <Route
+                          path="/admin"
+                          element={
+                            <RequireAuth roles={["admin", "ADMIN"]}>
+                              <AdminDashboard />
+                            </RequireAuth>
+                          }
+                        />
+
+                        <Route
+                          path="/profile"
+                          element={
+                            <RequireAuth roles={["student", "user", "USER"]}>
+                              <ProfilePage />
+                            </RequireAuth>
+                          }
+                        />
+                        </OrderContext>
+                      </PaymentContext>
+                    </StudentContext>
+                  </InstructorContext>
+                </CourseContext>
+              </CartContext>
+            </AIContext>
+        </Routes>
       </Suspense>
     </BrowserRouter>
-  )
+  );
 }

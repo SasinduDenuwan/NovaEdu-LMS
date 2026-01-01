@@ -8,7 +8,7 @@ interface AIContextType {
   loading: boolean;
 }
 
-const AIContext = createContext<AIContextType | undefined>(undefined);
+export const AIContext = createContext<AIContextType | undefined>(undefined);
 
 export const AIProvider = ({ children }: { children: ReactNode }) => {
   const [response, setResponse] = useState("");
