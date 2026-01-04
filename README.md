@@ -105,12 +105,12 @@
 <summary><b>🏠 Public Pages & Authentication</b></summary>
 <br>
 <div align="center">
-  <img src="screenshots/homePage.png" width="48%" alt="Home Page" style="border-radius: 8px;" />
-  <img src="screenshots/homePageCourses.png" width="48%" alt="Courses Page" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/homePage.png" width="48%" alt="Home Page" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/homePageCourses.png" width="48%" alt="Courses Page" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="screenshots/login.png" width="30%" alt="Login Page" style="border-radius: 8px;" />
-  <img src="screenshots/signup.png" width="30%" alt="Signup Page" style="border-radius: 8px;" />
-  <img src="screenshots/homePageInstructors.png" width="30%" alt="Instructors Page" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/login.png" width="30%" alt="Login Page" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/signup.png" width="30%" alt="Signup Page" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/homePageInstructors.png" width="30%" alt="Instructors Page" style="border-radius: 8px;" />
 </div>
 </details>
 
@@ -120,17 +120,17 @@
 <summary><b>🎓 Student Portal Experience</b></summary>
 <br>
 <div align="center">
-  <img src="screenshots/studentDashboard.png" width="80%" alt="Student Dashboard" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/studentDashboard.png" width="80%" alt="Student Dashboard" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="screenshots/courseVideoWatch.png" width="48%" alt="Video Player" style="border-radius: 8px;" />
-  <img src="screenshots/studentNotes.png" width="48%" alt="Student Notes" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/courseVideoWatch.png" width="48%" alt="Video Player" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/studentNotes.png" width="48%" alt="Student Notes" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="screenshots/courseInStudentDashboard.png" width="48%" alt="Course View" style="border-radius: 8px;" />
-  <img src="screenshots/studentProfileChange.png" width="48%" alt="Profile Settings" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/courseInStudentDashboard.png" width="48%" alt="Course View" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/studentProfileChange.png" width="48%" alt="Profile Settings" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="screenshots/cartInStudent.png" width="32%" alt="Shopping Cart" style="border-radius: 8px;" />
-  <img src="screenshots/checkoutStudent.png" width="32%" alt="Checkout" style="border-radius: 8px;" />
-  <img src="screenshots/paymentSection.png" width="32%" alt="Payment Section" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/cartInStudent.png" width="32%" alt="Shopping Cart" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/checkoutStudent.png" width="32%" alt="Checkout" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/paymentSection.png" width="32%" alt="Payment Section" style="border-radius: 8px;" />
 </div>
 </details>
 
@@ -140,20 +140,20 @@
 <summary><b>🛠️ Administrative Control Center</b></summary>
 <br>
 <div align="center">
-  <img src="screenshots/adminDashboard.png" width="80%" alt="Admin Dashboard" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/adminDashboard.png" width="80%" alt="Admin Dashboard" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="screenshots/coursesInAdminSide.png" width="80%" alt="Courses Grid" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/coursesInAdminSide.png" width="80%" alt="Courses Grid" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="screenshots/coursesAdminSide.png" width="48%" alt="Courses List" style="border-radius: 8px;" />
-  <img src="screenshots/addCourseAdminSide.png" width="48%" alt="Add Course" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/coursesAdminSide.png" width="48%" alt="Courses List" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/addCourseAdminSide.png" width="48%" alt="Add Course" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="screenshots/instructorsInAdminSide.png" width="48%" alt="Instructors List" style="border-radius: 8px;" />
-  <img src="screenshots/addInstructorAdminSide.png" width="48%" alt="Add Instructor" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/instructorsInAdminSide.png" width="48%" alt="Instructors List" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/addInstructorAdminSide.png" width="48%" alt="Add Instructor" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="screenshots/paymentAdminSide.png" width="48%" alt="Payment Management" style="border-radius: 8px;" />
-  <img src="screenshots/studentAdminSide.png" width="48%" alt="Student Management" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/paymentAdminSide.png" width="48%" alt="Payment Management" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/studentAdminSide.png" width="48%" alt="Student Management" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="screenshots/addNewStudent.png" width="48%" alt="Add Student" style="border-radius: 8px;" />
+  <img src="./LMS/screenshots/addNewStudent.png" width="48%" alt="Add Student" style="border-radius: 8px;" />
 </div>
 </details>
 
