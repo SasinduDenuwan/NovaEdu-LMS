@@ -1,7 +1,5 @@
 <div align="center">
 
-
-
   <img src="https://img.shields.io/badge/v1.0.0-Release-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/Status-Active_Development-orange?style=flat-square" alt="Status">
@@ -15,13 +13,13 @@
     Featuring <b>AI-driven assistance</b>, real-time analytics, and a seamless e-commerce experience, it sets a new standard for online education platforms.
   </p>
 
+  <h3>🚀 Deployed Applications</h3>
   <p>
-    <a href="https://lms-fe-lrhe.vercel.app/" target="_blank">
-      <img src="https://img.shields.io/badge/Live_Demo-Frontend-38B2AC?style=for-the-badge&logo=vercel&logoColor=white" alt="Frontend Demo" />
-    </a>
-    <a href="https://lms-be-tau.vercel.app/" target="_blank">
-      <img src="https://img.shields.io/badge/Live_API-Backend-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Backend API" />
-    </a>
+    <strong>Frontend Host:</strong><br>
+    <a href="https://lms-fe-lrhe.vercel.app/" target="_blank">https://lms-fe-lrhe.vercel.app/</a>
+    <br><br>
+    <strong>Backend API Host:</strong><br>
+    <a href="https://lms-be-tau.vercel.app/" target="_blank">https://lms-be-tau.vercel.app/</a>
   </p>
 
   <p>
@@ -37,60 +35,64 @@
 
 ---
 
-## 🚀 Key Features
+## 🌟 Comprehensive Feature List
 
-<table>
-  <tr>
-    <td width="33%" valign="top">
-      <h3 align="center">🔐 Secure & Roles</h3>
-      <ul>
-        <li><b>RBAC System</b>: Distinct portals for Admins, Instructors, and Students.</li>
-        <li><b>Auth</b>: JWT-based stateless authentication with email verification.</li>
-        <li><b>Security</b>: Protected routes and API endpoints.</li>
-      </ul>
-    </td>
-    <td width="33%" valign="top">
-      <h3 align="center">📚 Course Hub</h3>
-      <ul>
-        <li><b>Content</b>: YouTube video integration with side-by-side notes.</li>
-        <li><b>Management</b>: Easy drag-and-drop course creation.</li>
-        <li><b>Resources</b>: Downloadable course materials & auto-updated stats.</li>
-      </ul>
-    </td>
-    <td width="33%" valign="top">
-      <h3 align="center">💳 E-Commerce</h3>
-      <ul>
-        <li><b>Cart System</b>: Full shopping cart and wishlist functionality.</li>
-        <li><b>Checkout</b>: Seamless integration with payment gateways.</li>
-        <li><b>History</b>: Detailed order tracking and invoice generation.</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td width="33%" valign="top">
-      <h3 align="center">📊 Analytics</h3>
-      <ul>
-        <li><b>Dashboards</b>: Interactive charts for revenue, growth, and sales.</li>
-        <li><b>Admins</b>: Advanced search & pagination for user management.</li>
-        <li><b>Reports</b>: Exportable PDF and Excel reports for analysis.</li>
-      </ul>
-    </td>
-    <td width="33%" valign="top">
-      <h3 align="center">🤖 AI Assistant</h3>
-      <ul>
-        <li><b>Smart Chat</b>: 24/7 AI tutor powered by OpenRouter.</li>
-        <li><b>Context Aware</b>: Understands course context to answer student queries.</li>
-      </ul>
-    </td>
-    <td width="33%" valign="top">
-      <h3 align="center">🎨 Modern UI</h3>
-      <ul>
-        <li><b>Responsive</b>: Mobile-first design using TailwindCSS v4.</li>
-        <li><b>Interactive</b>: Smooth animations with Framer Motion.</li>
-      </ul>
-    </td>
-  </tr>
-</table>
+This project is a feature-rich platform designed for scalability and user experience. Below is a detailed breakdown of all implemented functionalities across the system.
+
+### 🔐 Authentication & Security
+*   **Secure Registration**: User signup with firstname, lastname, email, and password. Generates hashed passwords using `bcryptjs`.
+*   **JWT Authentication**: Stateless authentication using JSON Web Tokens (Access & Refresh tokens).
+*   **Role-Based Access Control (RBAC)**: Distinct permissions for `STUDENT`, `INSTRUCTOR`, and `ADMIN` roles.
+*   **Password Recovery**: Secure "Forgot Password" flow via Email OTP (using Nodemailer).
+*   **Session Management**: Auto-logout and token refresh mechanisms.
+*   **Protected Routes**: Middleware (`auth.middleware.ts`) ensures only authorized users access sensitive endpoints.
+
+### 🎓 Student Portal Features
+*   **Interactive Dashboard**:
+    *   **Personalized Greeting**: Dynamic welcome message based on time/user data.
+    *   **Learning Stats**: Track "Hours Learned", "Courses Enrolled", "Resources Accessed", and "Learning Streak".
+    *   **Continue Learning**: Quick access to recently accessed courses.
+*   **Course Discovery & Enrollment**:
+    *   **Course Browsing**: View all available courses with details like Rating, Duration, Level (Beginner/Intermediate), and Category.
+    *   **Advance Filtering**: Search and filter courses by category.
+    *   **Shopping Cart**: Add courses to cart, view total price, and manage wishlist items.
+    *   **Seamless Checkout**: Integrated payment processing flow creating orders and invoices.
+*   **Immersive Learning Experience**:
+    *   **Video Player**: Custom video player supporting YouTube embeds (`getEmbedUrl` utility) for seamless playback.
+    *   **Lesson Navigation**: Sidebar navigation to switch between lessons and video clips.
+    *   **Progress Tracking**: Real-time progress bar showing course completion percentage.
+    *   **Resource Hub**: Downloadable course materials (PDF, ZIP, DOC) directly from the dashboard.
+*   **User Profile Management**:
+    *   **Edit Profile**: Update personal details (Name, Address, Mobile) and upload profile pictures.
+    *   **Order History**: View past purchases and transaction status.
+
+### �️ Administrative Control Center
+*   **Dashboard & Analytics**:
+    *   **Visual Charts**: Integrated `Recharts` for "Revenue Trends", "Student Growth", and "Course Sales".
+    *   **KPI Cards**: Quick view of Total Revenue, Total Students, Active Instructors, and Total Courses.
+*   **User Management**:
+    *   **Student Management**: View all enrolled students, search by name, delete/ban users, and export student lists to PDF.
+    *   **Instructor Management**: Add new instructors (with photo upload), update bio/experience, and track their performance (Student count/Course count).
+*   **Course Management (CMS)**:
+    *   **Course Creation Wizard**: Form to add Course Title, Description, Price, Level, Category, and assign Instructors.
+    *   **Media Management**: Upload course thumbnails (Cloudinary integration) and manage video links.
+    *   **Rich Content**: Support for adding resources and structuring lessons.
+    *   **CRUD Operations**: Full Edit/Delete capabilities for existing courses.
+*   **Financial Hub**:
+    *   **Payment Tracking**: View all transaction logs with Status (Completed/Failed), Transaction IDs, and associated Students.
+    *   **Reporting**: specific "Export to PDF" functionality for financial records.
+
+### 🤖 AI-Powered Assistant
+*   **Smart Tutor**: Integrated AI Chatbot powered by **OpenRouter**.
+*   **Contextual Help**: Floating AI button allowing students to ask questions about course content anytime.
+*   **Natural Language Processing**: Understands student queries and provides instant, relevant answers.
+
+### ⚙️ Backend Logic & System Features
+*   **Automated Statistics**:
+    *   **Instructor Stats**: Auto-increments "Student Count" for an instructor when their course is purchased (`order.controller.ts`).
+    *   **Course Counts**: Auto-increments "Course Count" for instructors when new courses are assigned (`course.controller.ts`).
+*   **Cloud Storage**: Integration with **Cloudinary** for scalable image hosting (Profile pics, Course thumbnails).
+*   **Database Optimization**: efficiently structured MongoDB schemas with Mongoose relationships (`populate` methods for joining Courses, Instructors, and Videos).
 
 <br />
 
@@ -104,12 +106,60 @@
 | ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) | ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white) | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white) |
 | ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white) | ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white) | ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white) |
 | ![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white) | ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens) | ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white) |
+| ![Redux](https://img.shields.io/badge/Redux-593D88?style=for-the-badge&logo=redux&logoColor=white) | | |
 
 </div>
 
-<p align="center">
-  <b>Additional Integrations:</b> OpenRouter (AI), Recharts (Analytics), JSPDF (Reporting), SweetAlert2 (Notifications)
-</p>
+<br/>
+
+<div align="center">
+  <b>💎 Specialized Libraries</b>
+  <br/><br/>
+
+| Library | Badge | Library | Badge |
+| :---: | :---: | :---: | :---: |
+| **Recharts** | ![Recharts](https://img.shields.io/badge/Recharts-22b5bf?style=for-the-badge&logo=recharts&logoColor=white) | **Cloudinary** | ![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white) |
+| **JSPDF** | ![JSPDF](https://img.shields.io/badge/jspdf-EF5B25?style=for-the-badge&logo=adobeacrobatreader&logoColor=white) | **Nodemailer** | ![Nodemailer](https://img.shields.io/badge/Nodemailer-00d1b2?style=for-the-badge&logo=nodemailer&logoColor=white) |
+| **SweetAlert2** | ![SweetAlert2](https://img.shields.io/badge/SweetAlert2-EE4351?style=for-the-badge&logo=npm&logoColor=white) | **BCrypt** | ![Bcrypt](https://img.shields.io/badge/Bcrypt.js-222222?style=for-the-badge&logo=npm&logoColor=red) |
+| **Lucide React** | ![Lucide](https://img.shields.io/badge/Lucide_React-F05133?style=for-the-badge&logo=lucide&logoColor=white) | **Node-Cron** | ![NodeCron](https://img.shields.io/badge/Node_Cron-2FAB22?style=for-the-badge&logo=nodedotjs&logoColor=white) |
+| **Hot Toast** | ![HotToast](https://img.shields.io/badge/React_Hot_Toast-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) | **OpenRouter** | ![OpenRouter](https://img.shields.io/badge/OpenRouter-6F41D3?style=for-the-badge&logo=openai&logoColor=white) |
+
+</div>
+
+<br />
+
+## 📂 Project Structure
+
+A quick look at the top-level files and directories.
+
+```text
+LMS/
+├── lms-be/                 # Backend (Node.js/Express)
+│   ├── src/
+│   │   ├── config/         # DB, Cloudinary & Email configs
+│   │   ├── controllers/    # Business logic (Auth, Course, Order...)
+│   │   ├── middleware/     # Auth checks & error handling
+│   │   ├── models/         # Mongoose Schemas (User, Course...)
+│   │   ├── routes/         # API endpoints definitions
+│   │   ├── utils/          # Helpers (Tokens, PDF, Validation)
+│   │   └── index.ts        # Server entry point
+│   ├── .env.example
+│   └── package.json
+│
+├── lms-fe/                 # Frontend (React + Vite)
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── context/        # Global state (AuthContext)
+│   │   ├── pages/          # Full application views
+│   │   ├── services/       # API integration services
+│   │   ├── utils/          # Formatters & helper functions
+│   │   ├── App.tsx         # Main routing configuration
+│   │   └── main.tsx        # Application entry point
+│   ├── index.css           # Global styles (Tailwind imports)
+│   └── package.json
+│
+└── README.md
+```
 
 <br />
 
@@ -193,8 +243,10 @@ Create a `.env` file in `lms-be` with your credentials:
 PORT=5000
 MONGO_URI=mongodb+srv://<your-db>
 JWT_SECRET=supersecretkey
-CLOUDINARY_URL=your_cloudinary_url
+JWT_REFRESH_SECRET=superrefreshsecret
+CLOUDINARY_URL=cloudinary://your_key:your_secret@your_cloud_name
 OPENROUTER_API_KEY=your_openrouter_key
+GMAIL_USER=your_email@gmail.com
 ```
 Start the server:
 ```bash
