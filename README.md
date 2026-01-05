@@ -16,6 +16,15 @@
   </p>
 
   <p>
+    <a href="https://lms-fe-lrhe.vercel.app/" target="_blank">
+      <img src="https://img.shields.io/badge/Live_Demo-Frontend-38B2AC?style=for-the-badge&logo=vercel&logoColor=white" alt="Frontend Demo" />
+    </a>
+    <a href="https://lms-be-tau.vercel.app/" target="_blank">
+      <img src="https://img.shields.io/badge/Live_API-Backend-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Backend API" />
+    </a>
+  </p>
+
+  <p>
     <a href="#-features"><b>Explore Features</b></a> •
     <a href="#-tech-arsenal"><b>Tech Stack</b></a> •
     <a href="#-visual-tour"><b>Visual Tour</b></a> •
@@ -43,9 +52,9 @@
     <td width="33%" valign="top">
       <h3 align="center">📚 Course Hub</h3>
       <ul>
-        <li><b>Content</b>: Video lessons, downloadable resources, and rich text.</li>
-        <li><b>Management</b>: Easy drag-and-drop course creation tools.</li>
-        <li><b>Notes</b>: Built-in note-taking while watching lectures.</li>
+        <li><b>Content</b>: YouTube video integration with side-by-side notes.</li>
+        <li><b>Management</b>: Easy drag-and-drop course creation.</li>
+        <li><b>Resources</b>: Downloadable course materials & auto-updated stats.</li>
       </ul>
     </td>
     <td width="33%" valign="top">
@@ -61,8 +70,9 @@
     <td width="33%" valign="top">
       <h3 align="center">📊 Analytics</h3>
       <ul>
-        <li><b>Dashboards</b>: Real-time graphs for revenue, student growth, and sales.</li>
-        <li><b>Reports</b>: Exportable PDF and Excel reports for granular data analysis.</li>
+        <li><b>Dashboards</b>: Interactive charts for revenue, growth, and sales.</li>
+        <li><b>Admins</b>: Advanced search & pagination for user management.</li>
+        <li><b>Reports</b>: Exportable PDF and Excel reports for analysis.</li>
       </ul>
     </td>
     <td width="33%" valign="top">
@@ -96,6 +106,10 @@
 | ![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white) | ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens) | ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white) |
 
 </div>
+
+<p align="center">
+  <b>Additional Integrations:</b> OpenRouter (AI), Recharts (Analytics), JSPDF (Reporting), SweetAlert2 (Notifications)
+</p>
 
 <br />
 
@@ -179,8 +193,8 @@ Create a `.env` file in `lms-be` with your credentials:
 PORT=5000
 MONGO_URI=mongodb+srv://<your-db>
 JWT_SECRET=supersecretkey
-CLOUDINARY_URl=...
-OPENROUTER_API_KEY=...
+CLOUDINARY_URL=your_cloudinary_url
+OPENROUTER_API_KEY=your_openrouter_key
 ```
 Start the server:
 ```bash
