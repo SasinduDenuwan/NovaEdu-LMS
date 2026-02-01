@@ -254,8 +254,7 @@ LMS/
 
 ## 📸 Visual Tour
 
-<details open>
-<summary><b>🏠 Public Pages & Authentication</b></summary>
+### 🏠 Public Pages & Authentication
 <br>
 <div align="center">
   <img src="./LMS/screenshots/homePage.png" width="48%" alt="Home Page" style="border-radius: 8px;" />
@@ -265,12 +264,10 @@ LMS/
   <img src="./LMS/screenshots/signup.png" width="30%" alt="Signup Page" style="border-radius: 8px;" />
   <img src="./LMS/screenshots/homePageInstructors.png" width="30%" alt="Instructors Page" style="border-radius: 8px;" />
 </div>
-</details>
 
 <br/>
 
-<details>
-<summary><b>🎓 Student Portal Experience</b></summary>
+### 🎓 Student Portal Experience
 <br>
 <div align="center">
   <img src="./LMS/screenshots/studentDashboard.png" width="80%" alt="Student Dashboard" style="border-radius: 8px;" />
@@ -285,12 +282,10 @@ LMS/
   <img src="./LMS/screenshots/checkoutStudent.png" width="32%" alt="Checkout" style="border-radius: 8px;" />
   <img src="./LMS/screenshots/paymentSection.png" width="32%" alt="Payment Section" style="border-radius: 8px;" />
 </div>
-</details>
 
 <br/>
 
-<details>
-<summary><b>🛠️ Administrative Control Center</b></summary>
+### 🛠️ Administrative Control Center
 <br>
 <div align="center">
   <img src="./LMS/screenshots/adminDashboard.png" width="80%" alt="Admin Dashboard" style="border-radius: 8px;" />
@@ -308,7 +303,6 @@ LMS/
   <br/><br/>
   <img src="./LMS/screenshots/addNewStudent.png" width="48%" alt="Add Student" style="border-radius: 8px;" />
 </div>
-</details>
 
 <br />
 
