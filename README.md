@@ -35,67 +35,6 @@
 
 ---
 
-## 🌟 Comprehensive Feature List
-
-This project is a feature-rich platform designed for scalability and user experience. Below is a detailed breakdown of all implemented functionalities across the system.
-
-### 🔐 Authentication & Security
-*   **Secure Registration**: User signup with firstname, lastname, email, and password. Generates hashed passwords using `bcryptjs`.
-*   **JWT Authentication**: Stateless authentication using JSON Web Tokens (Access & Refresh tokens).
-*   **Role-Based Access Control (RBAC)**: Distinct permissions for `STUDENT`, `INSTRUCTOR`, and `ADMIN` roles.
-*   **Password Recovery**: Secure "Forgot Password" flow via Email OTP (using Nodemailer).
-*   **Session Management**: Auto-logout and token refresh mechanisms.
-*   **Protected Routes**: Middleware (`auth.middleware.ts`) ensures only authorized users access sensitive endpoints.
-
-### 🎓 Student Portal Features
-*   **Interactive Dashboard**:
-    *   **Personalized Greeting**: Dynamic welcome message based on time/user data.
-    *   **Learning Stats**: Track "Hours Learned", "Courses Enrolled", "Resources Accessed", and "Learning Streak".
-    *   **Continue Learning**: Quick access to recently accessed courses.
-*   **Course Discovery & Enrollment**:
-    *   **Course Browsing**: View all available courses with details like Rating, Duration, Level (Beginner/Intermediate), and Category.
-    *   **Advance Filtering**: Search and filter courses by category.
-    *   **Shopping Cart**: Add courses to cart, view total price, and manage wishlist items.
-    *   **Seamless Checkout**: Integrated payment processing flow creating orders and invoices.
-*   **Immersive Learning Experience**:
-    *   **Video Player**: Custom video player supporting YouTube embeds (`getEmbedUrl` utility) for seamless playback.
-    *   **Lesson Navigation**: Sidebar navigation to switch between lessons and video clips.
-    *   **Progress Tracking**: Real-time progress bar showing course completion percentage.
-    *   **Resource Hub**: Downloadable course materials (PDF, ZIP, DOC) directly from the dashboard.
-*   **User Profile Management**:
-    *   **Edit Profile**: Update personal details (Name, Address, Mobile) and upload profile pictures.
-    *   **Order History**: View past purchases and transaction status.
-
-### 🎛 Administrative Control Center
-*   **Dashboard & Analytics**:
-    *   **Visual Charts**: Integrated `Recharts` for "Revenue Trends", "Student Growth", and "Course Sales".
-    *   **KPI Cards**: Quick view of Total Revenue, Total Students, Active Instructors, and Total Courses.
-*   **User Management**:
-    *   **Student Management**: View all enrolled students, search by name, delete/ban users, and export student lists to PDF.
-    *   **Instructor Management**: Add new instructors (with photo upload), update bio/experience, and track their performance (Student count/Course count).
-*   **Course Management (CMS)**:
-    *   **Course Creation Wizard**: Form to add Course Title, Description, Price, Level, Category, and assign Instructors.
-    *   **Media Management**: Upload course thumbnails (Cloudinary integration) and manage video links.
-    *   **Rich Content**: Support for adding resources and structuring lessons.
-    *   **CRUD Operations**: Full Edit/Delete capabilities for existing courses.
-*   **Financial Hub**:
-    *   **Payment Tracking**: View all transaction logs with Status (Completed/Failed), Transaction IDs, and associated Students.
-    *   **Reporting**: specific "Export to PDF" functionality for financial records.
-
-### 🤖 AI-Powered Assistant
-*   **Smart Tutor**: Integrated AI Chatbot powered by **OpenRouter**.
-*   **Contextual Help**: Floating AI button allowing students to ask questions about course content anytime.
-*   **Natural Language Processing**: Understands student queries and provides instant, relevant answers.
-
-### ⚙️ Backend Logic & System Features
-*   **Automated Statistics**:
-    *   **Instructor Stats**: Auto-increments "Student Count" for an instructor when their course is purchased (`order.controller.ts`).
-    *   **Course Counts**: Auto-increments "Course Count" for instructors when new courses are assigned (`course.controller.ts`).
-*   **Cloud Storage**: Integration with **Cloudinary** for scalable image hosting (Profile pics, Course thumbnails).
-*   **Database Optimization**: efficiently structured MongoDB schemas with Mongoose relationships (`populate` methods for joining Courses, Instructors, and Videos).
-
-<br />
-
 ## 🏗 Advanced System Architecture
 
 The following diagram illustrates the high-level architecture of NovaEdu LMS, showcasing the interaction between client applications, the backend API, database, and external services.
@@ -182,6 +121,67 @@ sequenceDiagram
     
     FE-->>User: Update UI / Show Notification
 ```
+
+<br />
+
+## 🌟 Comprehensive Feature List
+
+This project is a feature-rich platform designed for scalability and user experience. Below is a detailed breakdown of all implemented functionalities across the system.
+
+### 🔐 Authentication & Security
+*   **Secure Registration**: User signup with firstname, lastname, email, and password. Generates hashed passwords using `bcryptjs`.
+*   **JWT Authentication**: Stateless authentication using JSON Web Tokens (Access & Refresh tokens).
+*   **Role-Based Access Control (RBAC)**: Distinct permissions for `STUDENT`, `INSTRUCTOR`, and `ADMIN` roles.
+*   **Password Recovery**: Secure "Forgot Password" flow via Email OTP (using Nodemailer).
+*   **Session Management**: Auto-logout and token refresh mechanisms.
+*   **Protected Routes**: Middleware (`auth.middleware.ts`) ensures only authorized users access sensitive endpoints.
+
+### 🎓 Student Portal Features
+*   **Interactive Dashboard**:
+    *   **Personalized Greeting**: Dynamic welcome message based on time/user data.
+    *   **Learning Stats**: Track "Hours Learned", "Courses Enrolled", "Resources Accessed", and "Learning Streak".
+    *   **Continue Learning**: Quick access to recently accessed courses.
+*   **Course Discovery & Enrollment**:
+    *   **Course Browsing**: View all available courses with details like Rating, Duration, Level (Beginner/Intermediate), and Category.
+    *   **Advance Filtering**: Search and filter courses by category.
+    *   **Shopping Cart**: Add courses to cart, view total price, and manage wishlist items.
+    *   **Seamless Checkout**: Integrated payment processing flow creating orders and invoices.
+*   **Immersive Learning Experience**:
+    *   **Video Player**: Custom video player supporting YouTube embeds (`getEmbedUrl` utility) for seamless playback.
+    *   **Lesson Navigation**: Sidebar navigation to switch between lessons and video clips.
+    *   **Progress Tracking**: Real-time progress bar showing course completion percentage.
+    *   **Resource Hub**: Downloadable course materials (PDF, ZIP, DOC) directly from the dashboard.
+*   **User Profile Management**:
+    *   **Edit Profile**: Update personal details (Name, Address, Mobile) and upload profile pictures.
+    *   **Order History**: View past purchases and transaction status.
+
+### 🎛 Administrative Control Center
+*   **Dashboard & Analytics**:
+    *   **Visual Charts**: Integrated `Recharts` for "Revenue Trends", "Student Growth", and "Course Sales".
+    *   **KPI Cards**: Quick view of Total Revenue, Total Students, Active Instructors, and Total Courses.
+*   **User Management**:
+    *   **Student Management**: View all enrolled students, search by name, delete/ban users, and export student lists to PDF.
+    *   **Instructor Management**: Add new instructors (with photo upload), update bio/experience, and track their performance (Student count/Course count).
+*   **Course Management (CMS)**:
+    *   **Course Creation Wizard**: Form to add Course Title, Description, Price, Level, Category, and assign Instructors.
+    *   **Media Management**: Upload course thumbnails (Cloudinary integration) and manage video links.
+    *   **Rich Content**: Support for adding resources and structuring lessons.
+    *   **CRUD Operations**: Full Edit/Delete capabilities for existing courses.
+*   **Financial Hub**:
+    *   **Payment Tracking**: View all transaction logs with Status (Completed/Failed), Transaction IDs, and associated Students.
+    *   **Reporting**: specific "Export to PDF" functionality for financial records.
+
+### 🤖 AI-Powered Assistant
+*   **Smart Tutor**: Integrated AI Chatbot powered by **OpenRouter**.
+*   **Contextual Help**: Floating AI button allowing students to ask questions about course content anytime.
+*   **Natural Language Processing**: Understands student queries and provides instant, relevant answers.
+
+### ⚙️ Backend Logic & System Features
+*   **Automated Statistics**:
+    *   **Instructor Stats**: Auto-increments "Student Count" for an instructor when their course is purchased (`order.controller.ts`).
+    *   **Course Counts**: Auto-increments "Course Count" for instructors when new courses are assigned (`course.controller.ts`).
+*   **Cloud Storage**: Integration with **Cloudinary** for scalable image hosting (Profile pics, Course thumbnails).
+*   **Database Optimization**: efficiently structured MongoDB schemas with Mongoose relationships (`populate` methods for joining Courses, Instructors, and Videos).
 
 <br />
 
