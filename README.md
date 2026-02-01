@@ -96,6 +96,95 @@ This project is a feature-rich platform designed for scalability and user experi
 
 <br />
 
+## 🏗 Advanced System Architecture
+
+The following diagram illustrates the high-level architecture of NovaEdu LMS, showcasing the interaction between client applications, the backend API, database, and external services.
+
+```mermaid
+graph TD
+    subgraph Client ["🖥️ Client Layer (Frontend)"]
+        Student[Student Portal]
+        Instructor[Instructor Portal]
+        Admin[Admin Dashboard]
+    end
+
+    subgraph Server ["⚙️ Backend Layer (Node.js + Express)"]
+        API[REST API Routes]
+        Auth[Auth Middleware]
+        Controllers[Business Logic]
+    end
+
+    subgraph Data ["💾 Data Persistence"]
+        DB[(MongoDB Atlas)]
+    end
+
+    subgraph External ["☁️ External Services"]
+        Cloudinary[Cloudinary (Media)]
+        AI[OpenRouter (AI Tutor)]
+        Email[Nodemailer (SMTP)]
+    end
+
+    Student -->|HTTP Requests| API
+    Instructor -->|HTTP Requests| API
+    Admin -->|HTTP Requests| API
+    
+    API --> Auth
+    Auth --> Controllers
+    
+    Controllers <-->|Mongoose ODM| DB
+    
+    Controllers -->|Image Uploads| Cloudinary
+    Controllers -->|AI Completion| AI
+    Controllers -->|Send Notifications| Email
+```
+
+<br />
+
+## 🔄 Data Flow Diagram
+
+This sequence diagram depicts the typical data flow for a user request, detailing the authentication, processing, and external service integration steps.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 User
+    participant FE as 🖥️ Frontend
+    participant API as ⚙️ Backend API
+    participant DB as 💾 Database
+    participant Ext as ☁️ External Services
+
+    User->>FE: Performs Action (e.g., Enroll)
+    FE->>FE: Validate Input
+    FE->>API: Send Request (with JWT)
+    
+    activate API
+    API->>API: Verify Auth Token
+    
+    alt Unauthorized
+        API-->>FE: 401 Unauthorized
+        FE-->>User: Redirect to Login
+    else Authorized
+        API->>DB: Query Data / Check Permissions
+        activate DB
+        DB-->>API: Return Data
+        deactivate DB
+        
+        opt External Interaction
+            API->>Ext: Call API (e.g., Cloudinary/AI)
+            Ext-->>API: Response
+        end
+        
+        API->>DB: Update/Save Records
+        
+        API-->>FE: Return Success Response
+    end
+    deactivate API
+    
+    FE-->>User: Update UI / Show Notification
+```
+
+<br />
+
 ## 🛠 Tech Arsenal
 
 <div align="center">
