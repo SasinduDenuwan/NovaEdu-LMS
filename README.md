@@ -1,25 +1,16 @@
-﻿<div align="center">
+<div align="center">
 
   <img src="https://img.shields.io/badge/v1.0.0-Release-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/Status-Active_Development-orange?style=flat-square" alt="Status">
 
-  <h1>🎓 NovaEdu LMS</h1>
+  <h1>🎟️ EventGo</h1>
   
-  <h3><i>Empowering Education with Intelligent Technology</i></h3>
+  <h3><i>The Ultimate Online Ticket Booking & Event Management System</i></h3>
 
   <p width="80%">
-    <b>NovaEdu</b> is a production-grade, full-stack Learning Management System crafted to bridge the gap between instructors and students. 
-    Featuring <b>AI-driven assistance</b>, real-time analytics, and a seamless e-commerce experience, it sets a new standard for online education platforms.
-  </p>
-
-  <h3>🚀 Deployed Applications</h3>
-  <p>
-    <strong>Frontend Host:</strong><br>
-    <a href="https://lms-fe-lrhe.vercel.app/" target="_blank">https://lms-fe-lrhe.vercel.app/</a>
-    <br><br>
-    <strong>Backend API Host:</strong><br>
-    <a href="https://lms-be-tau.vercel.app/" target="_blank">https://lms-be-tau.vercel.app/</a>
+    <b>EventGo</b> is a centralized platform designed to simplify how users explore events, book tickets, and manage event logistics. 
+    Empowering <b>organizers</b> with powerful management tools and providing <b>admins</b> with comprehensive control, it sets a new standard for efficient event coordination.
   </p>
 
   <p>
@@ -37,51 +28,49 @@
 
 ## 🏗 Advanced System Architecture
 
-The following diagram illustrates the high-level architecture of NovaEdu LMS, showcasing the interaction between client applications, the backend API, database, and external services.
+The following diagram illustrates the high-level architecture of EventGo, showcasing the interaction between the client interface, Spring Boot backend, and MySQL database.
 
 ```mermaid
 graph TD
     subgraph Client ["🖥️ Client Layer (Frontend)"]
-        Student["Student Portal"]
-        Instructor["Instructor Portal"]
-        Admin["Admin Dashboard"]
+        Public["Public Portal"]
+        User["User Dashboard"]
+        Admin["Admin Panel"]
     end
 
-    subgraph Server ["⚙️ Backend Layer (Node.js + Express)"]
-        API["REST API Routes"]
-        Auth["Auth Middleware"]
-        Controllers["Business Logic"]
+    subgraph Server ["⚙️ Backend Layer (Spring Boot)"]
+        Controller["REST Controllers"]
+        Service["Service Layer"]
+        Security["JWT Auth & Security"]
     end
 
     subgraph Data ["💾 Data Persistence"]
-        DB[("MongoDB Atlas")]
+        DB[("MySQL Database")]
     end
 
     subgraph External ["☁️ External Services"]
-        Cloudinary["Cloudinary (Media)"]
-        AI["OpenRouter (AI Tutor)"]
-        Email["Nodemailer (SMTP)"]
+        Email["SMTP (OTP/Notifications)"]
+        QRCode["QR Code Generator"]
     end
 
-    Student -->|HTTP Requests| API
-    Instructor -->|HTTP Requests| API
-    Admin -->|HTTP Requests| API
+    Public -->|HTTP Requests| Controller
+    User -->|HTTP Requests| Controller
+    Admin -->|HTTP Requests| Controller
     
-    API --> Auth
-    Auth --> Controllers
+    Controller --> Security
+    Security --> Service
     
-    Controllers <-->|Mongoose ODM| DB
+    Service <-->|JPA/Hibernate| DB
     
-    Controllers -->|Image Uploads| Cloudinary
-    Controllers -->|AI Completion| AI
-    Controllers -->|Send Notifications| Email
+    Service -->|Generate| QRCode
+    Service -->|Send| Email
 ```
 
 <br />
 
 ## 🔄 Data Flow Diagram
 
-This sequence diagram depicts the typical data flow for a user request, detailing the authentication, processing, and external service integration steps.
+This sequence diagram depicts the typical data flow for a ticket booking request, detailing authentication, processing, and confirmation steps.
 
 ```mermaid
 sequenceDiagram
@@ -92,9 +81,9 @@ sequenceDiagram
     participant DB as 💾 Database
     participant Ext as ☁️ External Services
 
-    User->>FE: Performs Action (e.g., Enroll)
-    FE->>FE: Validate Input
-    FE->>API: Send Request (with JWT)
+    User->>FE: Selects Event & Books Ticket
+    FE->>FE: Input Validation
+    FE->>API: POST /booking (with JWT)
     
     activate API
     API->>API: Verify Auth Token
@@ -103,85 +92,64 @@ sequenceDiagram
         API-->>FE: 401 Unauthorized
         FE-->>User: Redirect to Login
     else Authorized
-        API->>DB: Query Data / Check Permissions
+        API->>DB: Check Availability
         activate DB
-        DB-->>API: Return Data
+        DB-->>API: Confirm Slots
         deactivate DB
         
-        opt External Interaction
-            API->>Ext: Call API (e.g., Cloudinary/AI)
-            Ext-->>API: Response
+        API->>DB: Create Booking Record
+        
+        opt Ticket Generation
+            API->>Ext: Generate QR Code
+            API->>Ext: Send Email Confirmation
         end
         
-        API->>DB: Update/Save Records
-        
-        API-->>FE: Return Success Response
+        API-->>FE: Booking Success Response
     end
     deactivate API
     
-    FE-->>User: Update UI / Show Notification
+    FE-->>User: Show Success & Download Ticket
 ```
 
 <br />
 
 ## 🌟 Comprehensive Feature List
 
-This project is a feature-rich platform designed for scalability and user experience. Below is a detailed breakdown of all implemented functionalities across the system.
+EventGo is a feature-rich platform designed for scalability and user experience. Below is a detailed breakdown of all implemented functionalities across the system.
 
-### 🔐 Authentication & Security
-*   **Secure Registration**: User signup with firstname, lastname, email, and password. Generates hashed passwords using `bcryptjs`.
-*   **JWT Authentication**: Stateless authentication using JSON Web Tokens (Access & Refresh tokens).
-*   **Role-Based Access Control (RBAC)**: Distinct permissions for `STUDENT`, `INSTRUCTOR`, and `ADMIN` roles.
-*   **Password Recovery**: Secure "Forgot Password" flow via Email OTP (using Nodemailer).
-*   **Session Management**: Auto-logout and token refresh mechanisms.
-*   **Protected Routes**: Middleware (`auth.middleware.ts`) ensures only authorized users access sensitive endpoints.
+### 🌍 Public Portal (No Login Required)
+*   **Event Discovery**: Browse upcoming events on the landing page with details.
+*   **Feedback Access**: Read approved user feedback to gauge platform reliability.
+*   **Communication**: Access contact details and send messages directly to the admin.
+*   **About & Feedback**: Explore the platform's mission and submit general feedback.
 
-### 🎓 Student Portal Features
-*   **Interactive Dashboard**:
-    *   **Personalized Greeting**: Dynamic welcome message based on time/user data.
-    *   **Learning Stats**: Track "Hours Learned", "Courses Enrolled", "Resources Accessed", and "Learning Streak".
-    *   **Continue Learning**: Quick access to recently accessed courses.
-*   **Course Discovery & Enrollment**:
-    *   **Course Browsing**: View all available courses with details like Rating, Duration, Level (Beginner/Intermediate), and Category.
-    *   **Advance Filtering**: Search and filter courses by category.
-    *   **Shopping Cart**: Add courses to cart, view total price, and manage wishlist items.
-    *   **Seamless Checkout**: Integrated payment processing flow creating orders and invoices.
-*   **Immersive Learning Experience**:
-    *   **Video Player**: Custom video player supporting YouTube embeds (`getEmbedUrl` utility) for seamless playback.
-    *   **Lesson Navigation**: Sidebar navigation to switch between lessons and video clips.
-    *   **Progress Tracking**: Real-time progress bar showing course completion percentage.
-    *   **Resource Hub**: Downloadable course materials (PDF, ZIP, DOC) directly from the dashboard.
-*   **User Profile Management**:
-    *   **Edit Profile**: Update personal details (Name, Address, Mobile) and upload profile pictures.
-    *   **Order History**: View past purchases and transaction status.
+### 👤 User Portal & Experience
+*   **Secure Authentication**:
+    *   **Registration & Login**: Secure user signup and login flows.
+    *   **Password Recovery**: OTP-based password recovery via email for enhanced security.
+*   **Ticket Booking System**:
+    *   **Browsing**: Filter and select event tickets based on categories and pricing.
+    *   **Secure Checkout**: Integrated payment processing flow.
+    *   **Digital Tickets**: Downloadable QR code tickets for easy entry.
+    *   **History**: detailed booking history and options to cancel/disable tickets.
+*   **Event Organizing**:
+    *   **Create Events**: Post new events with images, details, and proof documents.
+    *   **Management**: Edit or cancel pending events tailored for organizers.
+    *   **Analytics**: Track ticket sales and receive payouts after event completion.
 
-### 🎛 Administrative Control Center
+### � Administrative Control Center
 *   **Dashboard & Analytics**:
-    *   **Visual Charts**: Integrated `Recharts` for "Revenue Trends", "Student Growth", and "Course Sales".
-    *   **KPI Cards**: Quick view of Total Revenue, Total Students, Active Instructors, and Total Courses.
-*   **User Management**:
-    *   **Student Management**: View all enrolled students, search by name, delete/ban users, and export student lists to PDF.
-    *   **Instructor Management**: Add new instructors (with photo upload), update bio/experience, and track their performance (Student count/Course count).
-*   **Course Management (CMS)**:
-    *   **Course Creation Wizard**: Form to add Course Title, Description, Price, Level, Category, and assign Instructors.
-    *   **Media Management**: Upload course thumbnails (Cloudinary integration) and manage video links.
-    *   **Rich Content**: Support for adding resources and structuring lessons.
-    *   **CRUD Operations**: Full Edit/Delete capabilities for existing courses.
+    *   **Overview**: Comprehensive views of total users, events, and payment statistics.
+*   **Event Management**:
+    *   **Approvals**: Review, approve, or reject pending events with specific reasons.
+    *   **Exports**: Download detailed event data as PDF reports.
 *   **Financial Hub**:
-    *   **Payment Tracking**: View all transaction logs with Status (Completed/Failed), Transaction IDs, and associated Students.
-    *   **Reporting**: specific "Export to PDF" functionality for financial records.
-
-### 🤖 AI-Powered Assistant
-*   **Smart Tutor**: Integrated AI Chatbot powered by **OpenRouter**.
-*   **Contextual Help**: Floating AI button allowing students to ask questions about course content anytime.
-*   **Natural Language Processing**: Understands student queries and provides instant, relevant answers.
-
-### ⚙️ Backend Logic & System Features
-*   **Automated Statistics**:
-    *   **Instructor Stats**: Auto-increments "Student Count" for an instructor when their course is purchased (`order.controller.ts`).
-    *   **Course Counts**: Auto-increments "Course Count" for instructors when new courses are assigned (`course.controller.ts`).
-*   **Cloud Storage**: Integration with **Cloudinary** for scalable image hosting (Profile pics, Course thumbnails).
-*   **Database Optimization**: efficiently structured MongoDB schemas with Mongoose relationships (`populate` methods for joining Courses, Instructors, and Videos).
+    *   **Commission Model**: System retains a **10% commission** on ticket sales.
+    *   **Tracking**: Monitor all ticket payments and manage organizer payouts.
+    *   **Reporting**: Generate financial reports in PDF format.
+*   **User & Feedback Management**:
+    *   **User Control**: Activate/Inactivate accounts and manage roles.
+    *   **Feedback Mediation**: Approve or reject user feedback for public display and reply via email.
 
 <br />
 
@@ -189,63 +157,32 @@ This project is a feature-rich platform designed for scalability and user experi
 
 <div align="center">
 
-| Frontend | Backend | Tools & DevOps |
+| Frontend | Backend | Database & Tools |
 | :---: | :---: | :---: |
-| ![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) | ![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white) | ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white) |
-| ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) | ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white) | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white) |
-| ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white) | ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white) | ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white) |
-| ![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white) | ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens) | ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white) |
-| ![Redux](https://img.shields.io/badge/Redux-593D88?style=for-the-badge&logo=redux&logoColor=white) | | |
+| ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white) | ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white) | ![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white) |
+| ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white) | ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white) | ![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=maven&logoColor=white) |
+| ![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white) | ![Hibernate](https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white) | ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens) |
+| ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black) | ![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=spring-security&logoColor=white) | ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white) |
 
 </div>
 
 <br/>
-
-<div align="center">
-  <b>💎 Specialized Libraries</b>
-  <br/><br/>
-
-| Library | Badge | Library | Badge |
-| :---: | :---: | :---: | :---: |
-| **Recharts** | ![Recharts](https://img.shields.io/badge/Recharts-22b5bf?style=for-the-badge&logo=recharts&logoColor=white) | **Cloudinary** | ![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white) |
-| **JSPDF** | ![JSPDF](https://img.shields.io/badge/jspdf-EF5B25?style=for-the-badge&logo=adobeacrobatreader&logoColor=white) | **Nodemailer** | ![Nodemailer](https://img.shields.io/badge/Nodemailer-00d1b2?style=for-the-badge&logo=nodemailer&logoColor=white) |
-| **SweetAlert2** | ![SweetAlert2](https://img.shields.io/badge/SweetAlert2-EE4351?style=for-the-badge&logo=npm&logoColor=white) | **BCrypt** | ![Bcrypt](https://img.shields.io/badge/Bcrypt.js-222222?style=for-the-badge&logo=npm&logoColor=red) |
-| **Lucide React** | ![Lucide](https://img.shields.io/badge/Lucide_React-F05133?style=for-the-badge&logo=lucide&logoColor=white) | **Node-Cron** | ![NodeCron](https://img.shields.io/badge/Node_Cron-2FAB22?style=for-the-badge&logo=nodedotjs&logoColor=white) |
-| **Hot Toast** | ![HotToast](https://img.shields.io/badge/React_Hot_Toast-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) | **OpenRouter** | ![OpenRouter](https://img.shields.io/badge/OpenRouter-6F41D3?style=for-the-badge&logo=openai&logoColor=white) |
-
-</div>
-
-<br />
 
 ## 📂 Project Structure
 
 A quick look at the top-level files and directories.
 
 ```text
-LMS/
-├── lms-be/                 # Backend (Node.js/Express)
-│   ├── src/
-│   │   ├── config/         # DB, Cloudinary & Email configs
-│   │   ├── controllers/    # Business logic (Auth, Course, Order...)
-│   │   ├── middleware/     # Auth checks & error handling
-│   │   ├── models/         # Mongoose Schemas (User, Course...)
-│   │   ├── routes/         # API endpoints definitions
-│   │   ├── utils/          # Helpers (Tokens, PDF, Validation)
-│   │   └── index.ts        # Server entry point
-│   ├── .env.example
-│   └── package.json
+EventGo/
+├── Back_End/               # Spring Boot Application
+│   ├── src/main/java       # Source code (Controllers, Models, Services)
+│   ├── src/main/resources  # Config (application.properties, templates)
+│   └── pom.xml             # Maven dependencies
 │
-├── lms-fe/                 # Frontend (React + Vite)
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── context/        # Global state (AuthContext)
-│   │   ├── pages/          # Full application views
-│   │   ├── services/       # API integration services
-│   │   ├── utils/          # Formatters & helper functions
-│   │   ├── App.tsx         # Main routing configuration
-│   │   └── main.tsx        # Application entry point
-│   ├── index.css           # Global styles (Tailwind imports)
-│   └── package.json
+├── Front_End/              # Client-side Application
+│   ├── assets/             # Images, CSS, JS files
+│   ├── pages/              # HTML pages (User, Admin, Public)
+│   └── index.html          # Entry point
 │
 └── README.md
 ```
@@ -254,54 +191,30 @@ LMS/
 
 ## 📸 Visual Tour
 
-### 🏠 Public Pages & Authentication
+### 🏠 User Dashboard & Booking
 <br>
 <div align="center">
-  <img src="./LMS/screenshots/homePage.png" width="48%" alt="Home Page" style="border-radius: 8px;" />
-  <img src="./LMS/screenshots/homePageCourses.png" width="48%" alt="Courses Page" style="border-radius: 8px;" />
+  <img src="./Front_End/assets/screenshots/Screenshot%20(167).png" width="80%" alt="User Dashboard" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="./LMS/screenshots/login.png" width="30%" alt="Login Page" style="border-radius: 8px;" />
-  <img src="./LMS/screenshots/signup.png" width="30%" alt="Signup Page" style="border-radius: 8px;" />
-  <img src="./LMS/screenshots/homePageInstructors.png" width="30%" alt="Instructors Page" style="border-radius: 8px;" />
+  <img src="./Front_End/assets/screenshots/Screenshot%20(172).png" width="48%" alt="Ticket Booking" style="border-radius: 8px;" />
+  <img src="./Front_End/assets/screenshots/Screenshot%20(163).png" width="48%" alt="Ticket Event" style="border-radius: 8px;" />
+  <br/><br/>
+  <img src="./Front_End/assets/screenshots/Screenshot%20(171).png" width="48%" alt="QR Scanner" style="border-radius: 8px;" />
+  <img src="./Front_End/assets/screenshots/Screenshot%20(173).png" width="48%" alt="QR Generator" style="border-radius: 8px;" />
 </div>
 
 <br/>
 
-### 🎓 Student Portal Experience
+### 🛠️ Admin & Organizer Controls
 <br>
 <div align="center">
-  <img src="./LMS/screenshots/studentDashboard.png" width="80%" alt="Student Dashboard" style="border-radius: 8px;" />
+  <img src="./Front_End/assets/screenshots/Screenshot%20(161).png" width="80%" alt="Admin Dashboard" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="./LMS/screenshots/courseVideoWatch.png" width="48%" alt="Video Player" style="border-radius: 8px;" />
-  <img src="./LMS/screenshots/studentNotes.png" width="48%" alt="Student Notes" style="border-radius: 8px;" />
+  <img src="./Front_End/assets/screenshots/Screenshot%20(162).png" width="48%" alt="Event Approvals" style="border-radius: 8px;" />
+  <img src="./Front_End/assets/screenshots/Screenshot%20(164).png" width="48%" alt="Organizer Payments" style="border-radius: 8px;" />
   <br/><br/>
-  <img src="./LMS/screenshots/courseInStudentDashboard.png" width="48%" alt="Course View" style="border-radius: 8px;" />
-  <img src="./LMS/screenshots/studentProfileChange.png" width="48%" alt="Profile Settings" style="border-radius: 8px;" />
-  <br/><br/>
-  <img src="./LMS/screenshots/cartInStudent.png" width="32%" alt="Shopping Cart" style="border-radius: 8px;" />
-  <img src="./LMS/screenshots/checkoutStudent.png" width="32%" alt="Checkout" style="border-radius: 8px;" />
-  <img src="./LMS/screenshots/paymentSection.png" width="32%" alt="Payment Section" style="border-radius: 8px;" />
-</div>
-
-<br/>
-
-### 🛠️ Administrative Control Center
-<br>
-<div align="center">
-  <img src="./LMS/screenshots/adminDashboard.png" width="80%" alt="Admin Dashboard" style="border-radius: 8px;" />
-  <br/><br/>
-  <img src="./LMS/screenshots/coursesInAdminSide.png" width="80%" alt="Courses Grid" style="border-radius: 8px;" />
-  <br/><br/>
-  <img src="./LMS/screenshots/coursesAdminSide.png" width="48%" alt="Courses List" style="border-radius: 8px;" />
-  <img src="./LMS/screenshots/addCourseAdminSide.png" width="48%" alt="Add Course" style="border-radius: 8px;" />
-  <br/><br/>
-  <img src="./LMS/screenshots/instructorsInAdminSide.png" width="48%" alt="Instructors List" style="border-radius: 8px;" />
-  <img src="./LMS/screenshots/addInstructorAdminSide.png" width="48%" alt="Add Instructor" style="border-radius: 8px;" />
-  <br/><br/>
-  <img src="./LMS/screenshots/paymentAdminSide.png" width="48%" alt="Payment Management" style="border-radius: 8px;" />
-  <img src="./LMS/screenshots/studentAdminSide.png" width="48%" alt="Student Management" style="border-radius: 8px;" />
-  <br/><br/>
-  <img src="./LMS/screenshots/addNewStudent.png" width="48%" alt="Add Student" style="border-radius: 8px;" />
+  <img src="./Front_End/assets/screenshots/Screenshot%20(165).png" width="48%" alt="User Management" style="border-radius: 8px;" />
+  <img src="./Front_End/assets/screenshots/Screenshot%20(170).png" width="48%" alt="Booked Tickets" style="border-radius: 8px;" />
 </div>
 
 <br />
@@ -310,55 +223,34 @@ LMS/
 
 To run this project locally, follow these steps:
 
-### 1️⃣ Clone & Install
+### 1️⃣ Clone the Repository
 ```bash
-git clone https://github.com/your-username/novaedu.git
-cd LMS
+git clone https://github.com/your-username/eventgo.git
+cd eventgo
 ```
 
-### 2️⃣ Backend Configuration
-```bash
-cd lms-be
-npm install
-```
-Create a `.env` file in `lms-be` with your credentials:
-```env
-PORT=5000
-MONGO_URI=mongodb+srv://<your-db>
-JWT_SECRET=supersecretkey
-JWT_REFRESH_SECRET=superrefreshsecret
-CLOUDINARY_URL=cloudinary://your_key:your_secret@your_cloud_name
-OPENROUTER_API_KEY=your_openrouter_key
-GMAIL_USER=your_email@gmail.com
-```
-Start the server:
-```bash
-npm run dev
-```
+### 2️⃣ Backend Configuration (Spring Boot)
+1.  Open the `Back_End` folder in your IDE (IntelliJ IDEA / Eclipse).
+2.  Update `application.properties` with your MySQL credentials:
+    ```properties
+    spring.datasource.url=jdbc:mysql://localhost:3306/eventgo_db
+    spring.datasource.username=root
+    spring.datasource.password=your_password
+    ```
+3.  Build and Run the application:
+    ```bash
+    mvn spring-boot:run
+    ```
 
-### 3️⃣ Frontend Launch
-```bash
-cd ../lms-fe
-npm install
-npm run dev
-```
-OPEN `http://localhost:5173` to view it in the browser.
+### 3️⃣ Frontend Setup
+1.  Navigate to the `Front_End` directory.
+2.  Open `index.html` in your browser or use a live server extension (e.g., VS Code Live Server) to launch the application.
+3.  Ensure the backend is running to handle API requests.
 
 <br/>
 
 ---
 
 <div align="center">
-
-  <h3><b>Designed & Developed by Sasindu Denuwan</b></h3>
-  <p>
-    <a href="https://github.com/SasinduDenuwan" target="_blank">
-      <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
-    </a>
-    <a href="https://www.linkedin.com/in/sasindu-denuwan-276b242a1/" target="_blank">
-      <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
-    </a>
-  </p>
-  <p><i>© 2026 NovaEdu LMS. All Rights Reserved.</i></p>
-
+  <p><i>© 2026 EventGo. All Rights Reserved.</i></p>
 </div>
