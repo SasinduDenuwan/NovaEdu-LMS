@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
   <img src="https://img.shields.io/badge/v1.0.0-Release-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
@@ -66,7 +66,7 @@ This project is a feature-rich platform designed for scalability and user experi
     *   **Edit Profile**: Update personal details (Name, Address, Mobile) and upload profile pictures.
     *   **Order History**: View past purchases and transaction status.
 
-### �️ Administrative Control Center
+### 🎛 Administrative Control Center
 *   **Dashboard & Analytics**:
     *   **Visual Charts**: Integrated `Recharts` for "Revenue Trends", "Student Growth", and "Course Sales".
     *   **KPI Cards**: Quick view of Total Revenue, Total Students, Active Instructors, and Total Courses.
@@ -103,25 +103,25 @@ The following diagram illustrates the high-level architecture of NovaEdu LMS, sh
 ```mermaid
 graph TD
     subgraph Client ["🖥️ Client Layer (Frontend)"]
-        Student[Student Portal]
-        Instructor[Instructor Portal]
-        Admin[Admin Dashboard]
+        Student["Student Portal"]
+        Instructor["Instructor Portal"]
+        Admin["Admin Dashboard"]
     end
 
     subgraph Server ["⚙️ Backend Layer (Node.js + Express)"]
-        API[REST API Routes]
-        Auth[Auth Middleware]
-        Controllers[Business Logic]
+        API["REST API Routes"]
+        Auth["Auth Middleware"]
+        Controllers["Business Logic"]
     end
 
     subgraph Data ["💾 Data Persistence"]
-        DB[(MongoDB Atlas)]
+        DB[("MongoDB Atlas")]
     end
 
     subgraph External ["☁️ External Services"]
-        Cloudinary[Cloudinary (Media)]
-        AI[OpenRouter (AI Tutor)]
-        Email[Nodemailer (SMTP)]
+        Cloudinary["Cloudinary (Media)"]
+        AI["OpenRouter (AI Tutor)"]
+        Email["Nodemailer (SMTP)"]
     end
 
     Student -->|HTTP Requests| API
